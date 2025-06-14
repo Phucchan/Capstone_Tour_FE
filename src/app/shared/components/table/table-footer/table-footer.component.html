@@ -1,0 +1,47 @@
+<div class="text-muted-foreground flex flex-wrap items-center justify-between gap-2 py-3 px-5 text-xs">
+  <div class="order-2 flex items-center gap-2 md:order-1">
+    Hiển thị
+    <select class="w-16 p-2" (change)="onPageSizeChange($event)">
+      <option value="5">5</option>
+      <option value="10" selected>10</option>
+      <option value="20">20</option>
+      <option value="30">30</option>
+      <option value="50">50</option>
+    </select>
+    mỗi trang
+  </div>
+  <div class="order-1 flex items-center gap-4 md:order-2">
+    <span>{{ currentPage + 1 }} trên {{ totalPages }}</span>
+    <div class="inline-flex items-center gap-1">
+      <button class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-sm disabled:opacity-50"
+        [disabled]="currentPage === 0" (click)="onPageSelect(currentPage - 1)">
+        <svg-icon src="./assets/icons/heroicons/outline/arrow-long-left.svg" [svgClass]="'h-4 w-4'"> </svg-icon>
+      </button>
+
+      <ng-container *ngFor="let page of getDisplayedPages()">
+        <button *ngIf="page !== '...'"
+          class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-sm" [ngClass]="{
+            'bg-muted-foreground/10 font-bold': page === currentPage + 1, 
+            'hover:bg-muted-foreground/10': page !== currentPage
+          }" (click)="onPageSelect(page)">
+          {{ page }}
+        </button>
+        <span *ngIf="page === '...'" class="inline-flex h-7 w-7 items-center justify-center text-sm">...</span>
+      </ng-container>
+
+      <button class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-sm"
+        [disabled]="currentPage + 1 >= totalPages" (click)="onPageSelect(currentPage + 1)">
+        <svg-icon src="./assets/icons/heroicons/outline/arrow-long-right.svg" [svgClass]="'h-4 w-4'"> </svg-icon>
+      </button>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <input type="number" class="w-16 rounded-md border p-1 text-center text-sm" [(ngModel)]="inputPage"
+        placeholder="Trang" min="1" [max]="totalPages" (keyup.enter)="goToPage()" />
+      <button class="inline-flex h-7 items-center justify-center rounded-md bg-primary px-2 text-sm text-white"
+        (click)="goToPage()">
+        Đi
+      </button>
+    </div>
+  </div>
+</div>

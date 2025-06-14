@@ -1,0 +1,138 @@
+<button data-modal-target="wishlistModal"></button>
+<div [class.transition-all]="isHomepage">
+  <nav class="fixed top-0 left-0 w-full bg-white shadow-md z-50 h-[80px] pt-2">
+    <div class="flex justify-between items-center px-4 sm:px-6 lg:px-8 max-w-[90%] mx-auto">
+      <!-- Logo -->
+      <div class="flex items-center space-x-3 cursor-pointer" (click)="goHomepage()">
+        <img class="w-14 h-14 rounded-full" src="assets/images/logo/image.png" alt="" />
+        <span class="font-bold text-xl sm:text-2xl">Soloist</span>
+      </div>
+
+      <div class="transition-all duration-300 overflow-hidden"
+        [class.max-h-[60px]]="!isHomepage || (isHomepage && isScrolled)" [class.max-h-0]="isHomepage && !isScrolled">
+        <div class="bg-white-100 py-2">
+          <div
+            class="max-w-7xl mx-auto flex items-center bg-white rounded-full px-4 pr-32 py-2 w-full border border-gray-300 shadow-sm relative">
+            <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"></path>
+            </svg>
+            <input type="text" placeholder="Tìm kiếm..."
+              class="w-full outline-none px-4 text-gray-700 placeholder-gray-400 text-lg bg-transparent"
+               />
+          </div>
+        </div>
+      </div>
+
+      <ul *ngIf="!isScrolled && isHomepage"
+        class="hidden md:flex ml-8 space-x-8 lg:space-x-14 text-lg font-semibold transition-all duration-300"
+        [class.ml-0]="!isHomepage || (isHomepage && isScrolled)" [class.ml-[-43rem]]="isHomepage && !isScrolled">
+
+        <li>
+          <a href="/customer/list-plan" class="hover:text-gray-600">Kế hoạch</a>
+        </li>
+        <li>
+          <a href="restaurants" class="hover:text-gray-600">Nhà hàng</a>
+        </li>
+        <li>
+          <a href="hotels" class="hover:text-gray-600">Khách sạn</a>
+        </li>
+        <li>
+          <a href="/activities" class="hover:text-gray-600">Hoạt động</a>
+        </li>
+      </ul>
+
+      <div class="relative">
+        <div class="flex items-center space-x-4 sm:space-x-6">
+          <svg class="w-6 h-6 text-gray-800 dark:text-black" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+            width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+              d="M4.37 7.657c2.063.528 2.396 2.806 3.202 3.87 1.07 1.413 2.075 1.228 3.192 2.644 1.805 2.289 1.312 5.705 1.312 6.705M20 15h-1a4 4 0 0 0-4 4v1M8.587 3.992c0 .822.112 1.886 1.515 2.58 1.402.693 2.918.351 2.918 2.334 0 .276 0 2.008 1.972 2.008 2.026.031 2.026-1.678 2.026-2.008 0-.65.527-.9 1.177-.9H20M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          </svg>
+          <span class="text-base sm:text-lg">VND</span>
+          <div class="" *ngIf="isLoggedIn; else signIn">
+            <button id="dropdownProfileButton" data-dropdown-toggle="dropdown" type="button">
+              <img class="w-8 h-8 sm:w-10 sm:h-10 bg-gray-300 rounded-full cursor-pointer overflow-clip" [src]="
+                  'https://cellphones.com.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg'
+                " alt="Ảnh Hồ Sơ" />
+            </button>
+
+
+
+
+
+          </div>
+          <svg [routerLink]="['/customer/cart']" class="w-12 h-12 text-gray-800 dark:text-white hover:bg-gray-300 p-[10px] rounded-full cursor-pointer" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+            width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312" />
+          </svg>
+
+        </div>
+        <div id="dropdown"
+          class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700">
+          <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownProfileButton">
+            <li>
+              <a href="/customer/user-profile"
+                class="cursor-pointer block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-black transition duration-200">
+                Hồ Sơ Người Dùng
+              </a>
+            </li>
+            <li>
+              <button type="button" data-modal-toggle="wishlistModal" data-modal-target="wishlistModal"
+                data-dropdown-hide="dropdown"
+                class="cursor-pointer block px-4 pr-8 py-2 text-gray-700 hover:bg-gray-100 hover:text-black transition duration-200">
+                Danh sách yêu thích
+              </button>
+            </li>
+            <li>
+              <a (click)="onLogout()"
+                class="cursor-pointer block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-black transition duration-200">
+                Đăng Xuất
+              </a>
+            </li>
+          </ul>
+        </div>
+        <ng-template #signIn>
+          <button (click)="router.navigate(['/login'])"
+            class="px-4 py-2 text-white bg-[#1F3F7D] rounded-full hover:bg-blue-500 transition duration-300">
+            Đăng Nhập
+          </button>
+        </ng-template>
+      </div>
+    </div>
+
+    <div class="transition-all duration-300 overflow-hidden"
+      [class.max-h-[50px]]="!isHomepage || (isHomepage && isScrolled)" [class.max-h-0]="isHomepage && !isScrolled">
+      <div class="bg-white shadow-sm py-2">
+        <ul class="flex justify-center space-x-8 gap-8 text-lg font-semibold text-gray-700">
+          <li>
+            <a href="/hotels"
+              class="hover:border-green-800 cursor-pointer hover:border-b-4 transition-all duration-300">
+              Khách sạn
+            </a>
+          </li>
+          <li>
+            <a href="/restaurants"
+              class="hover:border-green-800 cursor-pointer hover:border-b-4 transition-all duration-300">
+              Nhà Hàng
+            </a>
+          </li>
+          <li>
+            <a href="/activities" class="hover:border-green-800 cursor-pointer hover:border-b-4 transition-all duration-300">
+              Hoạt động
+            </a>
+          </li>
+          
+          <li>
+            <a href="/customer/list-plan"
+              class="hover:border-green-800 cursor-pointer hover:border-b-4 transition-all duration-300">
+              Kế hoạch
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</div>

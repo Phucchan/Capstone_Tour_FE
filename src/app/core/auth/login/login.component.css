@@ -1,0 +1,17 @@
+input::-ms-reveal,
+input::-ms-clear {
+    display: none;
+}
+
+.popup p {
+    margin: 0;
+    font-size: 12px;
+}
+
+.popup p.valid {
+    color: green;
+}
+
+.popup p:not(.valid) {
+    color: red;
+}

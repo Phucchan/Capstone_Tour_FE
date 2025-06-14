@@ -1,0 +1,34 @@
+<div class="relative ml-3">
+  <!-- Profile Button -->
+  <button (click)="toggleMenu()" class="bg-card relative flex rounded-full text-sm" type="button">
+    <span class="sr-only">Mở menu người dùng</span>
+    <img clickOutside (clickOutside)="isOpen = false" class="h-9 w-9 rounded-full"
+      src="https://cellphones.com.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg" alt="" />
+  </button>
+  <!-- Dropdown -->
+  <div [@openClose]="isOpen ? 'open' : 'closed'"
+    class="bg-white shadow-custom absolute right-0 z-20 mt-2 w-60 origin-top-right transform rounded-sm py-4 ring-1 ring-transparent ring-opacity-5 transition focus:outline-hidden">
+    <div class="flext-row flex items-center px-4 pb-4">
+      <div class="w-10 shrink-0">
+        <img class="h-9 w-9 rounded-full mr-4"
+          src="https://cellphones.com.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg" alt="" />
+      </div>
+      <div class="text-foreground  px-2 text-sm font-semibold">
+        <p class="text-muted-foreground truncate text-ellipsis text-xs ml-2 font-semibold">{{ user?.username }}</p>
+      </div>
+    </div>
+
+    <div class="border-border border-b border-dashed"></div>
+
+    <ul class="my-2 mx-4 flex flex-col">
+      <li
+        class="text-muted-foreground hover:bg-card hover:text-primary inline-flex cursor-pointer items-center gap-2 rounded-sm px-3 py-2 text-xs font-semibold">
+        <a (click)="onLogout()"
+          class="cursor-pointer block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-black transition duration-200">
+          Đăng Xuất
+        </a>
+      </li>
+    </ul>
+    <hr class="border-border border-dashed" />
+  </div>
+</div>
