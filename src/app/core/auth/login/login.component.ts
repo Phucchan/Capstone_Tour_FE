@@ -135,13 +135,13 @@ export class LoginComponent implements OnInit {
       .subscribe((response: any) => {
         if (response !== null) {
           const token = response.body.data.token;
-          const user = response.body.data.username;
+          const username = response.body.data.username;
           if (rememberMe) {
-            this.userStorageService.saveUser(user); // Save for 30 days
+            this.userStorageService.saveUser(username); // Save for 30 days
             localStorage.setItem('rememberedUser', username);
           }
 
-          this.postLogin(token, user);
+          this.postLogin(token, { username: username, password: null });
           
         }
       });

@@ -40,26 +40,23 @@ export class SocketSerivce {
     this.subcriptionActiveUsers = this.stompClient.subscribe(
       '/topic/active',
       (message: any) => {
-        console.log('Message: ', message);
-        const user = JSON.parse(message.body);
-        this.activeUserSubject.next(user);
-        console.log('Active user: ', user);
+        console.log('🔥 Message received from topic /topic/active:', message);
+        try {
+          const user = JSON.parse(message.body);
+          console.log('✅ Parsed user:', user);
+          this.activeUserSubject.next(user);
+        } catch (e) {
+          console.error('❌ Failed to parse message.body:', e);
+        }
       }
     );
   }
 
   sendConnect(user: any) {
-    this.stompClient.send(
-      '/app/user/connect',
-      {},
-      JSON.stringify(user)
-    );
+    this.stompClient.send('/app/user/connect', {}, JSON.stringify(user));
   }
-
-
 
   subcribeActiveUsers(): Observable<any> {
     return this.activeUserSubject.asObservable();
   }
-
 }
