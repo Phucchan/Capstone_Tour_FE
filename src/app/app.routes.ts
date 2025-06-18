@@ -14,18 +14,23 @@ export const routes: Routes = [
   },
   {
     path: 'customer',
-    loadChildren: () => import('./features/customer/customer.routes').then(m => m.CUSTOMER_ROUTES),
+    loadChildren: () =>
+      import('./features/customer/customer.routes').then(
+        (m) => m.CUSTOMER_ROUTES
+      ),
     canActivate: [AuthGuard],
-    data: { expectedRoles: ['CUSTOMER'] }
+    data: { expectedRoles: ['CUSTOMER'] },
   },
   {
     path: 'admin',
-    loadChildren: () => import('./features/admin/admin.routes').then(m => m.ADMIN_ROUTES),
+    loadChildren: () =>
+      import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
     canActivate: [AuthGuard],
-    data: { expectedRoles: ['ADMIN'] }
+    data: { expectedRoles: ['ADMIN'] },
   },
   {
     path: '',
-    loadChildren: () => import('./features/public/public.routes').then(m => m.PUBLIC_ROUTES),
+    loadChildren: () =>
+      import('./features/public/public.routes').then((m) => m.PUBLIC_ROUTES),
   },
 ];

@@ -6,12 +6,14 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth/auth.service';
 import { catchError, of } from 'rxjs';
 import { UserStorageService } from '../../services/user-storage/user-storage.service';
 import { CommonModule } from '@angular/common';
 import { SsrService } from '../../services/ssr.service';
+import { SocketSerivce } from '../../services/socket/socket.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -32,16 +34,19 @@ export class LoginComponent implements OnInit {
 
   usernameCriteria = {
     minLength: false,
-    maxLength: false,
-    pattern: false,
+    maxLength: false
   };
+
+  activeUsersSubcription: any;
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private formBuilder: FormBuilder,
     private userStorageService: UserStorageService,
-    private ssrService: SsrService
+    private ssrService: SsrService,
+    private socketService: SocketSerivce,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
@@ -50,6 +55,14 @@ export class LoginComponent implements OnInit {
       ?.getItem('rememberedUser')
       ?.replaceAll('"', '');
 
+    this.route.queryParams.subscribe((params) => {
+      const token = params['token'];
+       const email = params['email'];
+      if (token) {
+        this.postLogin(token, {username: email, password: null});
+      }
+    });
+
     // Initialize the login form
     this.loginForm = this.formBuilder.group({
       username: [
@@ -57,8 +70,7 @@ export class LoginComponent implements OnInit {
         [
           Validators.required,
           Validators.minLength(8),
-          Validators.maxLength(30),
-          Validators.pattern('^[a-zA-Z0-9]*$'),
+          Validators.maxLength(30)
         ],
       ],
       password: [
@@ -75,7 +87,6 @@ export class LoginComponent implements OnInit {
     this.loginForm.get('username')?.valueChanges.subscribe((value) => {
       this.usernameCriteria.minLength = value.length >= 8;
       this.usernameCriteria.maxLength = value.length <= 30;
-      this.usernameCriteria.pattern = /^[a-zA-Z0-9]*$/.test(value);
     });
 
     // Listen to password changes for validation criteria
@@ -94,6 +105,12 @@ export class LoginComponent implements OnInit {
 
   togglePasswordVisibility() {
     this.hidePassword = !this.hidePassword;
+  }
+
+  loginSocial(provider: string) {
+    const providerId = provider.toLowerCase();
+    const oauthUrl = `${environment.apiUrl}/oauth2/authorization/${providerId}`;
+    window.location.href = oauthUrl;
   }
 
   onSubmit() {
@@ -120,36 +137,55 @@ export class LoginComponent implements OnInit {
           const token = response.body.data.token;
           const user = response.body.data.username;
           if (rememberMe) {
-            this.userStorageService.saveToken(token); // Save for 30 days
             this.userStorageService.saveUser(user); // Save for 30 days
             localStorage.setItem('rememberedUser', username);
           }
 
-          const userRoles = this.userStorageService.getUserRoles();
-
-          console.log('User roles:', userRoles);
-          console.log('Token:', token);
-
-          // // Mapping role to route
-          // const roleRouteMap: { [key: string]: string } = {
-          //   CUSTOMER: 'customer',
-          //   CEO: 'ceo',
-          //   MARKETER: 'marketer',
-          //   SERVICE_PROVIDER: 'service-provider',
-          //   ADMIN: 'admin',
-          //   HEAD_OF_BUSINESS: 'head-business',
-          //   OPERATOR: 'operator',
-          //   SALESMAN: 'salesman',
-          //   ACCOUNTANT: 'accountant'
-          // };
-
-          // let redirectTo = '/'; // Default nếu chỉ có role CUSTOMER
-          // if (userRoles.length > 1 || userRoles[0] !== 'CUSTOMER') {
-          //   const targetRole = userRoles.find(role => role !== 'CUSTOMER') || userRoles[0];
-          //   redirectTo = `/${roleRouteMap[targetRole] || 'customer'}`;
-          // }
-          // this.router.navigate([redirectTo]);
+          this.postLogin(token, user);
+          
         }
       });
+  }
+
+  postLogin(token: string, user: any) {
+    this.userStorageService.saveToken(token);
+
+    this.socketService.connect(user);
+
+    this.activeUsersSubcription = this.socketService
+      .subcribeActiveUsers()
+      .subscribe({
+        next: (activeUser) => {
+          console.log('Active user:', activeUser);
+        },
+        error: (err) => {
+          console.error('Error subscribing to active users:', err);
+        },
+      });
+
+      const userRoles = this.userStorageService.getUserRoles();
+
+      console.log('User: ', user);
+      console.log('Token: ', token)
+
+    // // Mapping role to route
+    // const roleRouteMap: { [key: string]: string } = {
+    //   CUSTOMER: 'customer',
+    //   CEO: 'ceo',
+    //   MARKETER: 'marketer',
+    //   SERVICE_PROVIDER: 'service-provider',
+    //   ADMIN: 'admin',
+    //   HEAD_OF_BUSINESS: 'head-business',
+    //   OPERATOR: 'operator',
+    //   SALESMAN: 'salesman',
+    //   ACCOUNTANT: 'accountant'
+    // };
+
+    // let redirectTo = '/'; // Default nếu chỉ có role CUSTOMER
+    // if (userRoles.length > 1 || userRoles[0] !== 'CUSTOMER') {
+    //   const targetRole = userRoles.find(role => role !== 'CUSTOMER') || userRoles[0];
+    //   redirectTo = `/${roleRouteMap[targetRole] || 'customer'}`;
+    // }
+    // this.router.navigate([redirectTo]);
   }
 }
