@@ -14,8 +14,8 @@ export const ADMIN_ROUTES: Routes = [
       },
       {
         path: 'test',
-        component: AdminTestComponent
-      }
-    ]
-  }
+        component: AdminTestComponent,
+      },
+    ],
+  },
 ];

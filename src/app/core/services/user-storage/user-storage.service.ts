@@ -16,6 +16,10 @@ export class UserStorageService {
   ) { }
 
   private setCookie(name: string, value: string, days?: number): void {
+    if (typeof document === 'undefined') {
+    // Không chạy trong trình duyệt — không làm gì cả
+    return;
+  }
     let expires = "";
     if (days) {
       const date = new Date();
