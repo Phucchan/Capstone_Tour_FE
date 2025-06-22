@@ -6,39 +6,61 @@ import { HeroSectionComponent } from '../../../shared/components/hero-section/he
 import { HomepageService } from '../services/homepage.service';
 
 @Component({
-    selector: 'app-homepage',
-    standalone: true,
-    imports: [
-        CommonModule,
-        HeaderComponent,
-        FooterComponent,
-        HeroSectionComponent,
-
-    ],
-    templateUrl: './homepage.component.html',
-
+  selector: 'app-homepage',
+  standalone: true,
+  imports: [
+    CommonModule,
+    HeaderComponent,
+    HeroSectionComponent,
+    FooterComponent
+  ],
+  templateUrl: './homepage.component.html'
 })
 export class HomepageComponent {
-    blogs: any[] = [];
+  blogs: Blog[] = [];
+  highlyRatedTours: Tour[] = [];
+  isLoading = true;
+  errorMessage: string | null = null;
 
-    constructor(private homepageService: HomepageService) {
-        this.getHomePageData();
-    }
+  constructor(private homepageService: HomepageService) {
+    this.getHomePageData();
+  }
 
-    getHomePageData() {
-        this.homepageService.getHomePageData().subscribe(
-            {
-                next: (response) => {
-                    this.blogs = response.data.recentBlogs || [];
-                },
-                error: (error) => {
-                    console.error('Error fetching home page data:', error);
-                }
-            }
-        );
-    }
-    getTime(dateStr: string): string {
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('vi-VN');
-    }
+  getHomePageData(): void {
+    this.homepageService.getHomePageData().subscribe({
+      next: (response) => {
+        const data = response.data || {};
+        this.blogs = data.recentBlogs || [];
+        this.highlyRatedTours = data.highlyRatedTours || [];
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching homepage data', err);
+        this.errorMessage = 'Không thể tải dữ liệu. Vui lòng thử lại sau.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  getTime(dateStr: string): string {
+    return new Date(dateStr).toLocaleDateString('vi-VN');
+  }
+}
+
+interface Blog {
+  id: number;
+  title: string;
+  thumbnailImageUrl: string | null;
+  authorName: string;
+  createdAt: string;
+}
+
+interface Tour {
+  id: number;
+  name: string;
+  thumbnailUrl: string;
+  averageRating: number;
+  durationDays: number;
+  region: string;
+  locationName: string;
 }
