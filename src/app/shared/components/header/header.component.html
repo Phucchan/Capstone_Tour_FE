@@ -4,8 +4,8 @@
     <div class="flex justify-between items-center px-4 sm:px-6 lg:px-8 max-w-[90%] mx-auto">
       <!-- Logo -->
       <div class="flex items-center space-x-3 cursor-pointer" (click)="goHomepage()">
-        <img class="w-14 h-14 rounded-full" src="assets/images/logo/image.png" alt="" />
-        <span class="font-bold text-xl sm:text-2xl">Soloist</span>
+        <img class="w-14 h-14 rounded-full" src="assets/images/logo/logo.png" alt="" />
+        <span class="font-bold text-xl sm:text-2xl">Đi Đâu</span>
       </div>
 
       <div class="transition-all duration-300 overflow-hidden"
@@ -30,16 +30,19 @@
         [class.ml-0]="!isHomepage || (isHomepage && isScrolled)" [class.ml-[-43rem]]="isHomepage && !isScrolled">
 
         <li>
-          <a href="/customer/list-plan" class="hover:text-gray-600">Kế hoạch</a>
+          <a href="" class="hover:text-gray-600">Trang chủ</a>
         </li>
         <li>
-          <a href="restaurants" class="hover:text-gray-600">Nhà hàng</a>
+          <a href="" class="hover:text-gray-600">Du lịch</a>
         </li>
         <li>
-          <a href="hotels" class="hover:text-gray-600">Khách sạn</a>
+          <a href="" class="hover:text-gray-600">Du lịch với Al</a>
         </li>
         <li>
-          <a href="/activities" class="hover:text-gray-600">Hoạt động</a>
+          <a href="" class="hover:text-gray-600">Blog</a>
+        </li>
+        <li>
+          <a href="" class="hover:text-gray-600">Về chúng tôi</a>
         </li>
       </ul>
 
@@ -108,27 +111,33 @@
       <div class="bg-white shadow-sm py-2">
         <ul class="flex justify-center space-x-8 gap-8 text-lg font-semibold text-gray-700">
           <li>
-            <a href="/hotels"
+            <a href=""
               class="hover:border-green-800 cursor-pointer hover:border-b-4 transition-all duration-300">
-              Khách sạn
+              Trang chủ
             </a>
           </li>
           <li>
-            <a href="/restaurants"
+            <a href=""
               class="hover:border-green-800 cursor-pointer hover:border-b-4 transition-all duration-300">
-              Nhà Hàng
+              Du lịch
             </a>
           </li>
           <li>
-            <a href="/activities" class="hover:border-green-800 cursor-pointer hover:border-b-4 transition-all duration-300">
-              Hoạt động
+            <a href="" class="hover:border-green-800 cursor-pointer hover:border-b-4 transition-all duration-300">
+              Du lịch với Al
             </a>
           </li>
           
           <li>
-            <a href="/customer/list-plan"
+            <a href=""
               class="hover:border-green-800 cursor-pointer hover:border-b-4 transition-all duration-300">
-              Kế hoạch
+              Blog
+            </a>
+          </li>
+           <li>
+            <a href=""
+              class="hover:border-green-800 cursor-pointer hover:border-b-4 transition-all duration-300">
+              Về chúng tôi
             </a>
           </li>
         </ul>

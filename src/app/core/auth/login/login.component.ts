@@ -168,24 +168,22 @@ export class LoginComponent implements OnInit {
       console.log('User: ', user);
       console.log('Token: ', token)
 
-    // // Mapping role to route
-    // const roleRouteMap: { [key: string]: string } = {
-    //   CUSTOMER: 'customer',
-    //   CEO: 'ceo',
-    //   MARKETER: 'marketer',
-    //   SERVICE_PROVIDER: 'service-provider',
-    //   ADMIN: 'admin',
-    //   HEAD_OF_BUSINESS: 'head-business',
-    //   OPERATOR: 'operator',
-    //   SALESMAN: 'salesman',
-    //   ACCOUNTANT: 'accountant'
-    // };
+    // Mapping role to route
+    const roleRouteMap: { [key: string]: string } = {
+      CUSTOMER: 'customer',
+      ADMIN: 'admin',
+      MARKETING_MANAGER: 'marketing-manager',
+      SELLER: 'seller',
+      BUSINESS_DEPARTMENT: 'business-department',
+      SERVICE_COORDINATOR: 'service-coordinator',
+      ACCOUNTANT: 'accountant'
+    };
 
-    // let redirectTo = '/'; // Default nếu chỉ có role CUSTOMER
-    // if (userRoles.length > 1 || userRoles[0] !== 'CUSTOMER') {
-    //   const targetRole = userRoles.find(role => role !== 'CUSTOMER') || userRoles[0];
-    //   redirectTo = `/${roleRouteMap[targetRole] || 'customer'}`;
-    // }
-    // this.router.navigate([redirectTo]);
+    let redirectTo = '/'; // Default nếu chỉ có role CUSTOMER
+    if (userRoles.length > 1 || userRoles[0] !== 'CUSTOMER') {
+      const targetRole = userRoles.find(role => role !== 'CUSTOMER') || userRoles[0];
+      redirectTo = `/${roleRouteMap[targetRole] || 'customer'}`;
+    }
+    this.router.navigate([redirectTo]);
   }
 }
