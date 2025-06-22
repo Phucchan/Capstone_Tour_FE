@@ -5,10 +5,12 @@ import { ChatComponent } from './features/customer/components/chat/chat.componen
 
 export const routes: Routes = [
   {
-  path: '',
-  loadComponent: () => import('./features/public/homepage/homepage.component').then(m => m.HomepageComponent)
-},
-
+    path: '',
+    loadComponent: () =>
+      import('./features/public/homepage/homepage.component').then(
+        (m) => m.HomepageComponent
+      ),
+  },
   {
     path: '',
     redirectTo: 'login',
