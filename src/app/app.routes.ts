@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './core/auth/login/login.component';
 import { AuthGuard } from './core/guards/auth.guard';
+import { ChatComponent } from './features/customer/components/chat/chat.component';
 
 export const routes: Routes = [
   {
@@ -32,5 +33,9 @@ export const routes: Routes = [
     path: '',
     loadChildren: () =>
       import('./features/public/public.routes').then((m) => m.PUBLIC_ROUTES),
+  },
+  {
+    path: 'chat',
+    component: ChatComponent,
   },
 ];

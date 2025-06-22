@@ -1,0 +1,37 @@
+<div class="fixed bottom-0 right-0 z-50">
+  <!-- Nội dung hiện tại -->
+  <div class="w-100">
+    <div class="flex flex-col gap-2 overflow-x-auto w-full px-2 pb-2 pt-2 scrollbar-hide">
+      <div class="text-[1.125rem] font-medium pb-2 pl-4">
+        Liên hệ
+      </div>
+
+      <!-- Current User -->
+      <div class="flex gap-2 px-4 py-2 text-center">
+        <app-avatar [width]="'56px'" [isOnline]="true" [username]="currentUser.fullName"
+          [avatarUrl]="currentUser.avatarImage">
+        </app-avatar>
+        <div class="flex items-center justify-center h-[56px]">
+          <small class="text-sm">
+            Bạn
+          </small>
+        </div>
+      </div>
+
+      <!-- Other Active Users -->
+      <ng-container *ngFor="let u of activeUsers">
+        <div *ngIf="u.username !== currentUser.username" class="flex gap-2 px-4 py-2 rounded-md text-center cursor-pointer hover:bg-gray-100">
+          <app-avatar [width]="'56px'" [isOnline]="u.userStatus === 'ONLINE'" [username]="u.fullName"
+            [avatarUrl]="u.avatarImage">
+          </app-avatar>
+          <div class="flex flex-col text-left items-left justify-center h-[56px]">
+            <strong class="text-sm">{{ u.fullName }}</strong>
+            <p class="text-sm text-gray-500">
+              Em lan xinh quá • 1 phút
+            </p>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>
