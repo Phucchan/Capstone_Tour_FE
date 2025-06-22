@@ -3,6 +3,7 @@ import { Router, Event, NavigationEnd, RouterOutlet } from '@angular/router';
 import { SsrService } from '../../../../core/services/ssr.service';
 import { Modal } from 'flowbite';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
+import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 
 @Component({
   selector: 'app-public-layout',
@@ -11,6 +12,7 @@ import { HeaderComponent } from '../../../../shared/components/header/header.com
   imports: [
     RouterOutlet,
     HeaderComponent,
+    FooterComponent
 ],
 })
 export class PublicLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
