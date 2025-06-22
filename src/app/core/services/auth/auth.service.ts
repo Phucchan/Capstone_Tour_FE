@@ -16,7 +16,7 @@ export class AuthService {
     const headers = new HttpHeaders().set('Content-Type', 'application/json');
     const body = {username, password};
 
-    return this.http.post(environment.apiUrl + '/auth', body, { headers, observe: 'response' }).pipe(
+    return this.http.post(environment.apiUrl + '/auth/login', body, { headers, observe: 'response' }).pipe(
       map((response: any) => {
         const token = response.body.data.token;
         const user = response.body.data;

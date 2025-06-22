@@ -149,22 +149,7 @@ export class LoginComponent implements OnInit {
 
   postLogin(token: string, user: any) {
     this.userStorageService.saveToken(token);
-
-    this.socketService.connect(user);
-
-    this.activeUsersSubcription = this.socketService
-      .subcribeActiveUsers()
-      .subscribe({
-        next: (activeUser) => {
-          console.log('Active user:', activeUser);
-        },
-        error: (err) => {
-          console.error('Error subscribing to active users:', err);
-        },
-      });
-
       const userRoles = this.userStorageService.getUserRoles();
-
       console.log('User: ', user);
       console.log('Token: ', token)
 

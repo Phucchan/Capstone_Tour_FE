@@ -31,6 +31,20 @@ export class SocketSerivce {
     );
   }
 
+  disconnect(user: any): void {
+    this.sendDisconnect(user);
+    this.stompClient.disconnect(() => {
+      console.log('Disconnected from WebSocket');
+      this.subcriptionActiveUsers?.unsubscribe();
+      this.activeUserSubject.next(null);
+    });
+  }
+
+  sendDisconnect(user: any) {
+    this.stompClient.send('/app/user/disconnect', {}, JSON.stringify(user));
+    console.log('User disconnected:', user);
+  }
+
   private onConnect(user: any) {
     this.subcribeActive();
     this.sendConnect(user);
