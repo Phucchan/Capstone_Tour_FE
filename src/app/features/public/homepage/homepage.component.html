@@ -2,6 +2,94 @@
 
 <app-hero-section></app-hero-section>
 
-<!-- Nội dung khác... -->
+<section class="bg-white py-16 px-4 sm:px-6 lg:px-8">
+  <div class="text-center max-w-4xl mx-auto mb-12">
+    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+      Chúng tôi có thứ bạn cần
+    </h2>
+    <p class="text-gray-500 text-lg">
+      Đi Đâu là nền tảng du lịch giúp bạn dễ dàng khám phá mọi vùng đất tuyệt đẹp trên khắp Việt Nam. 
+      Từ đặt tour, tìm điểm đến hấp dẫn đến trải nghiệm văn hóa địa phương, tất cả đều có tại đây!
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+    <div class="relative rounded-lg overflow-hidden shadow-md group">
+      <img src="assets/images/feature1.jpg" alt="" class="w-full h-72 object-cover group-hover:scale-105 transition" />
+      <div class="absolute top-4 left-4 bg-orange-400 text-white px-4 py-1 rounded-full text-sm font-semibold">
+        Chuyến đi của riêng bạn
+      </div>
+      <div class="absolute bottom-20 left-0 right-0 text-center px-4">
+        <div class="bg-white/70 px-3 py-2 text-gray-700 font-semibold rounded">
+          Cùng nhau khám phá<br/>
+          Tìm kiếm bạn bè - kết nối hành trình, trọn vẹn trải nghiệm
+        </div>
+      </div>
+      <div class="absolute bottom-4 left-0 right-0 text-center">
+        <button class="bg-gradient-to-r from-orange-400 to-purple-500 text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 transition">
+          XEM THÊM
+        </button>
+      </div>
+    </div>
+
+    <div class="relative rounded-lg overflow-hidden shadow-md group">
+      <img src="assets/images/feature2.jpg" alt="" class="w-full h-72 object-cover group-hover:scale-105 transition" />
+      <div class="absolute top-4 left-4 bg-orange-400 text-white px-4 py-1 rounded-full text-sm font-semibold">
+        Chúng tôi có chuyến đi bạn tìm
+      </div>
+      <div class="absolute bottom-20 left-0 right-0 text-center px-4">
+        <div class="bg-white/70 px-3 py-2 text-gray-700 font-semibold rounded">
+          Sẵn sàng cho mọi chuyến đi của bạn<br/>
+          Khám phá điểm đến - Gắn kết cảm xúc, lưu giữ kỷ niệm
+        </div>
+      </div>
+      <div class="absolute bottom-4 left-0 right-0 text-center">
+        <button class="bg-gradient-to-r from-orange-400 to-purple-500 text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 transition">
+          XEM THÊM
+        </button>
+      </div>
+    </div>
+
+    <div class="relative rounded-lg overflow-hidden shadow-md group">
+      <img src="assets/images/feature3.jpg" alt="" class="w-full h-72 object-cover group-hover:scale-105 transition" />
+      <div class="absolute top-4 left-4 bg-orange-400 text-white px-4 py-1 rounded-full text-sm font-semibold">
+        Lưu dấu hành trình
+      </div>
+      <div class="absolute bottom-20 left-0 right-0 text-center px-4">
+        <div class="bg-white/70 px-3 py-2 text-gray-700 font-semibold rounded">
+          Đi là có thưởng<br/>
+          Lưu dấu hành trình. Quà tặng hết ý
+        </div>
+      </div>
+      <div class="absolute bottom-4 left-0 right-0 text-center">
+        <button class="bg-gradient-to-r from-orange-400 to-purple-500 text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 transition">
+          XEM THÊM
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+  <div class="max-w-6xl mx-auto">
+    <p class="text-gray-500 uppercase text-sm mb-2">Recent Blog</p>
+    <h2 class="text-3xl font-bold mb-10">BLOG</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+      <div *ngFor="let blog of blogs" class="bg-white rounded shadow-sm overflow-hidden">
+        <img [src]="blog.thumbnailUrl || 'assets/images/default-blog.jpg'" alt="thumbnail" class="w-full h-48 object-cover" />
+        <div class="p-4">
+          <p class="text-sm text-gray-500 mb-1">{{ blog.authorName }}</p>
+          <h3 class="font-semibold text-base mb-2 hover:text-blue-600 transition cursor-pointer">
+            {{ blog.title }}
+          </h3>
+          <p class="text-sm text-gray-400">{{ getTime(blog.createdAt) }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 
 <app-footer></app-footer>
