@@ -2,11 +2,16 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './core/auth/login/login.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { ChatComponent } from './features/customer/components/chat/chat.component';
+import { RegisterComponent } from './core/register/register/register.component';
 
 export const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent,
+  },
+  {
+    path: 'register',
+    component: RegisterComponent,
   },
   {
     path: 'customer',
