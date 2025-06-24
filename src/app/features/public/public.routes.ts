@@ -16,6 +16,8 @@ export const PUBLIC_ROUTES: Route[] = [
         path: 'homepage',
         component: HomepageComponent,
       },
+      
     ],
   },
+
 ];

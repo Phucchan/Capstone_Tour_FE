@@ -1,29 +1,36 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { HeaderComponent } from '../../../shared/components/header/header.component';
-import { FooterComponent } from '../../../shared/components/footer/footer.component';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HeroSectionComponent } from '../../../shared/components/hero-section/hero-section.component';
 import { HomepageService } from '../services/homepage.service';
+import { DurationFormatPipe } from "../../../shared/pipes/duration-format.pipe";
 
 @Component({
   selector: 'app-homepage',
   standalone: true,
   imports: [
     CommonModule,
-    HeaderComponent,
+   
     HeroSectionComponent,
-    FooterComponent
+    DurationFormatPipe,
   ],
-  templateUrl: './homepage.component.html'
+  templateUrl: './homepage.component.html',
 })
-export class HomepageComponent {
+export class HomepageComponent implements OnInit {
   blogs: Blog[] = [];
   highlyRatedTours: Tour[] = [];
+  locations: Location[] = [];
   isLoading = true;
   errorMessage: string | null = null;
 
-  constructor(private homepageService: HomepageService) {
-    this.getHomePageData();
+  constructor(
+    private homepageService: HomepageService,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
+
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.getHomePageData();
+    }
   }
 
   getHomePageData(): void {
@@ -32,13 +39,14 @@ export class HomepageComponent {
         const data = response.data || {};
         this.blogs = data.recentBlogs || [];
         this.highlyRatedTours = data.highlyRatedTours || [];
+        this.locations = data.locations || [];
         this.isLoading = false;
       },
       error: (err) => {
         console.error('Error fetching homepage data', err);
         this.errorMessage = 'Không thể tải dữ liệu. Vui lòng thử lại sau.';
         this.isLoading = false;
-      }
+      },
     });
   }
 
@@ -63,4 +71,12 @@ interface Tour {
   durationDays: number;
   region: string;
   locationName: string;
+  startingPrice: number;
+}
+
+interface Location {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
 }
