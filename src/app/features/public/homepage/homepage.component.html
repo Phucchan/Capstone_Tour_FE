@@ -88,25 +88,25 @@
 <ng-container *ngIf="!isLoading && !errorMessage">
   <section class="bg-white py-16 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
-      <h2 class="text-2xl sm:text-3xl font-bold text-center text-blue-800 mb-8 uppercase"> Tour hot</h2>
+      <h2 class="text-2xl sm:text-3xl font-bold text-center text-blue-800 mb-8 uppercase">Tour hot</h2>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div *ngFor="let tour of highlyRatedTours" class="flex bg-white shadow-md rounded-lg overflow-hidden">
-          <img [src]="tour.thumbnailUrl" alt="Tour" class="w-40 h-auto object-cover" />
-          <div class="p-4 flex-1 flex flex-col justify-between">
-            <div>
-              <h3 class="text-lg font-semibold mb-1 text-gray-800 line-clamp-2">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div *ngFor="let tour of highlyRatedTours" class="group flex flex-col bg-white shadow-md rounded-lg overflow-hidden min-h-[300px]">
+          <img [src]="tour.thumbnailUrl" alt="Tour" class="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-105" />
+          <div class="p-4 flex flex-col h-full">
+            <div class="flex-grow">
+              <h3 class="text-base font-semibold mb-1 text-gray-800 line-clamp-2">
                 {{ tour.name }}
               </h3>
               <p class="text-sm text-gray-500 mb-1">Khu vực: {{ tour.region }}</p>
               <p class="text-sm text-gray-500 mb-1">Địa điểm: {{ tour.locationName }}</p>
               <p class="text-sm text-gray-500 mb-1">{{ tour.durationDays | durationFormat }}</p>
-              <p class="text-sm text-yellow-600">Đánh giá trung bình: {{ tour.averageRating }}/5 ★</p>
-              <p class="text-red-600 font-semibold">
+              <p class="text-sm text-yellow-600">Đánh giá: {{ tour.averageRating }}/5 ★</p>
+              <p class="text-red-600 font-semibold text-sm">
                 Giá từ: {{ tour.startingPrice | number }}₫
               </p>
             </div>
-            <div class="mt-4 text-right">
+            <div class="mt-4 flex justify-end">
               <a class="text-sm px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">
                 Xem chi tiết
               </a>
@@ -116,8 +116,7 @@
       </div>
 
       <div class="mt-8 text-center">
-        <a
-          class="inline-block border border-blue-600 text-blue-600 px-6 py-2 rounded-full font-semibold hover:bg-blue-600 hover:text-white transition">
+        <a class="inline-block border border-blue-600 text-blue-600 px-6 py-2 rounded-full font-semibold hover:bg-blue-600 hover:text-white transition">
           Xem tất cả
         </a>
       </div>
@@ -151,23 +150,30 @@
 <ng-container *ngIf="!isLoading && !errorMessage">
   <section class="bg-white py-16 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
-  
-      <h2 class="text-2xl sm:text-3xl font-bold text-center text-blue-800 mb-8 uppercase">Bài viết</h2>
+      <h2 class="text-2xl sm:text-3xl font-bold text-center text-blue-800 mb-8 uppercase">Bài viết
+    </h2>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-        <div *ngFor="let blog of blogs" class="bg-white rounded shadow-sm overflow-hidden">
-          <img [src]="blog?.thumbnailImageUrl || 'assets/images/default-blog.jpg'" alt="thumbnail"
-            class="w-full aspect-[3/4] object-cover group-hover:scale-105 transition" />
-          <div class="p-4">
-            <p class="text-sm text-gray-500 mb-1">{{ blog?.authorName }}</p>
-            <h3 class="font-semibold text-base mb-2 hover:text-blue-600 transition cursor-pointer">
-              {{ blog?.title }}
-            </h3>
-            <p class="text-sm text-gray-400">{{ getTime(blog.createdAt) }}</p>
-          </div>
+ <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div *ngFor="let blog of blogs" class="group bg-white rounded-lg shadow-sm overflow-hidden flex flex-col min-h-[350px]">
+        <div class="relative w-full aspect-[3/4]">
+          <img
+            [src]="blog?.thumbnailImageUrl || 'assets/images/default-blog.jpg'"
+            alt="thumbnail"
+            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
+        <div class="p-4 flex flex-col">
+          <p class="text-sm text-gray-500 mb-1">{{ blog?.authorName }}</p>
+          <h3
+            class="font-semibold text-base mb-2 text-gray-900 hover:text-blue-600 transition cursor-pointer line-clamp-2"
+          >
+            {{ blog?.title }}
+          </h3>
+          <p class="text-sm text-gray-400 mt-auto">{{ getTime(blog.createdAt) }}</p>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 </ng-container>
 

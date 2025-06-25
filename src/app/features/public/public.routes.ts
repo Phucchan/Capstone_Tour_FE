@@ -1,6 +1,7 @@
 import { Route } from '@angular/router';
 import { PublicLayoutComponent } from './layout/public-layout/public-layout.component';
 import { HomepageComponent } from './homepage/homepage.component';
+import { ListTourComponent } from './list-tour/list-tour.component';
 
 export const PUBLIC_ROUTES: Route[] = [
   {
@@ -15,6 +16,10 @@ export const PUBLIC_ROUTES: Route[] = [
       {
         path: 'homepage',
         component: HomepageComponent,
+      },
+      {
+        path: 'list-tour',
+        component: ListTourComponent,
       },
       
     ],
