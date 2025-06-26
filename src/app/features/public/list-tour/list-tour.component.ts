@@ -28,7 +28,7 @@ import { DurationFormatPipe } from "../../../shared/pipes/duration-format.pipe";
 export class ListTourComponent implements OnInit {
   tours: any[] = [];
   total = 0;
-  page = 1;
+  page = 0;
   size = 10;
   sort = 'latest'; // hoặc 'price_asc', 'price_desc'
   isLoading = true;
@@ -44,6 +44,7 @@ export class ListTourComponent implements OnInit {
     this.tourService.getTours({ page: this.page, size: this.size, sort: this.sort }).subscribe({
       next: (response: any) => {
         this.tours = response.data.items;
+        console.log('Tours fetched:', response);
         this.total = response.data.total;
         this.isLoading = false;
       },
