@@ -17,12 +17,20 @@ import { CustomerService } from '../../../customer/services/customer.service';
 import { FriendService } from '../../../customer/services/friend.service';
 import { CommonModule } from '@angular/common';
 import { ChatIconComponent } from '../../../../shared/components/chat-icon/chat-icon.component';
+import { ChatBoxComponent } from '../../../../shared/components/chat-box/chat-box.component';
 
 @Component({
   selector: 'app-public-layout',
   templateUrl: './public-layout.component.html',
   styleUrls: ['./public-layout.component.css'],
-  imports: [RouterOutlet, HeaderComponent, FooterComponent, CommonModule, ChatIconComponent],
+  imports: [
+    RouterOutlet, 
+    HeaderComponent, 
+    FooterComponent, 
+    CommonModule, 
+    ChatIconComponent,
+    ChatBoxComponent
+  ],
 })
 export class PublicLayoutComponent {
   currentUser: any;
