@@ -128,7 +128,7 @@ export class LoginComponent implements OnInit {
       .login(username, password)
       .pipe(
         catchError((error) => {
-          const apiError = error || 'An error occurred during sign in.';
+          const apiError = error || 'Đăng nhập thất bại. Vui lòng thử lại.';
           this.errorMessage = apiError;
           return of(null);
         })
@@ -136,13 +136,13 @@ export class LoginComponent implements OnInit {
       .subscribe((response: any) => {
         if (response !== null) {
           const token = response.body.data.token;
-          const username = response.body.data.username;
+          const user = response.body.data.user;
           if (rememberMe) {
             this.userStorageService.saveUser(username); // Save for 30 days
             localStorage.setItem('rememberedUser', username);
           }
 
-          this.postLogin(token, {username: username});
+          this.postLogin(token, user);
         }
       });
   }
@@ -154,7 +154,7 @@ export class LoginComponent implements OnInit {
     console.log('Token: ', token);
     console.log('roles: ', userRoles);
 
-    this.currentUserService.setCurrentUser({...user, id: this.userStorageService.getUserId()});
+    this.currentUserService.setCurrentUser(user);
 
     // Mapping role to route
     const roleRouteMap: { [key: string]: string } = {
