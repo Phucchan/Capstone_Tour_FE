@@ -1,7 +1,10 @@
 // duration-format.pipe.ts
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'durationFormat' })
+@Pipe({
+  name: 'durationFormat',
+  standalone: true
+})
 export class DurationFormatPipe implements PipeTransform {
   transform(durationDays: number): string {
     const nights = durationDays > 0 ? durationDays - 1 : 0;
