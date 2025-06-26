@@ -27,18 +27,14 @@ export class UserOnlineComponent {
   ) {}
 
   ngOnInit(): void {
-    console.log('Current user id:', this.currentUser.userId);
-
     this.chatService
-      .getUserFriends(this.currentUser.userId)
+      .getUserFriends(this.currentUser.id)
       .subscribe({
         next: (response: any) => {
-          console.log('Friends:', response);
           this.activeUsers = response.data;
-          console.log('All friends', this.activeUsers);
         },
         error: (err) => {
-          console.error('Error fetching friends:', err);
+          console.error('User-Online-Component: Error fetching friends:', err);
         },
       });
     this.subscribeActiveUsers();

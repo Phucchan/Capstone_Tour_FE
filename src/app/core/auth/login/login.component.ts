@@ -154,6 +154,8 @@ export class LoginComponent implements OnInit {
       console.log('Token: ', token)
       console.log('roles: ', userRoles)
 
+      this.userStorageService.setCurrentUser(user)
+
     // Mapping role to route
     const roleRouteMap: { [key: string]: string } = {
       CUSTOMER: 'customer',
@@ -165,7 +167,7 @@ export class LoginComponent implements OnInit {
       ACCOUNTANT: 'accountant'
     };
 
-    let redirectTo = '/customer'; // Default nếu chỉ có role CUSTOMER
+    let redirectTo = '/'; // Default nếu chỉ có role CUSTOMER
     if (userRoles.length > 1 || userRoles[0] !== 'CUSTOMER') {
       const targetRole = userRoles.find(role => role !== 'CUSTOMER') || userRoles[0];
       redirectTo = `/${roleRouteMap[targetRole] || 'customer'}`;

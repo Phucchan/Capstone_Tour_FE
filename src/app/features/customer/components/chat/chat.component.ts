@@ -19,7 +19,8 @@ export class ChatComponent {
   constructor(
     private userStorageService: UserStorageService
   ) {
-    this.currentUser = this.userStorageService.getUser() || { username: 'Guest' };
+    this.currentUser = this.userStorageService.getUser() || { id: 1 ,username: 'Guest' };
+    console.log('Current user in chat component:', this.currentUser);
   }
 
 

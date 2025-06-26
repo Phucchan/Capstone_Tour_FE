@@ -28,7 +28,6 @@ export class UserStorageService {
 
   public clearCurrentUser(): void {
     this.currentUserSubject.next(null);
-    this.deleteCookie(USER);
   }
 
   public getCurrentUser(): any | null {
@@ -81,7 +80,7 @@ export class UserStorageService {
       USER,
       JSON.stringify({
         username: user.username,
-        userId: this.getUserId(),
+        id: this.getUserId(),
         role: this.getUserRoles(),
       }),
       1
@@ -93,7 +92,7 @@ export class UserStorageService {
       USER,
       JSON.stringify({
         username: user.username,
-        userId: this.getUserId(),
+        id: this.getUserId(),
         role: this.getUserRoles(),
       }),
       30
@@ -148,4 +147,12 @@ export class UserStorageService {
     userStorageService.deleteCookie(TOKEN);
     userStorageService.deleteCookie(USER);
   }
+
+
+  public logout() {
+    this.clearCurrentUser();
+    this.deleteCookie(TOKEN);
+    this.deleteCookie(USER);
+  }
+
 }

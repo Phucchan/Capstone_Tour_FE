@@ -10,10 +10,6 @@ export const CUSTOMER_ROUTES: Route[] = [
     pathMatch: 'full',
   },
   {
-    path: 'homepage',
-    component: HomepageComponent
-  },
-  {
     path: 'profile',
     component: ProfileComponent
   },

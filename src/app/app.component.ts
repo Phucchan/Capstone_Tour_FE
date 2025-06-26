@@ -26,6 +26,7 @@ export class AppComponent implements OnInit {
   }
 
   currentUser: any = {};
+  isConnected = false;
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -33,13 +34,16 @@ export class AppComponent implements OnInit {
     }
 
     this.userStorageService.currentUser$.subscribe((user) => {
+      this.currentUser = user;
       if (user) {
-        this.currentUser = user;
         this.registerBeforeUnload();
-        this.socketService.connect(this.currentUser);
+        this.socketService.connect(user);
 
-        console.log('Current user from app:', this.currentUser);
-      }
+        this.socketService.getConnectionStatus().subscribe((status) => {
+          console.log('Socket connected?', status);
+          this.isConnected = status;
+        });
+      } 
     });
   }
 
