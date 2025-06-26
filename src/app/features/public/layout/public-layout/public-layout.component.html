@@ -1,14 +1,16 @@
 <div class="flex flex-col h-screen overflow-hidden">
   <!-- Header -->
-  <app-header></app-header>
-
+  <ng-container *ngIf="isUserReady">
+    <app-header [currentUser]="currentUser" [customerBasicInfo]="customerBasicInfo" [friends]="friends"></app-header>
+  </ng-container>
 
   <!-- Main Content -->
-  <div id="main-content"
-    class="custom-scrollbar grow overflow-auto bg-card">
+  <div id="main-content" class="custom-scrollbar grow overflow-auto bg-card">
     <router-outlet></router-outlet>
     <app-footer></app-footer>
   </div>
 
-  
+  <app-chat-icon></app-chat-icon>
+
+
 </div>

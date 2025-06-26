@@ -10,31 +10,13 @@ const USER = 'user';
   providedIn: 'root',
 })
 export class UserStorageService {
-  private currentUserSubject: BehaviorSubject<any | null>;
-  public currentUser$: Observable<any | null>;
 
   constructor(
     private ssrService: SsrService
   ) {
-    const user = this.getUser(); // dùng cookie thay vì localStorage
-    this.currentUserSubject = new BehaviorSubject<any | null>(user);
-    this.currentUser$ = this.currentUserSubject.asObservable();
   }
 
-  public setCurrentUser(user: any): void {
-    this.currentUserSubject.next(user);
-    this.setCookie(USER, JSON.stringify(user)); // ghi lại cookie
-  }
-
-  public clearCurrentUser(): void {
-    this.currentUserSubject.next(null);
-  }
-
-  public getCurrentUser(): any | null {
-    return this.currentUserSubject.getValue();
-  }
-
-  private setCookie(name: string, value: string, days?: number): void {
+  public setCookie(name: string, value: string, days?: number): void {
     if (typeof document === 'undefined') {
       // Không chạy trong trình duyệt — không làm gì cả
       return;
@@ -63,7 +45,7 @@ export class UserStorageService {
     return null;
   }
 
-  private deleteCookie(name: string): void {
+  public deleteCookie(name: string): void {
     document.cookie = `${name}=; Max-Age=-99999999; path=/`;
   }
 
@@ -150,7 +132,6 @@ export class UserStorageService {
 
 
   public logout() {
-    this.clearCurrentUser();
     this.deleteCookie(TOKEN);
     this.deleteCookie(USER);
   }

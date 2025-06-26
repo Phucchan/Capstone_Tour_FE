@@ -6,6 +6,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
 import { UserStorageService } from './core/services/user-storage/user-storage.service';
 import { SocketSerivce } from './core/services/socket/socket.service';
+import { CurrentUserService } from './core/services/user-storage/current-user.service';
 
 @Component({
   selector: 'app-root',
@@ -19,8 +20,8 @@ export class AppComponent implements OnInit {
   constructor(
     private titleService: Title,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private userStorageService: UserStorageService,
-    private socketService: SocketSerivce
+    private socketService: SocketSerivce,
+    private currentUserService: CurrentUserService
   ) {
     this.titleService.setTitle(this.title);
   }
@@ -33,7 +34,7 @@ export class AppComponent implements OnInit {
       initFlowbite();
     }
 
-    this.userStorageService.currentUser$.subscribe((user) => {
+    this.currentUserService.currentUser$.subscribe((user) => {
       this.currentUser = user;
       if (user) {
         this.registerBeforeUnload();

@@ -15,11 +15,6 @@ export class SocketSerivce {
   private activeUserSubject = new Subject<any>();
   private connectionStatus$ = new BehaviorSubject<boolean>(false);
 
-  constructor(
-    private http: HttpClient,
-    private userStorageService: UserStorageService
-  ) {}
-
   connect(user: any): void {
     const socket = new SocketJS(environment.apiUrl + '/ws');
 
