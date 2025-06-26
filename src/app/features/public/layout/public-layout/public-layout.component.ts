@@ -1,76 +1,72 @@
-import { Component, AfterViewInit, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  AfterViewInit,
+  OnDestroy,
+  OnInit,
+  ElementRef,
+} from '@angular/core';
 import { Router, Event, NavigationEnd, RouterOutlet } from '@angular/router';
 import { SsrService } from '../../../../core/services/ssr.service';
 import { Modal } from 'flowbite';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
+import { SocketSerivce } from '../../../../core/services/socket/socket.service';
+import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
+import { UserStorageService } from '../../../../core/services/user-storage/user-storage.service';
+import { CustomerService } from '../../../customer/services/customer.service';
+import { FriendService } from '../../../customer/services/friend.service';
+import { CommonModule } from '@angular/common';
+import { ChatIconComponent } from '../../../../shared/components/chat-icon/chat-icon.component';
 
 @Component({
   selector: 'app-public-layout',
   templateUrl: './public-layout.component.html',
   styleUrls: ['./public-layout.component.css'],
-  imports: [
-    RouterOutlet,
-    HeaderComponent,
-    FooterComponent
-],
+  imports: [RouterOutlet, HeaderComponent, FooterComponent, CommonModule, ChatIconComponent],
 })
-export class PublicLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
-  private mainContent: HTMLElement | null = null;
-  private modal: Modal | null = null;
+export class PublicLayoutComponent {
+  currentUser: any;
+  customerBasicInfo: any;
+  friends: any;
+  isUserReady = false;
 
   constructor(
-    private router: Router,
-    private ssrService: SsrService
+    private customerService: CustomerService,
+    private currentUserService: CurrentUserService,
+    private friendService: FriendService
   ) {}
 
   ngOnInit(): void {
-    
-    const doc = this.ssrService.getDocument();
-    
-    if (doc) {
-      setTimeout(() => {
-        this.mainContent = doc.getElementById('main-content');
-      }, 100);
-      this.router.events.subscribe((event: Event) => {
-        if (event instanceof NavigationEnd && this.mainContent && doc.body.classList.contains('modal-open')) {
-          this.mainContent.scrollTop = 0;
-        }
-      });
-    }
-    
-  }
-
-  ngAfterViewInit(): void {
-    const doc = this.ssrService.getDocument();
-    if (doc) {
-      this.mainContent = doc.getElementById('main-content');
-
-      const modalEl = doc.getElementById('default-modal');
-      if (modalEl) {
-        this.modal = new Modal(modalEl);
-
-        modalEl.addEventListener('show.bs.modal', () => {
-          document.body.classList.add('modal-open');
-          this.mainContent?.classList.add('overflow-hidden');
-        });
-
-        modalEl.addEventListener('hide.bs.modal', () => {
-          document.body.classList.remove('modal-open');
-          this.mainContent?.classList.remove('overflow-hidden');
-        });
+    this.currentUserService.currentUser$.subscribe((user) => {
+      if (user) {
+        console.log('Current user from header:', user);
+        this.currentUser = user;
+        this.isUserReady = true;
+        this.getUserBasicInfo();
+      } else {
+        this.currentUser = {};
+        this.customerBasicInfo = {};
       }
-    }
+    });
+  }
+  getUserBasicInfo() {
+    this.customerService.getUserBasic(this.currentUser.username).subscribe({
+      next: (response) => {
+        console.log('User basic information:', response?.data);
+        this.customerBasicInfo = response?.data || {};
+        this.getUserFriends();
+      },
+      error: (error) => {
+        console.error('Error fetching user basic information:', error);
+      },
+    });
   }
 
-  ngOnDestroy(): void {
-    if (this.modal) {
-      this.modal.hide();
-    }
-    
-    const doc = this.ssrService.getDocument();
-    if(doc){
-      doc.body.classList.remove('modal-open');
-    }
+  getUserFriends() {
+    this.friendService
+      .getFriends(this.customerBasicInfo.id)
+      .subscribe((response: any) => {
+        this.friends = response?.data;
+      });
   }
 }

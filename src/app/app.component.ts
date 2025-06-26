@@ -6,6 +6,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
 import { UserStorageService } from './core/services/user-storage/user-storage.service';
 import { SocketSerivce } from './core/services/socket/socket.service';
+import { CurrentUserService } from './core/services/user-storage/current-user.service';
 
 @Component({
   selector: 'app-root',
@@ -19,27 +20,31 @@ export class AppComponent implements OnInit {
   constructor(
     private titleService: Title,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private userStorageService: UserStorageService,
-    private socketService: SocketSerivce
+    private socketService: SocketSerivce,
+    private currentUserService: CurrentUserService
   ) {
     this.titleService.setTitle(this.title);
   }
 
   currentUser: any = {};
+  isConnected = false;
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       initFlowbite();
     }
 
-    this.userStorageService.currentUser$.subscribe((user) => {
+    this.currentUserService.currentUser$.subscribe((user) => {
+      this.currentUser = user;
       if (user) {
-        this.currentUser = user;
         this.registerBeforeUnload();
-        this.socketService.connect(this.currentUser);
+        this.socketService.connect(user);
 
-        console.log('Current user from app:', this.currentUser);
-      }
+        this.socketService.getConnectionStatus().subscribe((status) => {
+          console.log('Socket connected?', status);
+          this.isConnected = status;
+        });
+      } 
     });
   }
 

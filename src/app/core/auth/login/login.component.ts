@@ -14,6 +14,7 @@ import { CommonModule } from '@angular/common';
 import { SsrService } from '../../services/ssr.service';
 import { SocketSerivce } from '../../services/socket/socket.service';
 import { environment } from '../../../../environments/environment';
+import { CurrentUserService } from '../../services/user-storage/current-user.service';
 
 @Component({
   selector: 'app-login',
@@ -34,7 +35,7 @@ export class LoginComponent implements OnInit {
 
   usernameCriteria = {
     minLength: false,
-    maxLength: false
+    maxLength: false,
   };
 
   activeUsersSubcription: any;
@@ -45,8 +46,8 @@ export class LoginComponent implements OnInit {
     private formBuilder: FormBuilder,
     private userStorageService: UserStorageService,
     private ssrService: SsrService,
-    private socketService: SocketSerivce,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private currentUserService: CurrentUserService
   ) {}
 
   ngOnInit() {
@@ -57,9 +58,9 @@ export class LoginComponent implements OnInit {
 
     this.route.queryParams.subscribe((params) => {
       const token = params['token'];
-       const email = params['email'];
+      const email = params['email'];
       if (token) {
-        this.postLogin(token, {username: email, password: null});
+        this.postLogin(token, { username: email, password: null });
       }
     });
 
@@ -70,7 +71,7 @@ export class LoginComponent implements OnInit {
         [
           Validators.required,
           Validators.minLength(8),
-          Validators.maxLength(30)
+          Validators.maxLength(30),
         ],
       ],
       password: [
@@ -141,18 +142,19 @@ export class LoginComponent implements OnInit {
             localStorage.setItem('rememberedUser', username);
           }
 
-          this.postLogin(token, { username: username, password: null });
-          
+          this.postLogin(token, {username: username});
         }
       });
   }
 
   postLogin(token: string, user: any) {
     this.userStorageService.saveToken(token);
-      const userRoles = this.userStorageService.getUserRoles();
-      console.log('User: ', user);
-      console.log('Token: ', token)
-      console.log('roles: ', userRoles)
+    const userRoles = this.userStorageService.getUserRoles();
+    console.log('User: ', user);
+    console.log('Token: ', token);
+    console.log('roles: ', userRoles);
+
+    this.currentUserService.setCurrentUser({...user, id: this.userStorageService.getUserId()});
 
     // Mapping role to route
     const roleRouteMap: { [key: string]: string } = {
@@ -162,15 +164,15 @@ export class LoginComponent implements OnInit {
       SELLER: 'seller',
       BUSINESS_DEPARTMENT: 'business-department',
       SERVICE_COORDINATOR: 'service-coordinator',
-      ACCOUNTANT: 'accountant'
+      ACCOUNTANT: 'accountant',
     };
 
-    let redirectTo = '/customer'; // Default nếu chỉ có role CUSTOMER
+    let redirectTo = '/'; // Default nếu chỉ có role CUSTOMER
     if (userRoles.length > 1 || userRoles[0] !== 'CUSTOMER') {
-      const targetRole = userRoles.find(role => role !== 'CUSTOMER') || userRoles[0];
+      const targetRole =
+        userRoles.find((role) => role !== 'CUSTOMER') || userRoles[0];
       redirectTo = `/${roleRouteMap[targetRole] || 'customer'}`;
     }
     this.router.navigate([redirectTo]);
   }
-  
 }

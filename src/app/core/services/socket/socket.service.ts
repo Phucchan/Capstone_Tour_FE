@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, map, Observable, Subject } from 'rxjs';
 import { UserStorageService } from '../user-storage/user-storage.service';
 import { environment } from '../../../../environments/environment';
 import { CompatClient, Stomp } from '@stomp/stompjs';
@@ -13,11 +13,7 @@ export class SocketSerivce {
   private stompClient: CompatClient = {} as CompatClient;
   private subcriptionActiveUsers: any;
   private activeUserSubject = new Subject<any>();
-
-  constructor(
-    private http: HttpClient,
-    private userStorageService: UserStorageService
-  ) {}
+  private connectionStatus$ = new BehaviorSubject<boolean>(false);
 
   connect(user: any): void {
     const socket = new SocketJS(environment.apiUrl + '/ws');
@@ -26,8 +22,15 @@ export class SocketSerivce {
 
     this.stompClient.connect(
       {},
-      () => this.onConnect(user),
-      (error: string) => console.error('STOMP error: ', error)
+      () => {
+        console.log('Connected to WebSocket');
+        this.connectionStatus$.next(true);
+        this.onConnect(user);
+      },
+      (error: string) => {
+        console.error('WebSocket connection error:', error);
+        this.connectionStatus$.next(false);
+      }
     );
   }
 
@@ -37,6 +40,7 @@ export class SocketSerivce {
       console.log('Disconnected from WebSocket');
       this.subcriptionActiveUsers?.unsubscribe();
       this.activeUserSubject.next(null);
+      this.connectionStatus$.next(false);
     });
   }
 
@@ -72,5 +76,9 @@ export class SocketSerivce {
 
   subcribeActiveUsers(): Observable<any> {
     return this.activeUserSubject.asObservable();
+  }
+
+  getConnectionStatus(): Observable<boolean> {
+    return this.connectionStatus$.asObservable();
   }
 }

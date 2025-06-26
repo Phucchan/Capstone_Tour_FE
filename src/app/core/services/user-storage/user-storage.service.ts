@@ -10,32 +10,13 @@ const USER = 'user';
   providedIn: 'root',
 })
 export class UserStorageService {
-  private currentUserSubject: BehaviorSubject<any | null>;
-  public currentUser$: Observable<any | null>;
 
   constructor(
     private ssrService: SsrService
   ) {
-    const user = this.getUser(); // dùng cookie thay vì localStorage
-    this.currentUserSubject = new BehaviorSubject<any | null>(user);
-    this.currentUser$ = this.currentUserSubject.asObservable();
   }
 
-  public setCurrentUser(user: any): void {
-    this.currentUserSubject.next(user);
-    this.setCookie(USER, JSON.stringify(user)); // ghi lại cookie
-  }
-
-  public clearCurrentUser(): void {
-    this.currentUserSubject.next(null);
-    this.deleteCookie(USER);
-  }
-
-  public getCurrentUser(): any | null {
-    return this.currentUserSubject.getValue();
-  }
-
-  private setCookie(name: string, value: string, days?: number): void {
+  public setCookie(name: string, value: string, days?: number): void {
     if (typeof document === 'undefined') {
       // Không chạy trong trình duyệt — không làm gì cả
       return;
@@ -64,7 +45,7 @@ export class UserStorageService {
     return null;
   }
 
-  private deleteCookie(name: string): void {
+  public deleteCookie(name: string): void {
     document.cookie = `${name}=; Max-Age=-99999999; path=/`;
   }
 
@@ -81,7 +62,7 @@ export class UserStorageService {
       USER,
       JSON.stringify({
         username: user.username,
-        userId: this.getUserId(),
+        id: this.getUserId(),
         role: this.getUserRoles(),
       }),
       1
@@ -93,7 +74,7 @@ export class UserStorageService {
       USER,
       JSON.stringify({
         username: user.username,
-        userId: this.getUserId(),
+        id: this.getUserId(),
         role: this.getUserRoles(),
       }),
       30
@@ -148,4 +129,11 @@ export class UserStorageService {
     userStorageService.deleteCookie(TOKEN);
     userStorageService.deleteCookie(USER);
   }
+
+
+  public logout() {
+    this.deleteCookie(TOKEN);
+    this.deleteCookie(USER);
+  }
+
 }
