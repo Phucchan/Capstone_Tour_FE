@@ -18,7 +18,7 @@ export const PUBLIC_ROUTES: Route[] = [
         component: HomepageComponent,
       },
       {
-        path: 'list-tour',
+        path: 'tours',
         component: ListTourComponent,
       },
       

@@ -3,21 +3,28 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HeroSectionComponent } from '../../../shared/components/hero-section/hero-section.component';
 import { HomepageService } from '../services/homepage.service';
 import { DurationFormatPipe } from "../../../shared/pipes/duration-format.pipe";
+import { RouterModule } from '@angular/router';
+import { CurrencyVndPipe } from '../../../shared/pipes/currency-vnd.pipe';
+import { FormatDatePipe } from '../../../shared/pipes/format-date.pipe';
+
 
 @Component({
   selector: 'app-homepage',
   standalone: true,
   imports: [
     CommonModule,
-   
+    RouterModule,
     HeroSectionComponent,
     DurationFormatPipe,
+    CurrencyVndPipe,
+    FormatDatePipe,
+
   ],
   templateUrl: './homepage.component.html',
 })
 export class HomepageComponent implements OnInit {
   blogs: Blog[] = [];
-  highlyRatedTours: Tour[] = [];
+  highlyRatedTours: HighlyRatedTour[] = [];
   locations: Location[] = [];
   isLoading = true;
   errorMessage: string | null = null;
@@ -63,7 +70,7 @@ interface Blog {
   createdAt: string;
 }
 
-interface Tour {
+interface HighlyRatedTour {
   id: number;
   name: string;
   thumbnailUrl: string;
@@ -72,6 +79,7 @@ interface Tour {
   region: string;
   locationName: string;
   startingPrice: number;
+  nextDepartureDate: string;
 }
 
 interface Location {

@@ -1,93 +1,84 @@
-<ng-container *ngIf="!isLoading && !errorMessage">
-  <section class="bg-white py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-      <h2 class="text-2xl sm:text-3xl font-bold text-center text-blue-800 mb-8 uppercase">Danh sách tour</h2>
+<div class="flex gap-6">
+  <!-- Bộ lọc bên trái -->
+  <aside class="w-[250px] bg-gray-50 p-4 rounded shadow text-sm">
+    <h3 class="font-semibold mb-4">Ngân sách</h3>
+    <div class="grid grid-cols-2 gap-2 mb-4">
+      <button class="border px-2 py-1 rounded hover:bg-blue-50">Dưới 5 triệu</button>
+      <button class="border px-2 py-1 rounded hover:bg-blue-50">Từ 5-10 triệu</button>
+      <button class="border px-2 py-1 rounded hover:bg-blue-50">Từ 10-20 triệu</button>
+      <button class="border px-2 py-1 rounded hover:bg-blue-50">Trên 20 triệu</button>
+    </div>
 
-      <!-- Bộ lọc tìm kiếm -->
-      <div class="bg-gray-100 p-4 rounded-lg mb-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày khởi hành</label>
-            <select class="w-full p-2 border rounded" [(ngModel)]="selectedDate" (ngModelChange)="filterTours()">
-              <option value="all">Tất cả</option>
-              <option value="today">Hôm nay</option>
-              <option value="next7days">7 ngày tới</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Giá từ</label>
-            <select class="w-full p-2 border rounded" [(ngModel)]="selectedPrice" (ngModelChange)="filterTours()">
-              <option value="all">Tất cả</option>
-              <option value="lowtohigh">Thấp đến cao</option>
-              <option value="hightolow">Cao đến thấp</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Phương tiện</label>
-            <select class="w-full p-2 border rounded" [(ngModel)]="selectedTransport" (ngModelChange)="filterTours()">
-              <option value="all">Tất cả</option>
-              <option value="plane">Máy bay</option>
-              <option value="car">Ô tô</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày khởi hành gần nhất</label>
-            <select class="w-full p-2 border rounded" [(ngModel)]="selectedRecent" (ngModelChange)="filterTours()">
-              <option value="all">Tất cả</option>
-              <option value="recent">Gần nhất</option>
-            </select>
-          </div>
-        </div>
-        <button class="mt-4 w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition" (click)="applyFilters()">
-          Áp dụng
-        </button>
-      </div>
+    <label class="block mb-1 font-medium">Điểm khởi hành</label>
+    <select class="w-full border rounded px-2 py-1 mb-4">
+      <option>Tất cả</option>
+      <option>Hà Nội</option>
+      <option>TP. HCM</option>
+      <option>Đà Nẵng</option>
+    </select>
 
-      <!-- Danh sách tour -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <div *ngFor="let tour of filteredTours" class="group flex flex-col bg-white shadow-md rounded-lg overflow-hidden min-h-[300px]">
-          <img [src]="tour.thumbnailUrl || 'assets/images/default-tour.jpg'" alt="{{ tour.name }}" class="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-105" />
-          <div class="p-4 flex flex-col h-full">
-            <div class="flex-grow">
-              <h3 class="text-base font-semibold mb-1 text-gray-800 line-clamp-2">
-                {{ tour.name }}
-              </h3>
-              <p class="text-sm text-gray-500 mb-1">Khu vực: {{ tour.region }}</p>
-              <p class="text-sm text-gray-500 mb-1">Địa điểm: {{ tour.locationName }}</p>
-              <p class="text-sm text-gray-500 mb-1">{{ tour.durationDays | durationFormat }}</p>
-              <p class="text-sm text-yellow-600">Đánh giá: {{ tour.averageRating }}/5 ★</p>
-              <p class="text-red-600 font-semibold text-sm">
-                Giá từ: {{ tour.startingPrice | number }}đ
-              </p>
-            </div>
-            <div class="mt-4 flex justify-end">
-              <a class="text-sm px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">
-                Xem chi tiết
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
+    <label class="block mb-1 font-medium">Điểm đến</label>
+    <select class="w-full border rounded px-2 py-1 mb-4">
+      <option>Tất cả</option>
+      <option>Phú Quốc</option>
+      <option>Đà Lạt</option>
+      <option>Sa Pa</option>
+    </select>
 
-      <!-- Thông báo nếu không có tour -->
-      <div *ngIf="filteredTours.length === 0" class="text-center text-gray-500 mt-6">
-        Không có tour nào phù hợp.
-      </div>
+    <label class="block mb-1 font-medium">Ngày đi</label>
+    <input type="date" class="w-full border rounded px-2 py-1 mb-4" />
 
-      <!-- Phân trang -->
-      <div *ngIf="total > 0" class="mt-6 text-center">
-        <button [disabled]="page === 0" (click)="prevPage()" class="px-4 py-2 bg-gray-300 rounded mr-2">Trước</button>
-        <span>Trang {{ page + 1 }} / {{ totalPages }}</span>
-        <button [disabled]="(page + 1) * size >= total" (click)="nextPage()" class="px-4 py-2 bg-gray-300 rounded ml-2">Sau</button>
+    <button class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+      Áp dụng
+    </button>
+  </aside>
+
+  <!-- Danh sách tour -->
+  <div class="flex-1">
+    <!-- Header & Sort -->
+    <div class="flex justify-between items-center mb-4">
+      <p>Chúng tôi tìm thấy <strong>{{ total }}</strong> chương trình tour cho quý khách</p>
+      <div class="flex items-center gap-2">
+        <label for="sort" class="text-sm text-gray-500">Sắp xếp theo:</label>
+        <select id="sort" [(ngModel)]="sort" (change)="onSortChange(sort)"
+          class="border rounded px-2 py-1 text-sm">
+          <option value="">Tất cả</option>
+          <option value="price_desc">Giá từ cao đến thấp</option>
+          <option value="price_asc">Giá từ thấp đến cao</option>
+          <option value="latest">Ngày khởi hành gần nhất</option>
+        </select>
       </div>
     </div>
-  </section>
-</ng-container>
 
-<ng-container *ngIf="isLoading">
-  <div class="text-center py-10">Đang tải...</div>
-</ng-container>
+    <!-- Danh sách tour -->
+    <div *ngIf="!isLoading && tours.length > 0" class="space-y-4">
+      <a *ngFor="let tour of tours" [routerLink]="['/tours', tour.id]"
+        class="flex border rounded overflow-hidden hover:shadow transition bg-white">
+        <img [src]="tour.thumbnailUrl" alt="{{ tour.name }}" class="w-60 h-40 object-cover" />
+        <div class="p-4 flex flex-col justify-between flex-1">
+          <div>
+            <h3 class="font-semibold text-lg mb-1">{{ tour.name }}</h3>
+            <p class="text-sm text-gray-600">📍 Khởi hành: {{ tour.locationName }}</p>
+            <p class="text-sm text-gray-600">⏳ Thời gian: {{ tour.durationDays | durationFormat }}</p>
+            <p class="text-sm text-yellow-600">⭐ Đánh giá: {{ tour.averageRating }}/5 ★</p>
+            <p class="text-sm text-gray-600">📅 Khởi hành: {{ tour.nextDepartureDate | formatDate }}</p>
+          </div>
+          <div class="flex items-center justify-between mt-3">
+            <p class="text-red-600 font-bold text-lg">💵 {{ tour.startingPrice | currencyVnd }}</p>
+            <span class="text-blue-600 font-medium text-sm">Xem chi tiết</span>
+          </div>
+        </div>
+      </a>
+    </div>
 
-<ng-container *ngIf="errorMessage">
-  <div class="text-center py-10 text-red-500">{{ errorMessage }}</div>
-</ng-container>
+    <!-- Không có kết quả -->
+    <div *ngIf="!isLoading && tours.length === 0" class="text-center text-gray-500 mt-10">
+      Không tìm thấy kết quả phù hợp.
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="isLoading" class="text-center text-gray-500 mt-10">
+      Đang tải dữ liệu...
+    </div>
+  </div>
+</div>

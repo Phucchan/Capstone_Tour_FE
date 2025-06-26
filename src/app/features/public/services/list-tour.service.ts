@@ -7,9 +7,10 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ListTourService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  getTourList(page: number, size: number): Observable<any> {
-    return this.http.get<any>(`${environment.apiUrl}/public/tours/fixed?page=${page}&size=${size}`);
+  getTours(params: { page: number; size: number; sort?: string }): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/public/tours/fixed`, { params });
   }
 }
+
