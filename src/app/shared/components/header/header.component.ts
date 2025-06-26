@@ -22,6 +22,7 @@ export class HeaderComponent implements OnInit {
   @Input() customerBasicInfo: any;
   @Input() friends: any;
   @Input() isUserReady: boolean = false;
+  @Input() chatGroups: any[] = [];
 
   showDropdown: boolean = false;
   showChat: boolean = false;

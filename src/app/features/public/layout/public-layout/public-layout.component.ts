@@ -18,6 +18,7 @@ import { FriendService } from '../../../customer/services/friend.service';
 import { CommonModule } from '@angular/common';
 import { ChatIconComponent } from '../../../../shared/components/chat-icon/chat-icon.component';
 import { ChatBoxComponent } from '../../../../shared/components/chat-box/chat-box.component';
+import { ChatService } from '../../../customer/services/chat.service';
 
 @Component({
   selector: 'app-public-layout',
@@ -37,11 +38,15 @@ export class PublicLayoutComponent {
   customerBasicInfo: any;
   friends: any;
   isUserReady = false;
+  chatGroups: any[] = [];
+
+
 
   constructor(
     private customerService: CustomerService,
     private currentUserService: CurrentUserService,
-    private friendService: FriendService
+    private friendService: FriendService,
+    private chatService: ChatService,
   ) {}
 
   ngOnInit(): void {
@@ -63,6 +68,7 @@ export class PublicLayoutComponent {
         console.log('User basic information:', response?.data);
         this.customerBasicInfo = response?.data || {};
         this.getUserFriends();
+        this.getUserChatGroups();
       },
       error: (error) => {
         console.error('Error fetching user basic information:', error);
@@ -75,6 +81,15 @@ export class PublicLayoutComponent {
       .getFriends(this.customerBasicInfo.id)
       .subscribe((response: any) => {
         this.friends = response?.data;
+      });
+  }
+
+
+  getUserChatGroups() {
+    this.chatService
+      .getChatGroups(this.customerBasicInfo.id)
+      .subscribe((response: any) => {
+        this.chatGroups = response?.data || [];
       });
   }
 }

@@ -16,6 +16,12 @@ export class ChatService {
     return this.http.get<any[]>(`${environment.apiUrl}/public/users/friends/${userId}`);
   }
 
+
+  getChatGroups(userId: number): Observable<any[]> {
+    console.log('Fetching chat groups for user ID:', userId);
+    return this.http.get<any[]>(`${environment.apiUrl}/public/chat-group/list/${userId}`);
+  }
+
 }
 
   
