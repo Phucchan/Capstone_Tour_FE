@@ -71,6 +71,26 @@
       </a>
     </div>
 
+    
+    <!-- Phân trang -->
+    <div *ngIf="!isLoading && total > size" class="flex justify-center items-center gap-2 mt-8 text-sm">
+      <button (click)="onPageChange(page - 1)" [disabled]="page === 0"
+        class="px-3 py-1 border rounded disabled:opacity-50 hover:bg-blue-50">
+        « Trước
+      </button>
+
+      <button *ngFor="let p of pages" (click)="onPageChange(p)" [class.bg-blue-600]="p === page"
+        [class.text-white]="p === page" class="px-3 py-1 border rounded hover:bg-blue-100">
+        {{ p + 1 }}
+      </button>
+
+      <button (click)="onPageChange(page + 1)" [disabled]="page + 1 >= totalPages"
+        class="px-3 py-1 border rounded disabled:opacity-50 hover:bg-blue-50">
+        Sau »
+      </button>
+    </div>
+
+
     <!-- Không có kết quả -->
     <div *ngIf="!isLoading && tours.length === 0" class="text-center text-gray-500 mt-10">
       Không tìm thấy kết quả phù hợp.
