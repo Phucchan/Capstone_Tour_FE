@@ -88,27 +88,69 @@
     <div class="max-w-7xl mx-auto">
       <h2 class="text-2xl sm:text-3xl font-bold text-center text-blue-800 mb-8 uppercase">Tour hot</h2>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <a *ngFor="let tour of highlyRatedTours" [routerLink]="['/tours', tour.id]"
-          class="flex flex-col bg-white shadow-md rounded-lg overflow-hidden h-[400px] hover:shadow-lg transition cursor-pointer">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1">
+        <div *ngFor="let tour of highlyRatedTours" (click)="navigateToTour(tour.id)"
+          class="flex flex-col bg-white shadow-md rounded-lg overflow-hidden h-[500px] hover:shadow-lg transition cursor-pointer">
 
+          <!-- Ảnh -->
           <img [src]="tour.thumbnailUrl" alt="Tour"
-            class="w-full h-40 object-cover transition-transform duration-300 hover:scale-105" />
+            class="w-full h-[200px] object-cover transition-transform duration-300 hover:scale-105" />
+
+          <!-- Nội dung -->
           <div class="p-4 flex flex-col flex-1">
-            <!-- Tên tour: để trên, không giới hạn độ cao -->
-            <h3 class="text-base font-semibold text-gray-800 line-clamp-2 mb-4">
+            <!-- Tên tour -->
+            <h3 class="text-base font-semibold text-gray-800 line-clamp-2 leading-snug mb-2 min-h-[3rem]">
               {{ tour.name }}
             </h3>
-            <!-- Phần thông tin: đẩy sát đáy -->
-            <div class="mt-auto space-y-2">
-              <p class="text-sm text-gray-600">📍 Khởi hành: {{ tour.locationName }}</p>
-              <p class="text-sm text-gray-600">⏳ Thời gian: {{ tour.durationDays | durationFormat }}</p>
-              <p class="text-sm text-yellow-600">⭐ Đánh giá: {{ tour.averageRating }}/5 ★</p>
-              <p class="text-sm text-gray-600">📅 Khởi hành: {{ tour.nextDepartureDate | formatDate }}</p>
-              <p class="text-red-500 font-semibold">💵 {{ tour.startingPrice | currencyVnd }}</p>
+
+            <!-- Thông tin -->
+            <div class="flex flex-col justify-between flex-1 space-y-2 text-sm text-black-600">
+              <p>🆔 Mã tour: {{ tour.code }}</p>
+              <p>📍 Khởi hành: {{ tour.locationName }}</p>
+              <p>⏳ Thời gian: {{ tour.durationDays | durationFormat }}</p>
+              <p class="text-yellow-600">⭐ Đánh giá: {{ tour.averageRating }}/5 ★</p>
+
+              <!-- Danh sách ngày khởi hành (scroll + nút trái/phải) -->
+              <div class="flex items-center gap-2 mt-2">
+                <span class="text-sm text-gray-700 flex-shrink-0">📅</span>
+
+                <!-- Nút trái -->
+                <button (click)="scrollLeft(tour.id); $event.stopPropagation()"
+                  class="text-gray-500 hover:text-black text-xs px-1 py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition">
+                  ←
+                </button>
+
+                <!-- Scroll ngang -->
+                <div #scrollRef class="flex overflow-x-auto no-scrollbar gap-2 max-w-[250px]"
+                  [attr.data-tour-id]="tour.id">
+                  <button *ngFor="let d of tour.departureDates" (click)="$event.stopPropagation()"
+                    class="border border-red-500 text-red-500 text-xs px-1 py-1 rounded-md hover:bg-red-50 whitespace-nowrap">
+                    {{ d | date:'dd/MM' }}
+                  </button>
+                </div>
+
+                <!-- Nút phải -->
+                <button (click)="scrollRight(tour.id); $event.stopPropagation()"
+                  class="text-gray-500 hover:text-black text-xs px-1 py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition">
+                  →
+                </button>
+              </div>
+
+              <p class="text-sm text-black-600">
+                {{ tour.tourTransport | iconTransport }}
+              </p>
+
+              <!-- Giá -->
+              <div class="mt-3">
+                <p class="text font-semibold text-gray-800">Giá từ:</p>
+                <p class="text-red-500 font-bold text-2xl whitespace-nowrap tracking-tight"> 
+                  {{ tour.startingPrice | currencyVnd }}
+                </p>
+              </div>
             </div>
           </div>
-        </a>
+        </div>
+
       </div>
       <div class="mt-8 flex justify-center">
         <a routerLink="/tours"

@@ -6,6 +6,7 @@ import { RouterModule } from "@angular/router";
 import { FormatDatePipe } from "../../../shared/pipes/format-date.pipe";
 import { CurrencyVndPipe } from "../../../shared/pipes/currency-vnd.pipe";
 import { DurationFormatPipe } from "../../../shared/pipes/duration-format.pipe";
+import { PaginationComponent } from "../../../shared/components/pagination/pagination.component";
 
 
 
@@ -22,6 +23,7 @@ import { DurationFormatPipe } from "../../../shared/pipes/duration-format.pipe";
     FormatDatePipe,
     CurrencyVndPipe,
     DurationFormatPipe,
+    PaginationComponent,
   ]
 })
 
