@@ -6,6 +6,7 @@ import { RouterModule } from "@angular/router";
 import { FormatDatePipe } from "../../../shared/pipes/format-date.pipe";
 import { CurrencyVndPipe } from "../../../shared/pipes/currency-vnd.pipe";
 import { DurationFormatPipe } from "../../../shared/pipes/duration-format.pipe";
+import { PaginationComponent } from "../../../shared/components/pagination/pagination.component";
 
 
 
@@ -15,13 +16,14 @@ import { DurationFormatPipe } from "../../../shared/pipes/duration-format.pipe";
   templateUrl: './list-tour.component.html',
   styleUrls: ['./list-tour.component.css'],
   imports: [
-    CommonModule, 
-    RouterModule, 
-    FormsModule, 
+    CommonModule,
+    RouterModule,
+    FormsModule,
     ReactiveFormsModule,
     FormatDatePipe,
     CurrencyVndPipe,
     DurationFormatPipe,
+    PaginationComponent,
   ]
 })
 
@@ -59,7 +61,25 @@ export class ListTourComponent implements OnInit {
     this.sort = value;
     this.fetchTours();
   }
+  onPageChange(newPage: number): void {
+    if (newPage < 0 || newPage >= this.totalPages) return;
+    this.page = newPage;
+    this.fetchTours();
+  }
+
+  get totalPages(): number {
+    console.log('Total items:', this.total, 'Page size:', this.size);
+    return Math.ceil(this.total / this.size);
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i);
+  }
 }
+
+
+
+
 interface TourItem {
   id: number;
   name: string;

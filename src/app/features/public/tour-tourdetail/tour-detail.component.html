@@ -1,0 +1,93 @@
+
+<section class="max-w-7xl mx-auto px-4 py-10" *ngIf="!isLoading && tour; else loadingOrError">
+  <h1 class="text-2xl sm:text-3xl font-bold mb-6 text-gray-900">{{ tour.name }}</h1>
+
+  <!-- Info block -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <div class="md:col-span-2">
+      <img [src]="tour.thumbnailUrl" class="w-full h-96 object-cover rounded-lg shadow" />
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+      <p class="text-2xl font-bold text-red-600 mb-2">{{ tour.schedules[0].price | currencyVnd }} / khách</p>
+      <p class="mb-1">📍 {{ tour.region }}</p>
+      <p class="mb-1">🎯 Chủ đề: {{ tour.tourThemeName }}</p>
+      <p class="mb-1">⏳ Thời gian: {{ tour.durationDays | durationFormat }}</p>
+      <p class="mb-1">⭐ Đánh giá: {{ tour.averageRating }}/5</p>
+    </div>
+  </div>
+
+  <!-- Description -->
+  <div class="mb-10">
+    <h2 class="text-xl font-semibold mb-2">Giới thiệu chương trình</h2>
+    <p class="text-gray-700 leading-relaxed">{{ tour.description }}</p>
+  </div>
+
+  <!-- Lịch trình -->
+  <div class="mb-10">
+    <h2 class="text-xl font-semibold mb-4">Lịch trình</h2>
+    <div *ngFor="let day of tour.days" class="mb-4 border rounded-lg">
+      <div class="bg-gray-100 px-4 py-2 font-semibold">Ngày {{ day.dayNumber }}: {{ day.title }}</div>
+      <div class="px-4 py-3 text-gray-700">
+        <p class="mb-2">📌 {{ day.locationName }}</p>
+        <p class="mb-2">{{ day.description }}</p>
+        <div *ngIf="day.services?.length" class="grid grid-cols-2 gap-2 mt-2">
+          <div *ngFor="let s of day.services" class="flex items-center gap-2">
+            <img [src]="s.imageUrl" class="w-10 h-10 object-cover rounded" />
+            <div>
+              <p class="font-medium">{{ s.name }}</p>
+              <p class="text-xs text-gray-500">{{ s.type }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback -->
+  <div *ngIf="tour.feedback?.length" class="mb-10">
+    <h2 class="text-xl font-semibold mb-4">Đánh giá</h2>
+    <div class="space-y-4">
+      <div *ngFor="let fb of tour.feedback" class="border p-4 rounded-lg shadow-sm">
+        <div class="flex items-center gap-3 mb-2">
+          <img [src]="fb.userAvatarUrl" class="w-10 h-10 rounded-full" />
+          <div>
+            <p class="font-semibold">{{ fb.userName }}</p>
+            <p class="text-sm text-gray-500">{{ fb.createdAt | formatDate }}</p>
+          </div>
+        </div>
+        <p class="text-yellow-600">⭐ {{ fb.rating }}/5</p>
+        <p class="text-gray-700 mt-1">{{ fb.comment }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schedules -->
+  <div>
+    <h2 class="text-xl font-semibold mb-4">Lịch khởi hành</h2>
+    <table class="w-full text-sm text-left">
+      <thead>
+        <tr class="bg-gray-100">
+          <th class="p-2">Ngày đi</th>
+          <th class="p-2">Ngày về</th>
+          <th class="p-2">Giá</th>
+          <th class="p-2">Chỗ trống</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of tour.schedules" class="border-b">
+          <td class="p-2">{{ s.departureDate | formatDate }}</td>
+          <td class="p-2">{{ s.endDate | formatDate }}</td>
+          <td class="p-2 text-red-600 font-medium">{{ s.price | currencyVnd }}</td>
+          <td class="p-2">{{ s.availableSeats }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<ng-template #loadingOrError>
+  <div class="text-center py-10">
+    <p *ngIf="isLoading">Đang tải dữ liệu tour...</p>
+    <p *ngIf="errorMessage" class="text-red-600">{{ errorMessage }}</p>
+  </div>
+</ng-template>

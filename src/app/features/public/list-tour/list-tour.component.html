@@ -39,13 +39,13 @@
     <div class="flex justify-between items-center mb-4">
       <p>Chúng tôi tìm thấy <strong>{{ total }}</strong> chương trình tour cho quý khách</p>
       <div class="flex items-center gap-2">
-        <label for="sort" class="text-sm text-gray-500">Sắp xếp theo:</label>
-        <select id="sort" [(ngModel)]="sort" (change)="onSortChange(sort)"
-          class="border rounded px-2 py-1 text-sm">
+        <label for="sort" class="text-sm text-gray-500">Sắp xếp theo: </label>
+        <select id="sort" [(ngModel)]="sort" (change)="onSortChange(sort) "
+          class="border rounded px-2 py-1 text-sm w-56">
           <option value="">Tất cả</option>
-          <option value="price_desc">Giá từ cao đến thấp</option>
-          <option value="price_asc">Giá từ thấp đến cao</option>
-          <option value="latest">Ngày khởi hành gần nhất</option>
+          <option value="price_desc">Giá từ cao đến thấp </option>
+          <option value="price_asc">Giá từ thấp đến cao </option>
+          <option value="latest">Ngày khởi hành gần nhất </option>
         </select>
       </div>
     </div>
@@ -70,6 +70,17 @@
         </div>
       </a>
     </div>
+
+
+    <!-- Phân trang -->
+    <app-pagination 
+    [currentPage]="page" 
+    [totalItems]="total" 
+    [pageSize]="size" 
+    (pageChange)="onPageChange($event)">
+    </app-pagination>
+
+
 
     <!-- Không có kết quả -->
     <div *ngIf="!isLoading && tours.length === 0" class="text-center text-gray-500 mt-10">
