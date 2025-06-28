@@ -1,0 +1,295 @@
+@if(isLoading) {
+<div role="status" class="absolute -translate-x-1/2 -translate-y-1/2 top-2/4 left-1/2">
+    <svg aria-hidden="true" class="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+        viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+            d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+            fill="currentColor" />
+        <path
+            d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+            fill="currentFill" />
+    </svg>
+    <span class="sr-only">Loading...</span>
+</div>
+}
+
+<div class="max-w-7xl mx-auto mt-32 mb-10 block" [class]="isLoading ? 'hidden' : 'block'">
+    <!-- Progress Bar -->
+    <div class="text-center">
+        <h1 class="text-2xl font-bold mb-4">Tour Booking</h1>
+        <div class="flex justify-center items-center gap-6">
+            <div class="flex flex-col items-center">
+                <div class="w-12 h-12 border-2  text-white flex items-center justify-center rounded-full">
+                    📋
+                </div>
+                <p class="font-semibold mt-2">Nhập Thông tin</p>
+            </div>
+            <div class="border-t-2 border-gray-400 w-12"></div>
+            <div class="flex flex-col items-center text-gray-400">
+                <div class="w-12 h-12 border-2 border-gray-400 flex items-center justify-center rounded-full">
+                    ✈️
+                </div>
+                <p class="mt-2">Booking</p>
+            </div>
+            <div class="border-t-2 border-gray-400 w-12"></div>
+            <div class="flex flex-col items-center text-gray-400">
+                <div class="w-12 h-12 border-2 bg-black border-gray-400 flex items-center justify-center rounded-full">
+                    💰
+                </div>
+                <p class="mt-2">Thanh Toán</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Form Section -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+        <!-- Left Section: Contact Information -->
+        <div class="md:col-span-2 bg-white p-6 rounded-lg shadow">
+            <h2 class="text-2xl mb-12 font-semibold mb-4">Thông tin liên hệ</h2>
+
+
+            <!-- Form Fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-semibold">Họ và tên *</label>
+                    <p class="w-full p-2 rounded mt-1"> {{bookingData?.bookedPerson.fullName}}</p>
+                </div>
+                <div>
+                    <label class="block font-semibold">Điện Thoại *</label>
+                    <p class="w-full p-2 rounded mt-1">{{bookingData?.bookedPerson.phone}}</p>
+                </div>
+                <div>
+                    <label class="block font-semibold">Email *</label>
+                    <p class="w-full p-2 rounded mt-1">{{bookingData?.bookedPerson.email}}</p>
+                </div>
+                <div>
+                    <label class="block font-semibold">Địa chỉ</label>
+                    <p class="w-full p-2 rounded mt-1">{{bookingData?.bookedPerson.address}}</p>
+                </div>
+            </div>
+
+            <!-- Passenger Information -->
+            <h2 class="text-2xl font-semibold mt-12 mb-12">Thông tin đoàn</h2>
+            <p class="font-semibold mb-6">👨‍👩‍👧 Người lớn (12 tuổi trở lên)</p>
+            @for (num of range(bookingData?.adults.length); track $index) {
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2">
+                <div>
+                    <label class="block font-semibold">Họ và Tên *</label>
+                    <p class="w-full p-2 rounded mt-1"> {{bookingData?.adults.at($index).fullName}}</p>
+                </div>
+                <div>
+                    <label class="block font-semibold">Giới Tính *</label>
+                    <p class="w-full p-2 rounded mt-1"> {{bookingData?.adults.at($index).gender === 'MALE' ? 'Nam' : 'Nữ'}}</p>
+                </div>
+                <div>
+                    <label class="block font-semibold">Ngày Sinh *</label>
+                    <p class="w-full p-2 rounded mt-1"> {{bookingData?.adults.at($index).dateOfBirth | date:
+                        'dd/MM/yyyy'}}</p>
+                </div>
+                <div class="flex flex-col justify-center text-center gap-2">
+
+                    <label class="block font-semibold">🛏️ Phòng Đơn</label>
+
+                    <p class="w-full p-2 rounded mt-1"> {{bookingData?.adults.at($index).singleRoom ? 'Có' : 'Không'}}</p>
+
+                </div>
+            </div>
+            }
+
+
+
+
+
+
+            @for (num of range(bookingData?.children.length); track num; let first = $first) {
+            @if(first) {
+            <p class="font-semibold mt-12 mb-6">👨‍👩‍👧 Trẻ em (Dưới 12 tuổi)</p>
+            }
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                <div>
+                    <label class="block font-semibold">Họ và Tên *</label>
+                    <p class="w-full p-2 rounded mt-1"> {{bookingData?.children.at($index).fullName}}</p>
+                </div>
+                <div>
+                    <label class="block font-semibold">Giới Tính *</label>
+                    <p class="w-full p-2 rounded mt-1"> {{bookingData?.children.at($index).gender}}</p>
+                </div>
+                <div>
+                    <label class="block font-semibold">Ngày sinh *</label>
+                    <p class="w-full p-2 rounded mt-1"> {{bookingData?.children.at($index).dateOfBirth | date:
+                        'dd/MM/yyyy'}}</p>
+                </div>
+
+            </div>
+            }
+
+
+
+
+
+
+
+
+
+            <h2 class="text-2xl font-semibold mb-4 mt-10">Thông tin Booking</h2>
+
+            <div class=" mx-auto bg-white p-6 rounded-lg shadow-md border">
+
+
+                <table class="w-full">
+                    <tbody>
+                        <tr class="border-b">
+                            <td class="font-semibold p-3">Mã Booking:</td>
+                            <td class="text-red-600 font-semibold p-3">{{bookingData?.bookingCode}}</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="font-semibold p-3">Ngày Tạo:</td>
+                            <td class="p-3">{{bookingData?.createdAt | date: 'dd/MM/yyyy HH:mm'}}</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="font-semibold p-3">Giá Booking:</td>
+                            <td class="font-semibold p-3">{{total | currencyVnd}} <td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="font-semibold p-3">Phương thức:</td>
+                            <td class="p-3">
+                                <span class="font-semibold">
+                                    {{bookingData?.paymentMethod}}
+                                </span>
+                                
+                                <span *ngIf="bookingData?.status === 'PENDING'" class="text-blue-600 underline ml-2 cursor-pointer hover:text-blue-800" (click)="changePaymentMethod()">Thay đổi phương thức thanh toán</span>
+                            </td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="font-semibold p-3">Hướng dẫn thanh toán:</td>
+                            <td class="p-3 text-blue-600">
+                                @if(bookingData?.paymentMethod === 'CASH') {
+                                    Vui lòng thanh toán tại cơ sở FPT University Hòa Lạc
+                                } @else {
+                                <div class="w-full mt-5">
+                                    <p><strong>STK:</strong> 2003883886 - Nguyen Viet Hoai Nam</p>
+                                    <p class="mt-2"><strong>Ngân Hàng:</strong> MB Bank</p>
+                                    <p class="mt-2"><strong>Nội dung chuyển khoản:</strong> {{bookingData?.bookingCode}}</p>
+                                    <p  class="mt-2" *ngIf="bookingData?.status === 'PENDING'">Thanh toán trực tiếp  <span class="text-blue-600 underline ml-2 hover:cursor-pointer hover:text-blue-800 " (click)="forwardPayment()" >tại đây</span>  </p>
+                                </div>
+                                }
+                            </td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="font-semibold p-3">Đã thanh toán:</td>
+                            <td class="p-3">
+                                <span *ngIf="bookingData?.status === 'PENDING'">
+                                    {{0 | currencyVnd}}
+                                </span>
+                                <span *ngIf="bookingData?.status !== 'PENDING'">
+                                    {{total | currencyVnd}}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="font-semibold p-3">Chưa thanh toán:</td>
+                            <td class="text-red-600 font-semibold p-3">
+                                <span *ngIf="bookingData?.status === 'PENDING'">
+                                    {{total | currencyVnd}}
+                                </span>
+                                <span *ngIf="bookingData?.status !== 'PENDING'">
+                                    {{0 | currencyVnd}}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="font-semibold p-3">Tình Trạng:</td>
+                            <td class="text-blue-600 p-3">
+                                Đặt chỗ của bạn đã được chúng tôi xác nhận thành công.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold p-3">Điều khoản thanh toán:</td>
+                            <td class="p-3">
+                                <span class="text-red-600 font-semibold">{{ expiredDate | date: 'dd/MM/yyyy HH:mm'
+                                    }}</span>
+                                <span class="text-gray-500 text-sm"> (Đặt chỗ sẽ bị hủy nếu quá hạn.)</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+
+
+
+            <!-- Note Section -->
+            <h2 class="text-lg font-semibold mb-2 mt-12">Ghi chú</h2>
+            <textarea class="w-full border p-3 rounded-md mb-6" rows="4"
+                placeholder="Please enter message here..." readonly>{{bookingData?.note}}</textarea>
+
+        </div>
+
+        <!-- Right Section: Trip Summary -->
+        <div class="bg-white p-6 rounded-lg shadow h-fit sticky top-32">
+            <h2 class="text-lg font-semibold mb-4">Xác nhận chuyến đi</h2>
+
+            <div class="bg-gray-200 w-full h-40 flex items-center justify-center">
+                <img [src]="bookingData?.tour?.tourImage?.imageUrl" alt="" class="w-full h-full object-cover" />
+            </div>
+
+            <div class="bg-gray-100 p-4 rounded-md mb-4">
+                <p class="font-semibold">📍 {{bookingData?.tour?.name}}</p>
+                <p class="text-gray-500">🎟️ Ngày đi: {{bookingData?.tourSchedule.startDate | date: 'dd/MM/yyyy'}}
+                </p>
+                <p class="text-gray-500">📍 Điểm xuất phát: <strong>{{bookingData?.tour?.departLocation?.name}}</strong></p>
+                <p class="text-gray-500">⏳ Thời lượng:
+                    <strong>{{bookingData?.tour.numberDays}}N{{bookingData?.tour?.numberNights}}D</strong>
+                </p>
+            </div>
+            <p class="font-semibold flex justify-between text-xl mb-4"><span>👥 Khách hàng</span> <span
+                    class="text-red-600">{{total |currencyVnd}}</span></p>
+            <p class="flex justify-between mb-2"><span>🧑 Người lớn: </span> <span>{{numberAdults}} x
+                    {{bookingData?.sellingPrice |currencyVnd}} </span></p>
+            <p class="flex justify-between mb-2"><span>👶 Trẻ em:</span> 
+                @if(numberChildren > 0) {
+                    <span>{{numberChildren}} x
+                        {{childrenPrice |currencyVnd}}</span>
+                }@else {
+                 <span>0 đ</span>
+                }
+                </p>
+            <p class="flex justify-between mb-2">
+                @if(numberSingleRooms > 0) {
+                <span>📍 Phòng đơn:</span> <span>{{numberSingleRooms}} x
+                    {{bookingData?.extraHotelCost |currencyVnd}} </span>
+                } @else {
+                <span>📍 Phòng đơn:</span> <span>0 đ</span>
+                }
+            </p>
+            <hr class="my-4">
+            <p class="font-semibold text-xl flex justify-between"><span>Tổng số tiền:</span> <span class="text-red-600">{{total |currencyVnd}} </span></p>
+        </div>
+    </div>
+</div>
+
+
+
+@if(showSuccess) {
+    <!-- Warning Notification (Only One at a Time) -->
+    <div class="fixed top-[5rem] left-1/2 transform -translate-x-1/2 z-50 w-80">
+        <div class="flex items-center bg-white shadow-md border border-gray-200 rounded-md p-3 animate-slide-in">
+            <span class="text-green-500 text-xl mr-2">✔</span>
+            <p class="text-green-800 text-sm">
+                {{ successMessage }}
+            </p>
+        </div>
+    </div>
+    }
+    
+    @if(showError) {
+    <!-- Warning Notification (Only One at a Time) -->
+    <div class="fixed top-[5rem] left-1/2 transform -translate-x-1/2 z-50 w-80">
+        <div class="flex items-center bg-white shadow-md border border-gray-200 rounded-md p-3 animate-slide-in">
+            <span class="text-red-500 text-xl mr-2">X</span>
+            <p class="text-red-800 text-sm">
+                {{ errorMessage }}
+        </div>
+    </div>
+    }

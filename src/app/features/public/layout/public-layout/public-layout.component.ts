@@ -1,23 +1,12 @@
-import {
-  Component,
-  AfterViewInit,
-  OnDestroy,
-  OnInit,
-  ElementRef,
-} from '@angular/core';
-import { Router, Event, NavigationEnd, RouterOutlet } from '@angular/router';
-import { SsrService } from '../../../../core/services/ssr.service';
-import { Modal } from 'flowbite';
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
-import { SocketSerivce } from '../../../../core/services/socket/socket.service';
 import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
-import { UserStorageService } from '../../../../core/services/user-storage/user-storage.service';
 import { CustomerService } from '../../../customer/services/customer.service';
 import { FriendService } from '../../../customer/services/friend.service';
 import { CommonModule } from '@angular/common';
 import { ChatIconComponent } from '../../../../shared/components/chat-icon/chat-icon.component';
-import { ChatBoxComponent } from '../../../../shared/components/chat-box/chat-box.component';
 import { ChatService } from '../../../customer/services/chat.service';
 
 @Component({
@@ -25,12 +14,11 @@ import { ChatService } from '../../../customer/services/chat.service';
   templateUrl: './public-layout.component.html',
   styleUrls: ['./public-layout.component.css'],
   imports: [
-    RouterOutlet, 
-    HeaderComponent, 
-    FooterComponent, 
-    CommonModule, 
+    RouterOutlet,
+    HeaderComponent,
+    FooterComponent,
+    CommonModule,
     ChatIconComponent,
-    ChatBoxComponent
   ],
 })
 export class PublicLayoutComponent {
@@ -40,13 +28,11 @@ export class PublicLayoutComponent {
   isUserReady = false;
   chatGroups: any[] = [];
 
-
-
   constructor(
     private customerService: CustomerService,
     private currentUserService: CurrentUserService,
     private friendService: FriendService,
-    private chatService: ChatService,
+    private chatService: ChatService
   ) {}
 
   ngOnInit(): void {
@@ -83,7 +69,6 @@ export class PublicLayoutComponent {
         this.friends = response?.data;
       });
   }
-
 
   getUserChatGroups() {
     this.chatService

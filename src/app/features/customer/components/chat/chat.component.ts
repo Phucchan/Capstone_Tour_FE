@@ -16,6 +16,7 @@ export class ChatComponent {
 
   @Input() currentUser: any = {};
   @Input() friends: any = {};
+  @Input() chatGroups: any[] = [];
 
   constructor(
   ) {

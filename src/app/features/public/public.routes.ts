@@ -3,6 +3,7 @@ import { PublicLayoutComponent } from './layout/public-layout/public-layout.comp
 import { HomepageComponent } from './homepage/homepage.component';
 import { ListTourComponent } from './list-tour/list-tour.component';
 import { TourDetailComponent } from './tour-tourdetail/tour-detail.component';
+import { TourBookingComponent } from '../customer/components/tour-booking/tour-booking.component';
 
 export const PUBLIC_ROUTES: Route[] = [
   {
@@ -26,6 +27,10 @@ export const PUBLIC_ROUTES: Route[] = [
         path: 'tours/:id',
         component: TourDetailComponent,
       },
+      {
+        path: 'tour-booking/:id/:scheduleId',
+        component: TourBookingComponent,
+      }
     ],
   },
 

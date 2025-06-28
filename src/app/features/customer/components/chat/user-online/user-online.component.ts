@@ -3,19 +3,22 @@ import { ChatService } from '../../../services/chat.service';
 import { SocketSerivce } from '../../../../../core/services/socket/socket.service';
 import { AvatarComponent } from '../../../../../shared/components/avatar/avatar.component';
 import { CommonModule } from '@angular/common';
+import { TimeAgoPipe } from "../../../../../shared/pipes/time-ago.pipe";
 
 @Component({
   selector: 'app-user-online',
   imports: [
     AvatarComponent,
-    CommonModule
-  ],
+    CommonModule,
+    TimeAgoPipe
+],
   templateUrl: './user-online.component.html',
   styleUrl: './user-online.component.css',
 })
 export class UserOnlineComponent {
   @Input() currentUser: any = {};
   @Input() friends: any = {};
+  @Input() chatGroups: any[] = [];
   activeUsersSubcription: any;
 
   constructor(

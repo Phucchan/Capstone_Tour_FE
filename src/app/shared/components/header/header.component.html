@@ -18,7 +18,7 @@
           src="/assets/icons/message.png" alt="user photo">
       </button>
 
-      <app-chat *ngIf="showChat" [currentUser]="customerBasicInfo" [friends]="friends"></app-chat>
+      <app-chat *ngIf="showChat" [currentUser]="customerBasicInfo" [friends]="friends" [chatGroups]="chatGroups"></app-chat>
 
       <button (click)="toggleDropdown()" *ngIf="currentUser !== undefined && currentUser?.username" type="button"
         class="flex text-sm hover:bg-gray-800 cursor-pointer rounded-full ml-5 md:me-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"

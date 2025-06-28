@@ -4,10 +4,8 @@ import { UserStorageService } from '../../../core/services/user-storage/user-sto
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SocketSerivce } from '../../../core/services/socket/socket.service';
-import { CustomerService } from '../../../features/customer/services/customer.service';
 import { CurrentUserService } from '../../../core/services/user-storage/current-user.service';
 import { ChatComponent } from '../../../features/customer/components/chat/chat.component';
-import { FriendService } from '../../../features/customer/services/friend.service';
 
 declare const window: any;
 
@@ -37,8 +35,6 @@ export class HeaderComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    console.log('[Header component]',this.currentUser);
-      
   }
 
   onLogin() {
@@ -68,6 +64,7 @@ export class HeaderComponent implements OnInit {
     const clickedInside = this.elRef.nativeElement.contains(event.target);
     if (!clickedInside) {
       this.showDropdown = false;
+      this.showChat = false;
     }
   }
 

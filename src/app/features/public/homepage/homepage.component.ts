@@ -5,7 +5,6 @@ import { HomepageService } from '../services/homepage.service';
 import { DurationFormatPipe } from "../../../shared/pipes/duration-format.pipe";
 import { Router, RouterModule } from '@angular/router';
 import { CurrencyVndPipe } from '../../../shared/pipes/currency-vnd.pipe';
-import { FormatDatePipe } from '../../../shared/pipes/format-date.pipe';
 import { IconTransportPipe } from '../../../shared/pipes/icon-transport.pipe';
 
 
@@ -18,7 +17,6 @@ import { IconTransportPipe } from '../../../shared/pipes/icon-transport.pipe';
     HeroSectionComponent,
     DurationFormatPipe,
     CurrencyVndPipe,
-    FormatDatePipe,
     IconTransportPipe,
 
   ],
