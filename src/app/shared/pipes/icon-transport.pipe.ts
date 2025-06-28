@@ -8,7 +8,7 @@ export class IconTransportPipe implements PipeTransform {
   transform(value: string): string {
     switch (value?.toLowerCase()) {
       case 'car':
-        return '🚗 Ô tô';
+        return '🚗 Xe';
       case 'plane':
         return '✈️ Máy bay';
       case 'train':

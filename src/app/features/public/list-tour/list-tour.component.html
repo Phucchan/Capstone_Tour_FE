@@ -1,7 +1,7 @@
 <div class="flex gap-6 max-w-[70%] m-auto mt-10">
   <!-- Bộ lọc bên trái -->
-  <aside class="w-[300px] bg-gray-50 p-4 rounded shadow text-sm h-fit">
-    <h3 class="font-semibold mb-4">Ngân sách</h3>
+  <aside class="w-[300px] bg-gray-50 p-4 rounded shadow text-sm h-fit sticky top-20">
+    <h3 class="font-semibold mb-4 text-lg">Ngân sách</h3>
     <div class="grid grid-cols-2 gap-2 mb-4">
       <button class="border px-2 py-1 rounded hover:bg-blue-50">Dưới 5 triệu</button>
       <button class="border px-2 py-1 rounded hover:bg-blue-50">Từ 5-10 triệu</button>
@@ -39,7 +39,7 @@
     <div class="flex justify-between items-center mb-4">
       <p>Chúng tôi tìm thấy <strong>{{ total }}</strong> chương trình tour cho quý khách</p>
       <div class="flex items-center gap-2">
-        <label for="sort" class="text-sm text-gray-500">Sắp xếp theo: </label>
+        <label for="sort" class="text-sm text-black-500">Sắp xếp theo: </label>
         <select id="sort" [(ngModel)]="sort" (change)="onSortChange(sort) "
           class="border rounded px-2 py-1 text-sm w-56">
           <option value="">Tất cả</option>
@@ -52,44 +52,92 @@
 
     <!-- Danh sách tour -->
     <div *ngIf="!isLoading && tours.length > 0" class="space-y-4">
-      <a *ngFor="let tour of tours" [routerLink]="['/tours', tour.id]"
-        class="flex border rounded overflow-hidden hover:shadow transition bg-white">
-        <img [src]="tour.thumbnailUrl" alt="{{ tour.name }}" class="w-60 h-40 object-cover" />
+      <div *ngFor="let tour of tours" class="flex border rounded-lg overflow-hidden shadow-sm bg-white relative group">
+
+        <!-- Icon trái tim -->
+        <button (click)="addToWishlist(tour.id); $event.stopPropagation()"
+          class="absolute top-3 left-3 z-10  rounded-full shadow hover:bg-red-500">
+          <img src="assets/images/logo/heart.png" alt="Yêu thích" class="w-5 h-5" />
+        </button>
+
+        <!-- Cột ảnh -->
+        <img [src]="tour.thumbnailUrl" alt="{{ tour.name }}"
+          class="w-[300px]  object-cover group-hover:scale-105 transition-transform duration-300" />
+
+        <!-- Cột nội dung -->
         <div class="p-4 flex flex-col justify-between flex-1">
           <div>
-            <h3 class="font-semibold text-lg mb-1">{{ tour.name }}</h3>
-            <p class="text-sm text-gray-600">📍 Khởi hành: {{ tour.locationName }}</p>
-            <p class="text-sm text-gray-600">⏳ Thời gian: {{ tour.durationDays | durationFormat }}</p>
-            <p class="text-sm text-yellow-600">⭐ Đánh giá: {{ tour.averageRating }}/5 ★</p>
-            <p class="text-sm text-gray-600">📅 Khởi hành: {{ tour.nextDepartureDate | formatDate }}</p>
-          </div>
-          <div class="flex items-center justify-between mt-3">
-            <p class="text-red-600 font-bold text-lg">💵 {{ tour.startingPrice | currencyVnd }}</p>
-            <span class="text-blue-600 font-medium text-sm">Xem chi tiết</span>
+            <!-- Tiêu đề -->
+            <h3 class="font-bold text-lg text-gray-900 leading-snug mb-2 line-clamp-2">
+              {{ tour.name }}
+            </h3>
+
+            <!-- Thông tin chi tiết -->
+            <div class="grid grid-cols-2 gap-x-4 text-base text-gray-700">
+              <p>🆔 <strong>Mã tour:</strong> {{ tour.code }}</p>
+              <p>📍 <strong>Khởi hành:</strong> {{ tour.locationName }}</p>
+              <p>⏳ <strong>Thời gian:</strong> {{ tour.durationDays | durationFormat }}</p>
+              <p>   <strong>Phương tiện:</strong> {{ tour.tourTransport | iconTransport }}</p>
+            </div>
+
+            <!-- Ngày khởi hành có scroll ngang -->
+            <!-- Danh sách ngày khởi hành (scroll + nút trái/phải) -->
+            <div class="flex items-center gap-2 mt-2">
+              <span class=" text-base text-gray-700 flex-shrink-0">📅 <strong>Ngày khởi hành :</strong> </span>
+
+              <!-- Nút trái -->
+              <button (click)="scrollLeft(tour.id); $event.stopPropagation()"
+                class="text-gray-500 hover:text-black text-base px-2 py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition">
+                ←
+              </button>
+
+              <!-- Scroll ngang -->
+              <div #scrollRef class="flex overflow-x-auto no-scrollbar gap-2 max-w-[450px]"
+                [attr.data-tour-id]="tour.id">
+                <button *ngFor="let d of tour.departureDates" (click)="$event.stopPropagation()"
+                  class="border border-red-500 text-red-500 text-base px-1 py-1 rounded-md hover:bg-red-50 whitespace-nowrap">
+                  {{ d | date:'dd/MM' }}
+                </button>
+              </div>
+
+              <!-- Nút phải -->
+              <button (click)="scrollRight(tour.id); $event.stopPropagation()"
+                class="text-gray-500 hover:text-black text-base px-2 py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition">
+                →
+              </button>
+            </div>
+
+            <!-- Giá và nút chi tiết -->
+            <div class="flex justify-between items-center mt-4">
+              <div>
+                <p class="text-sm font-semibold text-gray-700">Giá từ:</p>
+                <p class="text-red-600 text-2xl font-bold tracking-tight">{{ tour.startingPrice | currencyVnd }}</p>
+              </div>
+              <a [routerLink]="['/tours', tour.id]"
+                class="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition">
+                Xem chi tiết
+              </a>
+            </div>
           </div>
         </div>
-      </a>
-    </div>
-
-
-    <!-- Phân trang -->
-    <app-pagination 
-    [currentPage]="page" 
-    [totalItems]="total" 
-    [pageSize]="size" 
-    (pageChange)="onPageChange($event)">
-    </app-pagination>
+      </div>
 
 
 
-    <!-- Không có kết quả -->
-    <div *ngIf="!isLoading && tours.length === 0" class="text-center text-gray-500 mt-10">
-      Không tìm thấy kết quả phù hợp.
-    </div>
+      <!-- Phân trang -->
+      <app-pagination [currentPage]="page" [totalItems]="total" [pageSize]="size" (pageChange)="onPageChange($event)">
+      </app-pagination>
 
-    <!-- Loading -->
-    <div *ngIf="isLoading" class="text-center text-gray-500 mt-10">
-      Đang tải dữ liệu...
+
+
+      <!-- Không có kết quả -->
+      <div *ngIf="!isLoading && tours.length === 0" class="text-center text-gray-500 mt-10">
+        Không tìm thấy kết quả phù hợp.
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="text-center text-gray-500 mt-10">
+        Đang tải dữ liệu...
+      </div>
     </div>
   </div>
-</div>
