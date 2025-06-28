@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, ElementRef, OnInit, QueryList, ViewChildren } from "@angular/core";
 import { ListTourService } from "../services/list-tour.service";
 import { CommonModule } from "@angular/common";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
@@ -7,6 +7,7 @@ import { FormatDatePipe } from "../../../shared/pipes/format-date.pipe";
 import { CurrencyVndPipe } from "../../../shared/pipes/currency-vnd.pipe";
 import { DurationFormatPipe } from "../../../shared/pipes/duration-format.pipe";
 import { PaginationComponent } from "../../../shared/components/pagination/pagination.component";
+import { IconTransportPipe } from "../../../shared/pipes/icon-transport.pipe";
 
 
 
@@ -24,6 +25,7 @@ import { PaginationComponent } from "../../../shared/components/pagination/pagin
     CurrencyVndPipe,
     DurationFormatPipe,
     PaginationComponent,
+    IconTransportPipe,
   ]
 })
 
@@ -75,6 +77,39 @@ export class ListTourComponent implements OnInit {
   get pages(): number[] {
     return Array.from({ length: this.totalPages }, (_, i) => i);
   }
+  @ViewChildren('scrollRef') scrollContainers!: QueryList<ElementRef>;
+
+  // Scroll trái
+  scrollLeft(tourId: number): void {
+    const target = this.getScrollContainerByTourId(tourId);
+    if (target) {
+      target.scrollBy({ left: -100, behavior: 'smooth' });
+    }
+  }
+
+  // Scroll phải
+  scrollRight(tourId: number): void {
+    const target = this.getScrollContainerByTourId(tourId);
+    if (target) {
+      target.scrollBy({ left: 100, behavior: 'smooth' });
+    }
+  }
+  // Tìm scroll container ứng với tour id
+  private getScrollContainerByTourId(tourId: number): HTMLElement | null {
+    const containers = this.scrollContainers.toArray();
+    for (let c of containers) {
+      const el = c.nativeElement as HTMLElement;
+      if (el.dataset['tourId'] === tourId.toString()) {
+        return el;
+      }
+    }
+    return null;
+  }
+  addToWishlist(tourId: number): void {
+  console.log('Đã thêm tour vào wishlist:', tourId);
+  // TODO: Thêm xử lý thực tế ở đây (gọi service, lưu localStorage, hiển thị thông báo,...)
+}
+ 
 }
 
 
@@ -89,7 +124,7 @@ interface TourItem {
   region: string;
   locationName: string;
   startingPrice: number;
-  nextDepartureDate: string;
+  departureDate: string [];
 }
 
 interface TourListResponse {
