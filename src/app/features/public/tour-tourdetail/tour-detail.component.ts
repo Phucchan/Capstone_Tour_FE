@@ -1,16 +1,15 @@
-import { Component, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { CommonModule, DatePipe, ViewportScroller } from '@angular/common';
 import { Router } from '@angular/router';
-import { initFlowbite } from 'flowbite';
 import { CurrencyVndPipe } from '../../../shared/pipes/currency-vnd.pipe';
 import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
 import { CalendarOptions } from '@fullcalendar/core/index.js';
 import { UserStorageService } from '../../../core/services/user-storage/user-storage.service';
 import { TruncatePipe } from '../../../shared/pipes/truncate.pipe';
-import { HomepageService } from '../services/homepage.service';
 import { TourDetailService } from '../services/tour-detail.service';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import { SsrService } from '../../../core/services/ssr.service';
 
 @Component({
   selector: 'app-tour-detail',
@@ -31,6 +30,7 @@ export class TourDetailComponent  {
   uniqueMonths = new Set<string>();
   selectedSchedule: any | undefined;
   minPrice: number | undefined;
+  isBrowser: boolean = false;
 
   @ViewChild('calendar') calendarComponent!: FullCalendarComponent;
 
@@ -55,11 +55,12 @@ export class TourDetailComponent  {
     private router: Router,
     private datePipe: DatePipe,
     private viewportScroller: ViewportScroller,
-    private homepageService: HomepageService,
     private userStorageService: UserStorageService,
+    private ssrService: SsrService
   ) {
 
     this.userId = this.userStorageService.getUserId();
+    this.isBrowser = this.ssrService.isBrowser;
 
    }
 

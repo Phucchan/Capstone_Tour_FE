@@ -1,10 +1,8 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import {  Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { initFlowbite } from 'flowbite';
 import { Title } from '@angular/platform-browser';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
-import { UserStorageService } from './core/services/user-storage/user-storage.service';
 import { SocketSerivce } from './core/services/socket/socket.service';
 import { CurrentUserService } from './core/services/user-storage/current-user.service';
 
@@ -31,7 +29,9 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      import('flowbite').then(({ initFlowbite }) => {
       initFlowbite();
+    });
     }
 
     this.currentUserService.currentUser$.subscribe((user) => {

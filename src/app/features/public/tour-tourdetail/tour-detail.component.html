@@ -134,7 +134,7 @@
           </div>
           <div class="public w-[85%] p-8 px-12 bg-white shadow-md rounded-lg overflow-hidden">
             @if(!isLoading) {
-            <full-calendar #calendar [options]="calendarOptions"></full-calendar>
+            <full-calendar #calendar *ngIf="isBrowser" [options]="calendarOptions"></full-calendar>
             }
           </div>
         </div>
