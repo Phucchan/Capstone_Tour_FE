@@ -1,116 +1,77 @@
 import { CommonModule } from '@angular/common';
-import { Component, AfterViewInit, OnDestroy, OnInit, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, OnInit } from '@angular/core';
 import { UserStorageService } from '../../../core/services/user-storage/user-storage.service';
-import { NavigationEnd, Router, RouterModule } from '@angular/router';
-import { SsrService } from '../../../core/services/ssr.service';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { debounceTime, Subject } from 'rxjs';
+import { SocketSerivce } from '../../../core/services/socket/socket.service';
+import { CurrentUserService } from '../../../core/services/user-storage/current-user.service';
+import { ChatComponent } from '../../../features/customer/components/chat/chat.component';
+
+declare const window: any;
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterModule
-  ],
+  imports: [CommonModule, FormsModule, RouterModule, ChatComponent],
   templateUrl: './header.component.html',
 })
-export class HeaderComponent implements AfterViewInit, OnDestroy, OnInit {
-  @ViewChild('searchDropdown') searchDropdownRef!: ElementRef;
+export class HeaderComponent implements OnInit {
+  @Input() currentUser: any;
+  @Input() customerBasicInfo: any;
+  @Input() friends: any;
+  @Input() isUserReady: boolean = false;
+  @Input() chatGroups: any[] = [];
 
-  isScrolled = false;
-  private mainContent: HTMLElement | null | undefined;
-  isLoggedIn: boolean = false;
-  username: string = '';
-  isHomepage: boolean = false;
-  listLocation: any[] = [];
-  private searchSubject = new Subject<string>();
+  showDropdown: boolean = false;
+  showChat: boolean = false;
+  
 
   constructor(
     private userStorageService: UserStorageService,
-    private ssrService: SsrService,
-    public router: Router
-  ) {
-    
-  }
+    private router: Router,
+    private socketService: SocketSerivce,
+    private currentUserService: CurrentUserService,
+    private elRef: ElementRef,
+  ) {}
 
   ngOnInit(): void {
-    this.isHomepage = this.router.url === '/homepage' || this.router.url === '/';
-
-    this.router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-        window.scrollTo(0, 0);
-        this.isHomepage = this.router.url === '/homepage' || this.router.url === '/';
-      }
-    });
-
-    if (this.ssrService.getDocument()) {
-      const doc = this.ssrService.getDocument();
-      if (doc) {
-        doc.addEventListener('show.bs.modal', () => {
-          doc.body.classList.add('no-scroll');
-        });
-
-        doc.addEventListener('hide.bs.modal', () => {
-          doc.body.classList.remove('no-scroll');
-        });
-      }
-    }
   }
 
-
-
-  toggleDropdown() {
-    const dropdown = document.getElementById('dropdownLocation');
-    if (dropdown) {
-      dropdown.classList.toggle('hidden');
-    }
+  onLogin() {
+    this.router.navigate(['/login']);
   }
-
-  goHomepage(): void {
-    this.router.navigate(['/homepage']);
-  }
-
-  openHistory(): void {
-    this.router.navigate(['/customer/booking-history']);
-  }
-
-  ngAfterViewInit() {
-    if (this.ssrService.isBrowser) {
-      this.mainContent = document.getElementById('main-content');
-      if (this.mainContent) {
-        this.mainContent.addEventListener('scroll', this.onScroll);
-      }
-    }
-  }
-
-  ngOnDestroy(): void {
-    if (this.ssrService.isBrowser) {
-      if (this.mainContent) {
-        this.mainContent.removeEventListener('scroll', this.onScroll);
-      }
-      document.removeEventListener('show.bs.modal', () => { });
-      document.removeEventListener('hide.bs.modal', () => { });
-    }
-    this.searchSubject.unsubscribe(); // Hủy subscription khi component destroy
-  }
-
-  onScroll = () => {
-    if (this.ssrService.isBrowser) {
-      if (this.mainContent && this.isHomepage) {
-        const isModalOpen = document.body.classList.contains('modal-open');
-        if (!isModalOpen) {
-          const scrollPosition = this.mainContent.scrollTop;
-          this.isScrolled = scrollPosition > 300;
-        }
-      }
-    }
-  };
 
   onLogout() {
-    UserStorageService.signOut(this.userStorageService);
-    this.isLoggedIn = false;
+    if (!this.currentUser && !this.currentUser.id) {
+      console.error('No user is currently logged in.');
+      return;
+    }
+    this.socketService.disconnect(this.currentUser);
+    this.userStorageService.logout();
+    this.currentUserService.clearCurrentUser();
     this.router.navigate(['/homepage']);
+  }
+
+  toggleDropdown() {
+    this.showDropdown = !this.showDropdown;
+    if (this.showDropdown) {
+      this.showChat = false;
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: Event) {
+    const clickedInside = this.elRef.nativeElement.contains(event.target);
+    if (!clickedInside) {
+      this.showDropdown = false;
+      this.showChat = false;
+    }
+  }
+
+  openChatList() {
+    this.showChat = !this.showChat;
+    if (this.showChat) {
+      this.showDropdown = false;
+    }
   }
 }

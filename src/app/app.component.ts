@@ -1,9 +1,10 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import {  Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { initFlowbite } from 'flowbite';
 import { Title } from '@angular/platform-browser';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
+import { SocketSerivce } from './core/services/socket/socket.service';
+import { CurrentUserService } from './core/services/user-storage/current-user.service';
 
 @Component({
   selector: 'app-root',
@@ -16,14 +17,42 @@ export class AppComponent implements OnInit {
 
   constructor(
     private titleService: Title,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private socketService: SocketSerivce,
+    private currentUserService: CurrentUserService
   ) {
     this.titleService.setTitle(this.title);
   }
 
+  currentUser: any = {};
+  isConnected = false;
+
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      import('flowbite').then(({ initFlowbite }) => {
       initFlowbite();
+    });
     }
+
+    this.currentUserService.currentUser$.subscribe((user) => {
+      this.currentUser = user;
+      if (user) {
+        this.registerBeforeUnload();
+        this.socketService.connect(user);
+
+        this.socketService.getConnectionStatus().subscribe((status) => {
+          console.log('Socket connected?', status);
+          this.isConnected = status;
+        });
+      } 
+    });
+  }
+
+  registerBeforeUnload() {
+    window.addEventListener('beforeunload', this.onBeforeUnload.bind(this));
+  }
+
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    this.socketService.disconnect(this.currentUser);
   }
 }

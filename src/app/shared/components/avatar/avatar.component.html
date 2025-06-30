@@ -1,0 +1,10 @@
+<div class="relative w-14 h-14">
+  <img
+    class="w-14 h-14 object-cover rounded-full"
+    [src]="avatarUrl"
+    alt=""
+  />
+  <span class="absolute w-[14px] h-[14px] bg-[#23be7e] rounded-full border-[2px] border-white right-[2px] bottom-[2px]"
+        *ngIf="isOnline">
+  </span>
+</div>

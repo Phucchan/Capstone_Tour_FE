@@ -1,0 +1,27 @@
+<div class="absolute right-[2%] top-[7%] z-50 bg-gray-50 h-[92vh]">
+  <!-- Nội dung hiện tại -->
+  <div class="w-100">
+    <div class="flex flex-col gap-2 overflow-x-auto w-full px-1 pb-2 pt-2 scrollbar-hide">
+      <div class="text-[1.125rem] font-medium pb-2 pl-4">
+        Liên hệ
+      </div>
+      <!-- Other Active Users -->
+      <ng-container *ngFor="let chatgroup of chatGroups">
+        <div 
+          class="flex gap-2 px-4 py-2 rounded-md text-center cursor-pointer hover:bg-gray-200">
+          <app-avatar [width]="'56px'" [isOnline]="chatgroup?.grouped" [username]="chatgroup?.name"
+            [avatarUrl]="chatgroup?.imageUrl">
+          </app-avatar>
+          <div class="flex flex-col text-left items-left justify-center h-[56px]">
+            <strong class="text-sm">{{ chatgroup?.name }}</strong>
+            <p class="text-sm text-gray-500">
+              {{chatgroup?.lastChatMessage?.user ? chatgroup?.lastChatMessage?.user?.fullName?.split(' ')[0] : ''}}:  
+              {{chatgroup?.lastChatMessage ? (chatgroup?.lastChatMessage?.content?.length > 20 ? chatgroup?.lastChatMessage?.content?.slice(0, 20) + '...' : chatgroup?.lastChatMessage?.content) : 'Chưa có tin nhắn nào'}} 
+              • {{ chatgroup?.lastChatMessage?.dateSent  | timeAgo}}
+            </p>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

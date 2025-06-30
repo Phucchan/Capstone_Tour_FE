@@ -1,32 +1,37 @@
 import { inject, Injectable } from '@angular/core';
-import { firstValueFrom, Observable, of } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, Observable, of } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { SsrService } from '../ssr.service';
 
-
-const TOKEN = "token";
-const USER = "user";
+const TOKEN = 'token';
+const USER = 'user';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserStorageService {
-  constructor(
-    private ssrService: SsrService,
-  ) { }
 
-  private setCookie(name: string, value: string, days?: number): void {
-    let expires = "";
+  constructor(
+    private ssrService: SsrService
+  ) {
+  }
+
+  public setCookie(name: string, value: string, days?: number): void {
+    if (typeof document === 'undefined') {
+      // Không chạy trong trình duyệt — không làm gì cả
+      return;
+    }
+    let expires = '';
     if (days) {
       const date = new Date();
-      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-      expires = "; expires=" + date.toUTCString();
+      date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+      expires = '; expires=' + date.toUTCString();
     }
     document.cookie = `${name}=${value}${expires}; path=/`;
   }
 
   private getCookie(name: string): string | null {
-    const nameEQ = name + "=";
+    const nameEQ = name + '=';
     const document = this.ssrService.getDocument();
     if (document) {
       const cookies = document.cookie.split(';');
@@ -40,7 +45,7 @@ export class UserStorageService {
     return null;
   }
 
-  private deleteCookie(name: string): void {
+  public deleteCookie(name: string): void {
     document.cookie = `${name}=; Max-Age=-99999999; path=/`;
   }
 
@@ -53,19 +58,27 @@ export class UserStorageService {
   }
 
   public saveUser(user: any): void {
-    this.setCookie(USER, JSON.stringify({
-      username: user.username,
-      userId: this.getUserId(),
-      role: this.getUserRoles()
-    }), 1);
+    this.setCookie(
+      USER,
+      JSON.stringify({
+        username: user.username,
+        id: this.getUserId(),
+        role: this.getUserRoles(),
+      }),
+      1
+    );
   }
 
   public saveUserRemembered(user: any): void {
-    this.setCookie(USER, JSON.stringify({
-      username: user.username,
-      userId: this.getUserId(),
-      role: this.getUserRoles()
-    }), 30);
+    this.setCookie(
+      USER,
+      JSON.stringify({
+        username: user.username,
+        id: this.getUserId(),
+        role: this.getUserRoles(),
+      }),
+      30
+    );
   }
 
   getUserRoles(): string[] {
@@ -94,7 +107,6 @@ export class UserStorageService {
     return null;
   }
 
-
   public getTokenAsync(): Promise<string | null> {
     const document = this.ssrService.getDocument();
     if (document) {
@@ -102,7 +114,6 @@ export class UserStorageService {
     }
     return Promise.resolve(null);
   }
-
 
   public getUser(): any {
     const userJson = this.getCookie(USER);
@@ -118,4 +129,11 @@ export class UserStorageService {
     userStorageService.deleteCookie(TOKEN);
     userStorageService.deleteCookie(USER);
   }
+
+
+  public logout() {
+    this.deleteCookie(TOKEN);
+    this.deleteCookie(USER);
+  }
+
 }

@@ -1,11 +1,17 @@
 <div class="flex flex-col h-screen overflow-hidden">
   <!-- Header -->
-  <app-header></app-header>
-
+  <app-header [currentUser]="currentUser" [customerBasicInfo]="customerBasicInfo" [friends]="friends"
+    [isUserReady]="isUserReady" [chatGroups]="chatGroups"></app-header>
 
   <!-- Main Content -->
-  <div id="main-content"
-    class="custom-scrollbar grow overflow-auto bg-card">
+  <div id="main-content" class="custom-scrollbar grow overflow-auto bg-card">
     <router-outlet></router-outlet>
+    <app-footer></app-footer>
   </div>
+
+  <app-chat-icon></app-chat-icon>
+
+  <!-- <app-chat-box></app-chat-box> -->
+
+
 </div>
