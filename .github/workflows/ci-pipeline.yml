@@ -1,4 +1,4 @@
-name: Angular CI Pipeline
+tname: Angular CI Pipeline
 
 #Setup condition for trigger pipeline
 on:
@@ -28,7 +28,7 @@ jobs:
         run: npm ci                 #Use exactly version in package-lock.json
 
       - name: Build Angular app
-        run: npm run build -- --configuration=configuration
+        run: npm run build -- --configuration=production
         
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
