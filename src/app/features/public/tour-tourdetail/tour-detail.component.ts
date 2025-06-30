@@ -29,7 +29,7 @@ export class TourDetailComponent  {
   events: { scheduleId: number; title: string; start: string; }[] | undefined = [];
   uniqueMonths = new Set<string>();
   selectedSchedule: any | undefined;
-  minPrice: number | undefined;
+  price: number | undefined;
   isBrowser: boolean = false;
 
   @ViewChild('calendar') calendarComponent!: FullCalendarComponent;
@@ -79,7 +79,7 @@ export class TourDetailComponent  {
           }));
 
           if (this.tourDetails?.schedules?.length) {
-            this.minPrice = Math.min(
+            this.price = Math.min(
               ...this.tourDetails.schedules.map((schedule: any) => schedule.sellingPrice)
             );
           }
