@@ -1,4 +1,4 @@
-tname: Angular CI Pipeline
+name: Angular CI Pipeline
 
 #Setup condition for trigger pipeline
 on:
