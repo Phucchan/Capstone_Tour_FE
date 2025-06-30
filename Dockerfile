@@ -14,5 +14,5 @@ RUN npm run build --configuration=production
 
 # Stage 2: Serve with NGINX
 FROM nginx:alpine
-COPY --from=builder app/dist/tourism-fe /usr/share/nginx/html
+COPY --from=builder app/dist/tourism-fe/browser/ /usr/share/nginx/html
 EXPOSE 80
