@@ -9,10 +9,12 @@ import { Component ,Input } from '@angular/core';
   standalone: true,
 })
 export class SkeletonComponent {
-  @Input() isLoading = true;
+  @Input() isLoading = false;
   @Input() showHeader = true;
   @Input() showImageSection = true;
   @Input() showPriceBox = true;
   @Input() showCalendar = true;
-  // ... thêm @Input() cho từng phần muốn custom
+  @Input() showSchedule = true;
+  @Input() showImportantInfo = true;
+  @Input() showOtherTours = true;
 }
