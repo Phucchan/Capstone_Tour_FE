@@ -1,0 +1,30 @@
+<div *ngIf="isLoading" class="fixed inset-0 bg-white z-20 flex items-center justify-center">
+  <div class="w-[80%] mx-auto">
+    <ng-container *ngIf="showHeader">
+      <div class="h-8 w-3/4 bg-gray-300 animate-pulse rounded mb-6"></div>
+    </ng-container>
+    <ng-container *ngIf="showImageSection">
+      <div class="grid grid-cols-4 gap-4">
+        <div class="space-y-2">
+          <div class="h-20 bg-gray-300 animate-pulse rounded"></div>
+          <div class="h-20 bg-gray-300 animate-pulse rounded"></div>
+          <div class="h-20 bg-gray-300 animate-pulse rounded"></div>
+        </div>
+        <div class="col-span-3 h-64 bg-gray-300 animate-pulse rounded"></div>
+      </div>
+    </ng-container>
+    <!-- ...tương tự cho các section khác -->
+    <ng-container *ngIf="showPriceBox">
+      <div class="mt-4 p-4 w-64 h-16 bg-gray-300 animate-pulse rounded"></div>
+    </ng-container>
+    <ng-container *ngIf="showCalendar">
+      <div class="mt-6">
+        <div class="h-8 w-40 bg-gray-300 animate-pulse rounded mb-3"></div>
+        <div class="grid grid-cols-7 gap-2">
+          <div class="h-10 w-10 bg-gray-300 animate-pulse rounded" *ngFor="let n of [1,2,3,4,5,6,7]"></div>
+        </div>
+      </div>
+    </ng-container>
+    <!-- ... -->
+  </div>
+</div>

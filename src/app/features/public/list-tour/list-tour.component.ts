@@ -8,6 +8,7 @@ import { CurrencyVndPipe } from "../../../shared/pipes/currency-vnd.pipe";
 import { DurationFormatPipe } from "../../../shared/pipes/duration-format.pipe";
 import { PaginationComponent } from "../../../shared/components/pagination/pagination.component";
 import { IconTransportPipe } from "../../../shared/pipes/icon-transport.pipe";
+import { SkeletonComponent } from "../../../shared/components/skeleton/skeleton.component";
 
 
 
@@ -21,11 +22,11 @@ import { IconTransportPipe } from "../../../shared/pipes/icon-transport.pipe";
     RouterModule,
     FormsModule,
     ReactiveFormsModule,
-    FormatDatePipe,
     CurrencyVndPipe,
     DurationFormatPipe,
     PaginationComponent,
     IconTransportPipe,
+    SkeletonComponent,
   ]
 })
 
