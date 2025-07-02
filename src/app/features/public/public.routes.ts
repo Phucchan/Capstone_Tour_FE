@@ -30,7 +30,13 @@ export const PUBLIC_ROUTES: Route[] = [
       {
         path: 'tour-booking/:id/:scheduleId',
         component: TourBookingComponent,
-      }
+      },
+      {
+        path: 'blogs',
+        // Tải các routes con từ file blog.routes.ts
+        loadChildren: () => import('../blog/blog.routes').then(r => r.BLOG_ROUTES),
+        data: { title: 'Tin tức' }
+      },
     ],
   },
 

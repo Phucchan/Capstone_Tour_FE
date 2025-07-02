@@ -1,0 +1,26 @@
+<div class="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 h-full flex flex-col">
+  <a [routerLink]="['/blogs', blogItem.id]">
+    <img class="rounded-t-lg object-cover h-48 w-full" [src]="blogItem.thumbnailImageUrl" [alt]="blogItem.title" />
+  </a>
+  <div class="p-5 flex-grow flex flex-col">
+    <div class="mb-2">
+      <span *ngFor="let tag of blogItem.tags"
+            class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+        {{ tag }}
+      </span>
+    </div>
+    <a  [routerLink]="['/blogs', blogItem.id]">
+      <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white line-clamp-2">
+        {{ blogItem.title }}
+      </h5>
+    </a>
+    <div class="mt-auto pt-4 border-t border-gray-200 dark:border-gray-600">
+      <p class="text-sm font-normal text-gray-500 dark:text-gray-400">
+        Bởi {{ blogItem.authorName }}
+      </p>
+      <p class="text-sm font-normal text-gray-500 dark:text-gray-400">
+        Ngày đăng: {{ blogItem.createdAt | date: 'dd/MM/yyyy' }}
+      </p>
+    </div>
+  </div>
+</div>

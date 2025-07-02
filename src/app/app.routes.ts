@@ -3,6 +3,7 @@ import { LoginComponent } from './core/auth/login/login.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { ChatComponent } from './features/customer/components/chat/chat.component';
 import { RegisterComponent } from './core/register/register/register.component';
+import { PlanGenerateComponent } from './features/customer/components/plan-generate/plan-generate.component';
 
 export const routes: Routes = [
   {
@@ -38,4 +39,9 @@ export const routes: Routes = [
     path: 'chat',
     component: ChatComponent,
   },
+  {
+    path: 'test',
+    component: PlanGenerateComponent,
+  },
+
 ];
