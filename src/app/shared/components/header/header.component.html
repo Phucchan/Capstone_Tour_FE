@@ -18,7 +18,8 @@
           src="/assets/icons/message.png" alt="user photo">
       </button>
 
-      <app-chat *ngIf="showChat" [currentUser]="customerBasicInfo" [friends]="friends" [chatGroups]="chatGroups"></app-chat>
+      <app-chat *ngIf="showChat" [currentUser]="customerBasicInfo" [friends]="friends"
+        [chatGroups]="chatGroups"></app-chat>
 
       <button (click)="toggleDropdown()" *ngIf="currentUser !== undefined && currentUser?.username" type="button"
         class="flex text-sm hover:bg-gray-800 cursor-pointer rounded-full ml-5 md:me-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
@@ -86,6 +87,11 @@
         <li>
           <a href="#"
             class="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Tours</a>
+        </li>
+        <li>
+          <a routerLink="/blogs" routerLinkActive="text-blue-700 dark:text-blue-500 font-bold md:text-blue-700 md:dark:text-blue-500 "
+            [routerLinkActiveOptions]="{exact: true}"
+            class="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Bài viết</a>
         </li>
         <li>
           <a href="#"
