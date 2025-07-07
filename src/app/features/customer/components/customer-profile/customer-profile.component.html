@@ -1,0 +1,50 @@
+<div class="bg-white rounded-2xl border border-gray-200 p-8 shadow-xl w-[1500px] max-w-3xl mx-auto">
+  <div class="text-2xl font-bold text-blue-800 mb-2 text-center">TÀI KHOẢN CỦA BẠN</div>
+  <div class="font-semibold mb-1">Thông Tin Cá Nhân</div>
+  <div class="text-gray-500 text-sm mb-6">
+    Cập Nhật Thông Tin Của Quý Khách Và Tìm Hiểu Các Thông Tin Này Được Sử Dụng Ra Sao
+  </div>
+  <form (ngSubmit)="onSave()" class="grid grid-cols-2 gap-6">
+    <div>
+      <label class="block mb-1">Họ và tên</label>
+      <input type="text" class="form-input" [(ngModel)]="editableUser.fullName" name="fullName" />
+    </div>
+    <div>
+      <label class="block mb-1">Giới tính</label>
+      <select class="form-input" [(ngModel)]="editableUser.gender" name="gender">
+        <option value="MALE">Nam</option>
+        <option value="FEMALE">Nữ</option>
+        <option value="OTHER">Khác</option>
+      </select>
+    </div>
+    <div>
+      <label class="block mb-1">E-mail</label>
+      <input type="email" class="form-input" [(ngModel)]="editableUser.email" name="email" />
+    </div>
+    <div>
+      <label class="block mb-1">Tổng số tour đã đi</label>
+      <input type="number" class="form-input" [value]="user?.totalTours" disabled />
+    </div>
+    <div>
+      <label class="block mb-1">Số điện thoại</label>
+      <input type="text" class="form-input" [(ngModel)]="editableUser.phone" name="phone" />
+    </div>
+    <div>
+      <label class="block mb-1">Ngày sinh</label>
+      <input type="date" class="form-input" [(ngModel)]="editableUser.birthDay" name="birthDay" />
+    </div>
+    <div>
+      <label class="block mb-1">Địa chỉ</label>
+      <input type="text" class="form-input" [(ngModel)]="editableUser.address" name="address" />
+    </div>
+    <div>
+      <label class="block mb-1">Số điểm hiện có</label>
+      <input type="number" class="form-input" [value]="user?.points" disabled />
+    </div>
+    <div class="col-span-2 text-right mt-4">
+      <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
+        Lưu thay đổi
+      </button>
+    </div>
+  </form>
+</div>

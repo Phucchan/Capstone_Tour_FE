@@ -13,7 +13,8 @@ export class UserStorageService {
 
   constructor(
     private ssrService: SsrService
-  ) {
+  ) 
+  {
   }
 
   public setCookie(name: string, value: string, days?: number): void {

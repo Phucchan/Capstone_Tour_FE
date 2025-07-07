@@ -1,0 +1,49 @@
+<div class="user-sidebar p-4 border border-gray-200 rounded-2xl bg-white shadow-lg flex flex-col items-center">
+  <img 
+    [src]="user?.avatarImg || 'https://via.placeholder.com/100x100?text=Avatar'" 
+    alt="avatar" 
+    class="w-20 h-20 rounded-full object-cover border"
+  />
+  <label class="mt-3">
+    <input type="file" hidden (change)="onUploadPhoto($event)" />
+    <button class="bg-indigo-400 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl shadow">
+      Upload new photo
+    </button>
+  </label>
+  <div class="font-semibold text-lg mt-2">{{ user?.username }}</div>
+  <hr class="my-4 w-full border-gray-200" />
+  <div class="w-full space-y-4">
+    <!-- Tài khoản -->
+    <div>
+      <div class="flex items-center font-bold">
+        <span class="mr-3 text-xl"><i class="fa fa-user"></i></span>
+        Tài Khoản
+      </div>
+      <div class="ml-8 mt-1 text-gray-500 space-y-1 text-sm">
+        <div>Thông Tin Cá Nhân</div>
+        <div>Đổi Mật Khẩu</div>
+        <div>Đăng Xuất</div>
+      </div>
+    </div>
+    <!-- Đơn đặt tour -->
+    <div class="flex items-center">
+      <span class="mr-3 text-xl"><i class="fa fa-file-invoice"></i></span>
+      Đơn Đặt Tour
+    </div>
+    <!-- Đánh giá của bạn -->
+    <div class="flex items-center">
+      <span class="mr-3 text-xl"><i class="fa fa-comment-alt"></i></span>
+      Đánh Giá Của Bạn
+    </div>
+    <!-- Yêu thích đã lưu -->
+    <div class="flex items-center">
+      <span class="mr-3 text-xl"><i class="fa fa-heart"></i></span>
+      Yêu Thích Đã Lưu
+    </div>
+    <!-- Thư viện ảnh -->
+    <div class="flex items-center">
+      <span class="mr-3 text-xl"><i class="fa fa-image"></i></span>
+      Thư Viện Ảnh
+    </div>
+  </div>
+</div>
