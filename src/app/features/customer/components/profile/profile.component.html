@@ -1,1 +1,6 @@
-<p>profile works!</p>
+<app-header ></app-header>
+<div class="flex gap-8 mt-10 items-start w-full justify-center  items-center">
+  <app-customer-sidebar [user]="user" (photoUploaded)="onPhotoUploaded($event)"></app-customer-sidebar>
+    <app-customer-profile [user]="user"></app-customer-profile>
+  <router-outlet></router-outlet>
+</div>
