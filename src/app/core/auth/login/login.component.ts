@@ -137,9 +137,13 @@ export class LoginComponent implements OnInit {
         if (response !== null) {
           const token = response.body.data.token;
           const user = response.body.data.user;
+
+          console.log('{LoginComponent} Login successful:', user);
+
+          console.log('{LoginComponent} Remember Me:', rememberMe);
+
           if (rememberMe) {
-            this.userStorageService.saveUser(username); // Save for 30 days
-            localStorage.setItem('rememberedUser', username);
+            localStorage.setItem('rememberedUser', user);
           }
 
           this.postLogin(token, user);
@@ -171,8 +175,9 @@ export class LoginComponent implements OnInit {
     if (userRoles.length > 1 || userRoles[0] !== 'CUSTOMER') {
       const targetRole =
         userRoles.find((role) => role !== 'CUSTOMER') || userRoles[0];
-      redirectTo = `/${roleRouteMap[targetRole] || 'customer'}`;
+      redirectTo = `/${roleRouteMap[targetRole] || '/'}`;
     }
+    console.log('Redirecting to:', redirectTo);
     this.router.navigate([redirectTo]);
   }
 }

@@ -4,6 +4,7 @@ import { AuthGuard } from './core/guards/auth.guard';
 import { ChatComponent } from './features/customer/components/chat/chat.component';
 import { RegisterComponent } from './core/register/register/register.component';
 import { PlanGenerateComponent } from './features/customer/components/plan-generate/plan-generate.component';
+import { UnauthorizeComponent } from './core/pages/error-page/unauthorize/unauthorize.component';
 
 export const routes: Routes = [
   {
@@ -42,6 +43,10 @@ export const routes: Routes = [
   {
     path: 'test',
     component: PlanGenerateComponent,
+  },
+  {
+    path: 'error/403-unauthorized',
+    component: UnauthorizeComponent,
   },
 
 ];
