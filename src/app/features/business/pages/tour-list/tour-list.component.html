@@ -1,0 +1,104 @@
+<div class="container mx-auto p-4 md:p-8">
+  <header class="flex flex-col md:flex-row justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800 mb-4 md:mb-0">Quản lý Tour</h1>
+    <button (click)="navigateToCreateTour()"
+      class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out">
+      + Tạo Tour mới
+    </button>
+  </header>
+
+  <form [formGroup]="filterForm" class="bg-white p-4 rounded-lg shadow-sm mb-6">
+    <h2 class="text-xl font-semibold text-gray-700 mb-4">Tìm kiếm & Lọc</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label for="keyword" class="block text-sm font-medium text-gray-600">Từ khóa</label>
+        <input type="text" id="keyword" formControlName="keyword" placeholder="Nhập tên tour..." class="mt-1 block w-full input-style">
+      </div>
+      <div>
+        <label for="tourType" class="block text-sm font-medium text-gray-600">Loại tour</label>
+        <select id="tourType" formControlName="tourType" class="mt-1 block w-full input-style">
+          <option [ngValue]="null">Tất cả các loại</option>
+          <option *ngFor="let type of tourTypes" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+      <div>
+        <label for="tourStatus" class="block text-sm font-medium text-gray-600">Trạng thái</label>
+        <select id="tourStatus" formControlName="tourStatus" class="mt-1 block w-full input-style">
+          <option [ngValue]="null">Tất cả trạng thái</option>
+          <option *ngFor="let status of tourStatuses" [value]="status">{{ status }}</option>
+        </select>
+      </div>
+    </div>
+  </form>
+
+  <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <ng-container *ngIf="toursResponse$ | async as toursResponse; else loading">
+      <div *ngIf="toursResponse.items && toursResponse.items.length > 0; else noData">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên Tour</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số ngày</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+              <th scope="col" class="relative px-6 py-3"><span class="sr-only">Hành động</span></th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let tour of toursResponse.items" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-10 w-10">
+                    <img class="h-10 w-10 rounded-full object-cover" [src]="tour.thumbnailImage || 'https://placehold.co/40x40/EBF4FF/76A9FA?text=T'" alt="Ảnh tour">
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900">{{ tour.name }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-700">{{ tour.durationDays }} ngày</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="text-sm text-gray-700">{{ tour.typeName }}</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                  [ngClass]="{
+                    'bg-green-100 text-green-800': tour.tourStatus === 'PUBLISHED',
+                    'bg-yellow-100 text-yellow-800': tour.tourStatus === 'DRAFT',
+                    'bg-red-100 text-red-800': tour.tourStatus === 'CANCELLED'
+                  }">
+                  {{ tour.tourStatus }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button (click)="viewTourDetails(tour.id)" class="text-blue-600 hover:text-blue-900 mr-4">Chi tiết</button>
+                <button (click)="calculateTourPrice(tour.id)" class="text-indigo-600 hover:text-indigo-900">Chiết tính</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <footer class="p-4 border-t border-gray-200" *ngIf="toursResponse.total > toursResponse.size">
+          <app-pagination
+            [currentPage]="toursResponse.page"
+            [totalItems]="toursResponse.total"
+            [pageSize]="toursResponse.size"
+            (pageChange)="onPageChange($event)">
+          </app-pagination>
+        </footer>
+      </div>
+      <ng-template #noData>
+        <div class="text-center py-12 text-gray-500">
+          <p>Không tìm thấy tour nào.</p>
+        </div>
+      </ng-template>
+    </ng-container>
+    <ng-template #loading>
+      <div class="text-center py-12 text-gray-500">
+        <p>Đang tải dữ liệu...</p>
+      </div>
+    </ng-template>
+  </div>
+</div>
