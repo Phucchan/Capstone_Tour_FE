@@ -6,6 +6,7 @@ import { DurationFormatPipe } from "../../../shared/pipes/duration-format.pipe";
 import { Router, RouterModule } from '@angular/router';
 import { CurrencyVndPipe } from '../../../shared/pipes/currency-vnd.pipe';
 import { IconTransportPipe } from '../../../shared/pipes/icon-transport.pipe';
+import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 
 
 @Component({
@@ -18,6 +19,7 @@ import { IconTransportPipe } from '../../../shared/pipes/icon-transport.pipe';
     DurationFormatPipe,
     CurrencyVndPipe,
     IconTransportPipe,
+    SkeletonComponent,
 
   ],
   templateUrl: './homepage.component.html',

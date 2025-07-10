@@ -22,12 +22,10 @@ export class CurrentUserService {
 
   public setCurrentUser(user: any): void {
     this.currentUserSubject.next(user);
-    this.userStorageService.setCookie(USER, JSON.stringify(user)); // ghi lại cookie
   }
 
   public clearCurrentUser(): void {
     this.currentUserSubject.next(null);
-    this.userStorageService.deleteCookie(USER); // xóa cookie
     this.userStorageService.deleteCookie(TOKEN); // xóa token cookie
   }
 

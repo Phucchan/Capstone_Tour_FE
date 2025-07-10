@@ -13,7 +13,8 @@ export class UserStorageService {
 
   constructor(
     private ssrService: SsrService
-  ) {
+  ) 
+  {
   }
 
   public setCookie(name: string, value: string, days?: number): void {
@@ -58,11 +59,12 @@ export class UserStorageService {
   }
 
   public saveUser(user: any): void {
+    console.log('{UserStorageService}  Saving user:', user);
     this.setCookie(
       USER,
       JSON.stringify({
         username: user.username,
-        id: this.getUserId(),
+        id: user.id,
         role: this.getUserRoles(),
       }),
       1

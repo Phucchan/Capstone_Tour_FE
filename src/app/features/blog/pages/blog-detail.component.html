@@ -1,0 +1,53 @@
+<ng-container *ngIf="blogDetail$ | async as blog; else loading">
+  <div class="container mx-auto px-4 py-8 max-w-4xl">
+    <nav class="flex mb-5" aria-label="Breadcrumb">
+      <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+          <a routerLink="/homepage" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white">
+            Trang chủ
+          </a>
+        </li>
+        <li>
+          <div class="flex items-center">
+            <span class="mx-2 text-gray-400">/</span>
+            <a routerLink="/blogs" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2 dark:text-gray-400 dark:hover:text-white">Tin tức</a>
+          </div>
+        </li>
+        <li aria-current="page">
+          <div class="flex items-center">
+            <span class="mx-2 text-gray-400">/</span>
+            <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2 dark:text-gray-400 line-clamp-1">{{ blog.title }}</span>
+          </div>
+        </li>
+      </ol>
+    </nav>
+
+    <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-600 mb-4">{{ blog.title }}</h1>
+
+    <div class="flex items-center space-x-4 mb-6 text-sm text-gray-500 dark:text-gray-400">
+      <span>Bởi <strong>{{ blog.authorName }}</strong></span>
+      <span>&bull;</span>
+      <span>Ngày đăng: {{ blog.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+    </div>
+
+    <img class="w-full h-auto max-h-96 object-cover rounded-lg mb-8" [src]="blog.thumbnailImageUrl" [alt]="blog.title">
+
+    <div class="prose dark:prose-invert max-w-none" [innerHTML]="blog.content"></div>
+
+    <div class="mt-8 border-t pt-6">
+      <h3 class="text-lg font-semibold mb-2">Tags:</h3>
+      <div class="flex flex-wrap gap-2">
+        <span *ngFor="let tag of blog.tags"
+              class="bg-gray-100 text-gray-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-300">
+          {{ tag }}
+        </span>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #loading>
+  <div class="flex justify-center items-center py-32">
+    <app-spinner></app-spinner>
+  </div>
+</ng-template>

@@ -4,6 +4,7 @@ import { AuthGuard } from './core/guards/auth.guard';
 import { ChatComponent } from './features/customer/components/chat/chat.component';
 import { RegisterComponent } from './core/register/register/register.component';
 import { PlanGenerateComponent } from './features/customer/components/plan-generate/plan-generate.component';
+import { UnauthorizeComponent } from './core/pages/error-page/unauthorize/unauthorize.component';
 
 export const routes: Routes = [
   {
@@ -36,6 +37,15 @@ export const routes: Routes = [
       import('./features/public/public.routes').then((m) => m.PUBLIC_ROUTES),
   },
   {
+    path: 'business',
+    loadChildren: () =>
+      import('./features/business/business.routes').then(
+        (m) => m.BUSINESS_ROUTES
+      ),
+    canActivate: [AuthGuard],
+    data: { expectedRoles: ['BUSINESS_DEPARTMENT'] }, // <-- Đảm bảo tên role là chính xác
+  },
+  {
     path: 'chat',
     component: ChatComponent,
   },
@@ -43,5 +53,8 @@ export const routes: Routes = [
     path: 'test',
     component: PlanGenerateComponent,
   },
-
+  {
+    path: 'error/403-unauthorized',
+    component: UnauthorizeComponent,
+  },
 ];

@@ -20,6 +20,8 @@ export class SocketSerivce {
 
     this.stompClient = Stomp.over(socket);
 
+    console.log('{SocketService} Connecting to WebSocket with user:', user);
+
     this.stompClient.connect(
       {},
       () => {

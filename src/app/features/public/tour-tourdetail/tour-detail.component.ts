@@ -10,6 +10,7 @@ import { TourDetailService } from '../services/tour-detail.service';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { SsrService } from '../../../core/services/ssr.service';
+import { DurationFormatPipe } from '../../../shared/pipes/duration-format.pipe';
 
 @Component({
   selector: 'app-tour-detail',
@@ -17,6 +18,7 @@ import { SsrService } from '../../../core/services/ssr.service';
      CommonModule, 
      CurrencyVndPipe, 
      TruncatePipe, 
+     DurationFormatPipe,
   ],
   standalone: true,
   templateUrl: './tour-detail.component.html',
@@ -80,7 +82,7 @@ export class TourDetailComponent  {
 
           if (this.tourDetails?.schedules?.length) {
             this.price = Math.min(
-              ...this.tourDetails.schedules.map((schedule: any) => schedule.sellingPrice)
+              ...this.tourDetails.schedules.map((schedule: any) => schedule.price)
             );
           }
 

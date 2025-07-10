@@ -116,63 +116,71 @@ export class LoginComponent implements OnInit {
 
   onSubmit() {
     this.errorMessage = null;
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
 
     const username = this.loginForm.get('username')?.value;
     const password = this.loginForm.get('password')?.value;
-
-    const rememberMe = (
-      document.getElementById('remember-me') as HTMLInputElement
-    ).checked;
 
     this.authService
       .login(username, password)
       .pipe(
         catchError((error) => {
-          const apiError = error || 'Đăng nhập thất bại. Vui lòng thử lại.';
-          this.errorMessage = apiError;
+          this.errorMessage =
+            error.error?.message || 'Đăng nhập thất bại. Vui lòng thử lại.';
           return of(null);
         })
       )
-      .subscribe((response: any) => {
-        if (response !== null) {
-          const token = response.body.data.token;
-          const user = response.body.data.user;
+      .subscribe((user: any) => {
+        if (user) {
+          // Logic rememberMe
+          const rememberMe = (
+            document.getElementById('remember-me') as HTMLInputElement
+          ).checked;
           if (rememberMe) {
-            this.userStorageService.saveUser(username); // Save for 30 days
             localStorage.setItem('rememberedUser', username);
+          } else {
+            localStorage.removeItem('rememberedUser');
           }
 
-          this.postLogin(token, user);
+          // Điều hướng sau khi đăng nhập thành công
+          this.navigateAfterLogin(user);
         }
       });
   }
 
-  postLogin(token: string, user: any) {
-    this.userStorageService.saveToken(token);
-    const userRoles = this.userStorageService.getUserRoles();
-    console.log('User: ', user);
-    console.log('Token: ', token);
-    console.log('roles: ', userRoles);
+  navigateAfterLogin(user: any) {
+    // Lấy roles trực tiếp từ đối tượng user vừa nhận được
+    const userRoles = user.roles?.map((roleObj: any) => roleObj.roleName) || [];
 
-    this.currentUserService.setCurrentUser(user);
-
-    // Mapping role to route
     const roleRouteMap: { [key: string]: string } = {
       CUSTOMER: 'customer',
       ADMIN: 'admin',
-      MARKETING_MANAGER: 'marketing-manager',
-      SELLER: 'seller',
-      BUSINESS_DEPARTMENT: 'business-department',
-      SERVICE_COORDINATOR: 'service-coordinator',
-      ACCOUNTANT: 'accountant',
+      BUSINESS_DEPARTMENT: 'business/tours', // <-- Đảm bảo điều hướng đúng
+      // ... các role khác
     };
 
-    let redirectTo = '/'; // Default nếu chỉ có role CUSTOMER
-    if (userRoles.length > 1 || userRoles[0] !== 'CUSTOMER') {
+    let redirectTo = '/';
+    if (userRoles.includes('ADMIN')) {
+      redirectTo = `/${roleRouteMap['ADMIN']}`;
+    } else if (userRoles.includes('BUSINESS_DEPARTMENT')) {
+      redirectTo = `/${roleRouteMap['BUSINESS_DEPARTMENT']}`;
+    } else if (userRoles.length > 0) {
       const targetRole =
-        userRoles.find((role) => role !== 'CUSTOMER') || userRoles[0];
+        userRoles.find((role: string) => role !== 'CUSTOMER') || userRoles[0];
       redirectTo = `/${roleRouteMap[targetRole] || 'customer'}`;
     }
+
     this.router.navigate([redirectTo]);
+  }
+
+  // Hàm postLogin không còn cần thiết cho luồng đăng nhập bằng form nữa,
+  // nhưng vẫn giữ lại để xử lý login qua social
+  postLogin(token: string, user: any) {
+    this.userStorageService.saveToken(token);
+    this.currentUserService.setCurrentUser({ ...user, accessToken: token });
+    this.navigateAfterLogin(user);
   }
 }
