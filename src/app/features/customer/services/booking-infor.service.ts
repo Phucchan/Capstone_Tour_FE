@@ -43,21 +43,21 @@ export class BookingInfoService {
 
 
   submitBooking(bookingData: any): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}public/booking/submit`, bookingData);
+    return this.http.post<any>(`${environment.apiUrl}/public/booking/submit`, bookingData);
   }
 
 
   getBookingDetails(bookingId: any): Observable<any> {
-    return this.http.get<any>(`${environment.apiUrl}public/booking/details/${bookingId}`);
+    return this.http.get<any>(`${environment.apiUrl}/public/booking/details/${bookingId}`);
   }
 
   public getUserInformation(userId: number): Observable<any> {
-    return this.http.get<any[]>(`${environment.apiUrl}public/booking/details/user/${userId}`);
+    return this.http.get<any[]>(`${environment.apiUrl}/public/booking/details/user/${userId}`);
   }
 
   
   changePaymentStatus(bookingId: number, method: string): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}public/booking/change-payment-method`, {
+    return this.http.post<any>(`${environment.apiUrl}/public/booking/change-payment-method`, {
       bookingId: bookingId,
       paymentMethod: method
     });

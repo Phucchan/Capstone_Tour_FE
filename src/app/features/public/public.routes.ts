@@ -6,6 +6,7 @@ import { TourDetailComponent } from './tour-tourdetail/tour-detail.component';
 import { TourBookingComponent } from '../customer/components/tour-booking/tour-booking.component';
 import { ProfileComponent } from '../customer/components/profile/profile.component';
 import { CustomTourBookingComponent } from '../customer/components/custom-tour-booking/custom-tour-booking.component';
+import { TourBookingConfirmComponent } from '../customer/components/tour-booking/tour-booking-confirm/tour-booking-confirm.component';
 
 export const PUBLIC_ROUTES: Route[] = [
   {
@@ -32,6 +33,10 @@ export const PUBLIC_ROUTES: Route[] = [
       {
         path: 'tour-booking/:id/:scheduleId',
         component: TourBookingComponent,
+      },
+      {
+        path: 'tour-booking-detail/:code',
+        component: TourBookingConfirmComponent,
       },
       {
         path: 'custom-tour-booking',

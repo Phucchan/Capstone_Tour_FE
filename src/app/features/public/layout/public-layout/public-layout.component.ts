@@ -70,11 +70,13 @@ export class PublicLayoutComponent {
       });
   }
 
-  getUserChatGroups() {
+  getUserChatGroups() { 
+    console.log('{PublicLayoutComponent} Fetching chat groups for user:', this.customerBasicInfo.id);
     this.chatService
       .getChatGroups(this.customerBasicInfo.id)
       .subscribe((response: any) => {
         this.chatGroups = response?.data || [];
+        console.log('{PublicLayoutComponent} User chat groups:', this.chatGroups);
       });
   }
 }
