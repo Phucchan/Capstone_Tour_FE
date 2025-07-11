@@ -74,6 +74,10 @@ export class TourBookingConfirmComponent {
 
         this.numberSingleRooms = this.bookingData.adults.filter((t: any) => t?.singleRoom === true).length
 
+        if(this.bookingData?.needHelp) {
+          this.numberSingleRooms = this.bookingData?.singleRooms || 1;
+        }
+
 
         this.numberAdults = this.bookingData.adults.length;
         this.numberChildren = this.bookingData.children.length;
