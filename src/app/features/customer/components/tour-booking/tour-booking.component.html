@@ -118,10 +118,10 @@
                         <span>Em bé<br><small class="text-gray-500">Dưới 2 tuổi</small></span>
                         <div class="flex items-center space-x-2">
                             <button type="button" class="border border-gray-300 px-3 py-1 rounded"
-                                (click)="decrementToddleres()">-</button>
-                            <span>{{numberToddleres}}</span>
+                                (click)="decrementToddlers()">-</button>
+                            <span>{{numberToddlers}}</span>
                             <button type="button" class="border border-gray-300 px-3 py-1 rounded"
-                                (click)="incrementToddleres()">+</button>
+                                (click)="incrementToddlers()">+</button>
                         </div>
                     </div>
                     <div class="border-gray-300 border p-4 rounded-lg flex justify-between items-center" *ngIf="isHelpingInput">
@@ -312,8 +312,8 @@
                     }
                 </div>
 
-                <div formArrayName="toddleres" *ngIf="!isHelpingInput">
-                    @for (num of range(numberToddleres); track num; let first = $first) {
+                <div formArrayName="toddlers" *ngIf="!isHelpingInput">
+                    @for (num of range(numberToddlers); track num; let first = $first) {
                     @if(first) {
                     <p class="font-semibold mt-12 mb-6">👶 Em bé (Dưới 2 tuổi)</p>
                     }
@@ -323,8 +323,8 @@
                             <input type="text" formControlName="fullName" class="w-full border p-2 rounded mt-1"
                                 placeholder="Họ và tên">
                             <p *ngIf="
-                                toddleresFormArray.at($index).get('fullName')?.invalid &&
-                                toddleresFormArray.at($index).get('fullName')?.touched
+                                toddlersFormArray.at($index).get('fullName')?.invalid &&
+                                toddlersFormArray.at($index).get('fullName')?.touched
                               " class="text-red-500 text-sm">
                                 Thông tin bắt buộc
                             </p>
@@ -341,8 +341,8 @@
                             <input type="date" formControlName="dateOfBirth" class="w-full border p-2 rounded mt-1"
                                 [attr.min]="maxDateOfBirth" [attr.max]="today">
                             <p *ngIf="
-                                  toddleresFormArray.at($index).get('dateOfBirth')?.invalid &&
-                                  toddleresFormArray.at($index).get('dateOfBirth')?.touched
+                                  toddlersFormArray.at($index).get('dateOfBirth')?.invalid &&
+                                  toddlersFormArray.at($index).get('dateOfBirth')?.touched
                                 " class="text-red-500 text-sm">
                                 Thông tin bắt buộc
                             </p>
@@ -465,9 +465,9 @@
                 </p>
                 }
 
-                @if(numberToddleres > 0) {
+                @if(numberToddlers > 0) {
                 <p class="flex justify-between mb-2">
-                    <span>👶 Em bé:</span> <span>{{numberToddleres}} x {{toddleresPrice |currencyVnd}}</span>
+                    <span>👶 Em bé:</span> <span>{{numberToddlers}} x {{toddlersPrice |currencyVnd}}</span>
                 </p>
                 }
 

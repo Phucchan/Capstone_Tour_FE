@@ -92,9 +92,11 @@
             </div>
 
 
-            <p class="font-semibold mb-6">👨‍👩‍👧 Người lớn (12 tuổi trở lên)</p>
             <div *ngIf="!bookingData?.needHelp">
-                @for (num of range(bookingData?.adults.length); track $index) {
+                @for (num of range(bookingData?.adults.length); track $index; let first = $first) {
+                @if(first) {
+                <p class="font-semibold mb-6">👨‍👩‍👧 Người lớn (12 tuổi trở lên)</p>
+                }
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2">
                     <div>
                         <label class="block font-semibold">Họ và Tên *</label>
@@ -150,15 +152,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
                     <div>
                         <label class="block font-semibold">Họ và Tên *</label>
-                        <p class="w-full p-2 rounded mt-1"> {{bookingData?.children.at($index).fullName}}</p>
+                        <p class="w-full p-2 rounded mt-1"> {{bookingData?.infants.at($index).fullName}}</p>
                     </div>
                     <div>
                         <label class="block font-semibold">Giới Tính *</label>
-                        <p class="w-full p-2 rounded mt-1"> {{bookingData?.children.at($index).gender}}</p>
+                        <p class="w-full p-2 rounded mt-1"> {{bookingData?.infants.at($index).gender}}</p>
                     </div>
                     <div>
                         <label class="block font-semibold">Ngày sinh *</label>
-                        <p class="w-full p-2 rounded mt-1"> {{bookingData?.children.at($index).dateOfBirth | date:
+                        <p class="w-full p-2 rounded mt-1"> {{bookingData?.infants.at($index).dateOfBirth | date:
                             'dd/MM/yyyy'}}</p>
                     </div>
 
@@ -172,15 +174,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
                     <div>
                         <label class="block font-semibold">Họ và Tên *</label>
-                        <p class="w-full p-2 rounded mt-1"> {{bookingData?.children.at($index).fullName}}</p>
+                        <p class="w-full p-2 rounded mt-1"> {{bookingData?.toddlers.at($index).fullName}}</p>
                     </div>
                     <div>
                         <label class="block font-semibold">Giới Tính *</label>
-                        <p class="w-full p-2 rounded mt-1"> {{bookingData?.children.at($index).gender}}</p>
+                        <p class="w-full p-2 rounded mt-1"> {{bookingData?.toddlers.at($index).gender}}</p>
                     </div>
                     <div>
                         <label class="block font-semibold">Ngày sinh *</label>
-                        <p class="w-full p-2 rounded mt-1"> {{bookingData?.children.at($index).dateOfBirth | date:
+                        <p class="w-full p-2 rounded mt-1"> {{bookingData?.toddlers.at($index).dateOfBirth | date:
                             'dd/MM/yyyy'}}</p>
                     </div>
 
@@ -331,15 +333,15 @@
 
             @if(numberInfants > 0) {
             <p class="flex justify-between mb-2"><span>👶 Trẻ nhỏ:</span>
-                <span>{{numberChildren}} x
-                    {{childrenPrice |currencyVnd}}</span>
+                <span>{{numberInfants}} x
+                    {{infantPrice |currencyVnd}}</span>
             </p>
             }
 
             @if(numberToddlers > 0) {
             <p class="flex justify-between mb-2"><span>👶 Em bé:</span>
-                <span>{{numberChildren}} x
-                    {{childrenPrice |currencyVnd}}</span>
+                <span>{{numberToddlers}} x
+                    {{toddlerPrice |currencyVnd}}</span>
             </p>
             }
 

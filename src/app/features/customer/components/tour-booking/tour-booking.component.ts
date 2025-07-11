@@ -38,11 +38,11 @@ export class TourBookingComponent implements OnInit {
   numberAdults: number = 1;
   numberChildren: number = 0;
   numberInfants: number = 0;
-  numberToddleres: number = 0;
+  numberToddlers: number = 0;
 
   childrenPrice: number = 0;
   infantsPrice: number = 0;
-  toddleresPrice: number = 500000;
+  toddlersPrice: number = 500000;
 
   numberSingleRooms: number = 1;
 
@@ -81,7 +81,7 @@ export class TourBookingComponent implements OnInit {
       adults: this.fb.array([]),
       children: this.fb.array([]),
       infants: this.fb.array([]),
-      toddleres: this.fb.array([]),
+      toddlers: this.fb.array([]),
       total: [0],
       sellingPrice: [0, Validators.required],
       extraHotelCost: [0, Validators.required],
@@ -138,18 +138,18 @@ export class TourBookingComponent implements OnInit {
 
     const adultPrice = this.tourSchedule?.price;
     const childrenPrice = this.childrenPrice;
-    const toddleresPrice = this.toddleresPrice;
+    const toddlersPrice = this.toddlersPrice;
     const infantsPrice = this.tourSchedule?.price! * 0.5;
 
     const adultTotal = adultsArray.controls.length * adultPrice!;
     const childrenTotal = childrenArray.controls.length * childrenPrice;
     const infantsTotal = this.numberInfants * infantsPrice;
-    const toddleresTotal = this.numberToddleres * toddleresPrice;
+    const toddlersTotal = this.numberToddlers * toddlersPrice;
 
     const extra = this.numberSingleRooms * this.tourSchedule?.extraHotelCost!;
 
     this.total =
-      adultTotal + childrenTotal + extra + infantsTotal + toddleresTotal;
+      adultTotal + childrenTotal + extra + infantsTotal + toddlersTotal;
 
     this.bookingForm.patchValue({ total: this.total }, { emitEvent: false });
   }
@@ -215,7 +215,7 @@ export class TourBookingComponent implements OnInit {
       '{TourBookingComponent} Clearing all passenger groups validators'
     );
 
-    const groups = ['adults', 'children', 'toddleres', 'infants'];
+    const groups = ['adults', 'children', 'toddlers', 'infants'];
     groups.forEach((group) => {
       const arr = this.bookingForm.get(group) as FormArray;
       arr.controls.forEach((ctrl) => {
@@ -231,7 +231,7 @@ export class TourBookingComponent implements OnInit {
   }
 
   addAllPassengerGroupValidators() {
-    const groups = ['adults', 'children', 'toddleres', 'infants'];
+    const groups = ['adults', 'children', 'toddlers', 'infants'];
 
     groups.forEach((group) => {
       const arr = this.bookingForm.get(group) as FormArray;
@@ -281,9 +281,9 @@ export class TourBookingComponent implements OnInit {
     infantsArray.push(this.createChildrenGroup('INFANT'));
   }
 
-  addToddleres(): void {
-    const toddleresArray = this.toddleresFormArray;
-    toddleresArray.push(this.createChildrenGroup('TODDLER'));
+  addtoddlers(): void {
+    const toddlersArray = this.toddlersFormArray;
+    toddlersArray.push(this.createChildrenGroup('TODDLER'));
   }
 
   updateSingleRoomValues(): void {
@@ -317,9 +317,9 @@ export class TourBookingComponent implements OnInit {
     return this.bookingForm.get('infants') as FormArray;
   }
 
-  // Getter for the toddleres FormArray
-  get toddleresFormArray(): FormArray {
-    return this.bookingForm.get('toddleres') as FormArray;
+  // Getter for the toddlers FormArray
+  get toddlersFormArray(): FormArray {
+    return this.bookingForm.get('toddlers') as FormArray;
   }
 
   getTourDetails(tourId: number) {
@@ -426,7 +426,7 @@ export class TourBookingComponent implements OnInit {
       this.numberAdults +
         this.numberChildren +
         this.numberInfants +
-        this.numberToddleres <
+        this.numberToddlers <
       this.tourSchedule?.availableSeats!
     ) {
       this.numberAdults++;
@@ -465,7 +465,7 @@ export class TourBookingComponent implements OnInit {
       this.numberAdults +
         this.numberChildren +
         this.numberInfants +
-        this.numberToddleres <
+        this.numberToddlers <
       this.tourSchedule?.availableSeats!
     ) {
       this.numberChildren++;
@@ -493,7 +493,7 @@ export class TourBookingComponent implements OnInit {
       this.numberAdults +
         this.numberChildren +
         this.numberInfants +
-        this.numberToddleres <
+        this.numberToddlers <
       this.tourSchedule?.availableSeats!
     ) {
       this.numberInfants++;
@@ -516,16 +516,16 @@ export class TourBookingComponent implements OnInit {
     } // Prevent negative values
   }
 
-  incrementToddleres() {
+  incrementToddlers() {
     if (
       this.numberAdults +
         this.numberChildren +
         this.numberInfants +
-        this.numberToddleres <
+        this.numberToddlers <
       this.tourSchedule?.availableSeats!
     ) {
-      this.numberToddleres++;
-      this.addToddleres();
+      this.numberToddlers++;
+      this.addtoddlers();
       this.calculateTotal();
     } else {
       this.warningMessage =
@@ -536,10 +536,10 @@ export class TourBookingComponent implements OnInit {
     }
   }
 
-  decrementToddleres() {
-    if (this.toddleresFormArray.length > 0) {
-      this.numberToddleres--;
-      this.toddleresFormArray.removeAt(this.numberToddleres);
+  decrementToddlers() {
+    if (this.toddlersFormArray.length > 0) {
+      this.numberToddlers--;
+      this.toddlersFormArray.removeAt(this.numberToddlers);
       this.calculateTotal();
     } // Prevent negative values
   }
