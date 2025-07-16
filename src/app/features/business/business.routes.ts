@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './layout/layout.component';
 import { TourListComponent } from './pages/tour-list/tour-list.component';
-// import { TourFormComponent } from './pages/tour-form/tour-form.component'; // <-- TẠM THỜI XÓA DÒNG NÀY
+import { TourFormComponent } from './pages/tour-form/tour-form.component';
 
 export const BUSINESS_ROUTES: Routes = [
   {
@@ -10,25 +10,21 @@ export const BUSINESS_ROUTES: Routes = [
     children: [
       { path: '', redirectTo: 'tours', pathMatch: 'full' },
       {
-        path: 'tours',
+        path: 'tours', // Route cho trang danh sách Tour
         component: TourListComponent,
         data: { title: 'Quản lý Tour' },
       },
-      // === CÁC ROUTE GÂY LỖI ĐÃ ĐƯỢC XÓA TẠM THỜI ===
-      // Chúng ta sẽ thêm lại chúng ở giai đoạn sau khi đã tạo TourFormComponent
-      /*
+
       {
-        path: 'tours/new',
+        path: 'tours/new', // Route cho trang tạo mới
         component: TourFormComponent,
-        data: { title: 'Tạo Tour mới' }
+        data: { title: 'Tạo Tour mới' },
       },
       {
-        path: 'tours/:id',
+        path: 'tours/:id', // Route cho trang cập nhật/chi tiết
         component: TourFormComponent,
-        data: { title: 'Chi tiết Tour' }
-      }
-      */
-      // ================================================
+        data: { title: 'Chi tiết Tour' },
+      },
     ],
   },
 ];
