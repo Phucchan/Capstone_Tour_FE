@@ -1,0 +1,220 @@
+<!--
+<div class="container mx-auto p-4 md:p-8">
+  <header class="flex items-center justify-between mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">{{ pageTitle }}</h1>
+    <button (click)="goBack()" class="text-blue-600 hover:underline">&larr; Quay lại</button>
+  </header>
+
+  <form [formGroup]="tourForm" (ngSubmit)="onSubmit()" class="bg-white p-8 rounded-lg shadow-md space-y-6">
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label for="name" class="block text-sm font-medium text-gray-700">Tên Tour</label>
+        <input type="text" id="name" formControlName="name" class="mt-1 block w-full input-style">
+      </div>
+      <div>
+        <label for="code" class="block text-sm font-medium text-gray-700">Mã Tour</label>
+        <input type="text" id="code" formControlName="code" class="mt-1 block w-full input-style">
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label for="tourType" class="block text-sm font-medium text-gray-700">Loại Tour</label>
+        <select id="tourType" formControlName="tourType" class="mt-1 block w-full input-style">
+          <option [ngValue]="null" disabled>Chọn loại tour</option>
+          <option *ngFor="let type of tourTypes" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+      <div>
+        <label for="tourStatus" class="block text-sm font-medium text-gray-700">Trạng thái</label>
+        <select id="tourStatus" formControlName="tourStatus" class="mt-1 block w-full input-style">
+          <option *ngFor="let status of tourStatuses" [value]="status">{{ status }}</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <label for="thumbnailUrl" class="block text-sm font-medium text-gray-700">Link ảnh đại diện</label>
+      <input type="text" id="thumbnailUrl" formControlName="thumbnailUrl" class="mt-1 block w-full input-style">
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            <label for="tourThemeId" class="block text-sm font-medium text-gray-700">Chủ đề Tour (ID)</label>
+            <input type="number" id="tourThemeId" formControlName="tourThemeId" class="mt-1 block w-full input-style">
+        </div>
+        <div>
+            <label for="durationDays" class="block text-sm font-medium text-gray-700">Thời gian (số ngày)</label>
+            <input type="number" id="durationDays" formControlName="durationDays" class="mt-1 block w-full input-style">
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            <label for="departLocationId" class="block text-sm font-medium text-gray-700">Điểm đi (ID)</label>
+            <input type="number" id="departLocationId" formControlName="departLocationId" class="mt-1 block w-full input-style">
+        </div>
+        <div>
+            <label for="destinationLocationId" class="block text-sm font-medium text-gray-700">Điểm đến (ID)</label>
+            <input type="number" id="destinationLocationId" formControlName="destinationLocationId" class="mt-1 block w-full input-style">
+        </div>
+    </div>
+    <div>
+      <label for="description" class="block text-sm font-medium text-gray-700">Mô tả chi tiết</label>
+      <textarea id="description" formControlName="description" rows="4" class="mt-1 block w-full input-style"></textarea>
+    </div>
+    <div class="flex justify-end pt-4">
+      <button type="submit" [disabled]="tourForm.invalid"
+        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
+        {{ isEditMode ? 'Lưu thay đổi' : 'Tạo Tour' }}
+      </button>
+    </div>
+  </form>
+</div> -->
+
+
+<!-- <div class="container mx-auto p-4 md:p-8">
+  <header class="flex items-center justify-between mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">{{ pageTitle }}</h1>
+    <button (click)="goBack()" class="text-blue-600 hover:underline">&larr; Quay lại</button>
+  </header>
+
+  Sử dụng async pipe để lấy dữ liệu cho các dropdown
+   <ng-container *ngIf="tourOptions$ | async as options; else loadingOptions">
+    <form [formGroup]="tourForm" (ngSubmit)="onSubmit()" class="bg-white p-8 rounded-lg shadow-md space-y-6">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label for="name" class="block text-sm font-medium text-gray-700">Tên Tour</label>
+          <input type="text" id="name" formControlName="name" class="mt-1 block w-full input-style">
+        </div>
+        <div>
+          <label for="code" class="block text-sm font-medium text-gray-700">Mã Tour (duy nhất)</label>
+          <input type="text" id="code" formControlName="code" class="mt-1 block w-full input-style">
+        </div>
+      </div>
+
+      <div>
+        <label for="thumbnailUrl" class="block text-sm font-medium text-gray-700">Link ảnh đại diện</label>
+        <input type="text" id="thumbnailUrl" formControlName="thumbnailUrl" class="mt-1 block w-full input-style">
+      </div>
+
+      <div>
+        <label for="departLocationId" class="block text-sm font-medium text-gray-700">Điểm khởi hành</label>
+        <select id="departLocationId" formControlName="departLocationId" class="mt-1 block w-full input-style">
+          <option [ngValue]="null" disabled>-- Chọn điểm khởi hành --</option>
+          <option *ngFor="let loc of options.departures" [value]="loc.id">{{ loc.name }}</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="destinationLocationIds" class="block text-sm font-medium text-gray-700">Điểm đến (chọn nhiều)</label>
+        <select id="destinationLocationIds" formControlName="destinationLocationIds" multiple class="mt-1 block w-full input-style h-40">
+          <option *ngFor="let loc of options.destinations" [value]="loc.id">{{ loc.name }}</option>
+        </select>
+        <p class="text-xs text-gray-500 mt-1">Giữ Ctrl (hoặc Cmd trên Mac) để chọn nhiều điểm đến.</p>
+      </div>
+
+      <div>
+        <label for="tourThemeIds" class="block text-sm font-medium text-gray-700">Chủ đề (chọn nhiều)</label>
+        <select id="tourThemeIds" formControlName="tourThemeIds" multiple class="mt-1 block w-full input-style h-32">
+          <option *ngFor="let theme of options.themes" [value]="theme.id">{{ theme.name }}</option>
+        </select>
+        <p class="text-xs text-gray-500 mt-1">Giữ Ctrl (hoặc Cmd trên Mac) để chọn nhiều chủ đề.</p>
+      </div>
+
+      <div>
+        <label for="description" class="block text-sm font-medium text-gray-700">Mô tả chi tiết</label>
+        <textarea id="description" formControlName="description" rows="4" class="mt-1 block w-full input-style"></textarea>
+      </div>
+
+      <div class="flex justify-end pt-4">
+        <button type="submit" [disabled]="tourForm.invalid"
+          class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
+          {{ isEditMode ? 'Lưu thay đổi' : 'Tạo Tour' }}
+        </button>
+      </div>
+    </form>
+  </ng-container>
+
+  <ng-template #loadingOptions>
+    <div class="text-center py-12 text-gray-500">
+      <p>Đang tải dữ liệu cho form...</p>
+    </div>
+  </ng-template>
+</div> -->
+
+
+<div class="container mx-auto p-4 md:p-8">
+  <header class="flex items-center justify-between mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">{{ pageTitle }}</h1>
+    <button (click)="goBack()" class="text-blue-600 hover:underline">&larr; Quay lại</button>
+  </header>
+
+  <ng-container *ngIf="tourOptions$ | async as options; else loadingOptions">
+    <form [formGroup]="tourForm" (ngSubmit)="onSubmit()" class="bg-white p-8 rounded-lg shadow-md space-y-6">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label for="name" class="block text-sm font-medium text-gray-700">Tên Tour</label>
+          <input type="text" id="name" formControlName="name" class="mt-1 block w-full input-style">
+        </div>
+        <div>
+          <label for="code" class="block text-sm font-medium text-gray-700">Mã Tour (duy nhất)</label>
+          <input type="text" id="code" formControlName="code" class="mt-1 block w-full input-style">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label for="thumbnailUrl" class="block text-sm font-medium text-gray-700">Link ảnh đại diện</label>
+          <input type="text" id="thumbnailUrl" formControlName="thumbnailUrl" class="mt-1 block w-full input-style">
+        </div>
+        <div>
+          <label for="durationDays" class="block text-sm font-medium text-gray-700">Số ngày</label>
+          <input type="number" id="durationDays" [value]="durationDays" readonly class="mt-1 block w-full input-style bg-gray-100 cursor-not-allowed">
+          <p class="text-xs text-gray-500 mt-1">Số ngày được tự động tính dựa trên số điểm đến đã chọn.</p>
+        </div>
+      </div>
+
+      <div>
+        <label for="departLocationId" class="block text-sm font-medium text-gray-700">Điểm khởi hành</label>
+        <select id="departLocationId" formControlName="departLocationId" class="mt-1 block w-full input-style">
+          <option [ngValue]="null" disabled>-- Chọn điểm khởi hành --</option>
+          <option *ngFor="let loc of options.departures" [value]="loc.id">{{ loc.name }}</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="destinationLocationIds" class="block text-sm font-medium text-gray-700">Điểm đến (chọn nhiều)</label>
+        <select id="destinationLocationIds" formControlName="destinationLocationIds" multiple class="mt-1 block w-full input-style h-40">
+          <option *ngFor="let loc of options.destinations" [value]="loc.id">{{ loc.name }}</option>
+        </select>
+        <p class="text-xs text-gray-500 mt-1">Giữ Ctrl (hoặc Cmd trên Mac) để chọn nhiều điểm đến.</p>
+      </div>
+
+      <div>
+        <label for="tourThemeIds" class="block text-sm font-medium text-gray-700">Chủ đề (chọn nhiều)</label>
+        <select id="tourThemeIds" formControlName="tourThemeIds" multiple class="mt-1 block w-full input-style h-32">
+          <option *ngFor="let theme of options.themes" [value]="theme.id">{{ theme.name }}</option>
+        </select>
+        <p class="text-xs text-gray-500 mt-1">Giữ Ctrl (hoặc Cmd trên Mac) để chọn nhiều chủ đề.</p>
+      </div>
+
+      <div>
+        <label for="description" class="block text-sm font-medium text-gray-700">Mô tả chi tiết</label>
+        <textarea id="description" formControlName="description" rows="4" class="mt-1 block w-full input-style"></textarea>
+      </div>
+
+      <div class="flex justify-end pt-4">
+        <button type="submit" [disabled]="tourForm.invalid"
+          class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
+          Tạo Tour
+        </button>
+      </div>
+    </form>
+  </ng-container>
+
+  <ng-template #loadingOptions>
+    <div class="text-center py-12 text-gray-500">
+      <p>Đang tải dữ liệu cho form...</p>
+    </div>
+  </ng-template>
+</div>
