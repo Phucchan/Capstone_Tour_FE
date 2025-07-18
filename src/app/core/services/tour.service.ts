@@ -4,10 +4,10 @@ import { Observable, map } from 'rxjs';
 import {
   TourListItem,
   PagingDTO,
-  // TourDetail,
+  TourDetail,
   TourOptionsData,
   CreateTourRequest,
-  // UpdateTourRequest,
+  UpdateTourRequest,
 } from '../models/tour.model';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
@@ -51,21 +51,21 @@ export class TourService {
       .pipe(map((response) => response.data));
   }
 
-  // /**
-  //  * @description Lấy thông tin chi tiết của một tour theo ID.
-  //  */
-  // getTourById(id: number): Observable<TourDetail> {
-  //   return this.http
-  //     .get<ApiResponse<TourDetail>>(`${this.apiUrl}/${id}`)
-  //     .pipe(map((response) => response.data));
-  // }
+  /**
+   * @description Lấy thông tin chi tiết của một tour theo ID.
+   */
+  getTourById(id: number): Observable<TourDetail> {
+    return this.http
+      .get<ApiResponse<TourDetail>>(`${this.apiUrl}/${id}`)
+      .pipe(map((response) => response.data));
+  }
 
-  // /**
-  //  * @description Cập nhật một tour.
-  //  */
-  // updateTour(id: number, tourData: UpdateTourRequest): Observable<TourDetail> {
-  //   return this.http
-  //     .put<ApiResponse<TourDetail>>(`${this.apiUrl}/${id}`, tourData)
-  //     .pipe(map((response) => response.data));
-  // }
+  /**
+   * @description Cập nhật một tour.
+   */
+  updateTour(id: number, tourData: UpdateTourRequest): Observable<TourDetail> {
+    return this.http
+      .put<ApiResponse<TourDetail>>(`${this.apiUrl}/${id}`, tourData)
+      .pipe(map((response) => response.data));
+  }
 }
