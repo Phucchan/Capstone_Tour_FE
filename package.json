@@ -27,6 +27,7 @@
     "@fullcalendar/interaction": "^6.1.17",
     "@fullcalendar/list": "^6.1.17",
     "@fullcalendar/timegrid": "^6.1.17",
+    "@ng-select/ng-select": "^14.9.0",
     "@stomp/stompjs": "^7.1.1",
     "@tailwindcss/postcss": "^4.1.10",
     "angular-svg-icon": "^19.1.1",

@@ -46,6 +46,10 @@ export const PUBLIC_ROUTES: Route[] = [
         component: CustomTourBookingComponent,
       },
       {
+        path: 'customer/profile',
+        component: ProfileComponent,
+      },
+      {
         path: 'plan-generation',
         component: PlanComponent,
         canActivate: [AuthGuard]

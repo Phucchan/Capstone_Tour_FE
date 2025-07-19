@@ -13,8 +13,7 @@ export class UserStorageService {
 
   constructor(
     private ssrService: SsrService
-  ) 
-  {
+  ) {
   }
 
   public setCookie(name: string, value: string, days?: number): void {
@@ -32,15 +31,13 @@ export class UserStorageService {
   }
 
   private getCookie(name: string): string | null {
+    if (!this.ssrService.isBrowser) return null;
     const nameEQ = name + '=';
-    const document = this.ssrService.getDocument();
-    if (document) {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        let cookie = cookies[i].trim();
-        if (cookie.indexOf(nameEQ) === 0) {
-          return cookie.substring(nameEQ.length);
-        }
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      let cookie = cookies[i].trim();
+      if (cookie.indexOf(nameEQ) === 0) {
+        return cookie.substring(nameEQ.length);
       }
     }
     return null;
@@ -88,9 +85,13 @@ export class UserStorageService {
     return decodedToken ? decodedToken.roles || [] : [];
   }
 
+  // getUserId(): number | null {
+  //   const decodedToken = this.decodeToken();
+  //   return decodedToken ? decodedToken.id || null : null;
+  // }
   getUserId(): number | null {
-    const decodedToken = this.decodeToken();
-    return decodedToken ? decodedToken.id || null : null;
+    const user = this.getUser();
+    return user && user.id ? Number(user.id) : null;
   }
 
   decodeToken(): any {
@@ -119,6 +120,7 @@ export class UserStorageService {
 
   public getUser(): any {
     const userJson = this.getCookie(USER);
+    console.log('DEBUG - user in getUserId:', userJson);
     return userJson ? JSON.parse(userJson) : null;
   }
 

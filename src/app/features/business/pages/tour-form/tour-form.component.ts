@@ -8,7 +8,10 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subscription, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
+
+// --- Thêm import cho NgSelectModule ---
+import { NgSelectModule } from '@ng-select/ng-select';
 
 import { TourService } from '../../../../core/services/tour.service';
 import {
@@ -16,12 +19,17 @@ import {
   CreateTourRequest,
   UpdateTourRequest,
   TourDetail,
+  TourDetailWithOptions,
 } from '../../../../core/models/tour.model';
 
 @Component({
   selector: 'app-tour-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule, // <-- Component này dùng Reactive Forms
+    NgSelectModule, // <-- Thêm NgSelectModule để sử dụng ng-select
+  ],
   templateUrl: './tour-form.component.html',
   styleUrls: ['./tour-form.component.css'],
 })
@@ -48,60 +56,50 @@ export class TourFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Lấy các options cho dropdowns từ service
-    this.tourOptions$ = this.tourService.getTourOptions();
+    const tourWithOptions$ = this.route.paramMap.pipe(
+      switchMap((params) => {
+        const id = params.get('id');
+        if (id) {
+          this.isEditMode = true;
+          this.tourId = +id;
+          return this.tourService.getTourById(this.tourId);
+        }
+        this.isEditMode = false;
+        this.pageTitle = 'Tạo Tour Mới';
+        return this.tourService
+          .getTourOptions()
+          .pipe(map((options) => ({ detail: null, options })));
+      })
+    );
 
-    // Lắng nghe sự thay đổi của destinationLocationIds để tự động tính số ngày
+    tourWithOptions$.subscribe((data: any) => {
+      this.tourOptions$ = of(data.options);
+      if (this.isEditMode && data.detail) {
+        this.pageTitle = 'Chi tiết & Cập nhật Tour';
+        this.patchFormWithTourData(data.detail);
+      }
+    });
+
     this.destinationSub = this.tourForm
       .get('destinationLocationIds')!
       .valueChanges.subscribe((selectedIds: number[]) => {
         this.durationDays = selectedIds ? selectedIds.length : 0;
       });
-
-    // Kiểm tra route params để xác định là TẠO MỚI hay CẬP NHẬT
-    this.route.paramMap
-      .pipe(
-        switchMap((params) => {
-          const id = params.get('id');
-          if (id) {
-            // --- Chế độ CẬP NHẬT ---
-            this.isEditMode = true;
-            this.tourId = +id;
-            this.pageTitle = 'Chi tiết & Cập nhật Tour';
-            // Lấy dữ liệu chi tiết của tour từ service
-            return this.tourService.getTourById(this.tourId);
-          }
-          // --- Chế độ TẠO MỚI ---
-          this.pageTitle = 'Tạo Tour Mới';
-          this.isEditMode = false;
-          return of(null); // Trả về a null observable nếu không có id
-        })
-      )
-      .subscribe((tourData) => {
-        if (this.isEditMode && tourData) {
-          // Nếu ở chế độ cập nhật và có dữ liệu, điền vào form
-          this.patchFormWithTourData(tourData);
-        }
-      });
   }
 
   ngOnDestroy(): void {
-    // Hủy subscription để tránh rò rỉ bộ nhớ
     if (this.destinationSub) {
       this.destinationSub.unsubscribe();
     }
   }
 
-  // --- Private Methods ---
   private buildForm(): void {
-    // Định nghĩa cấu trúc và validators cho form
     this.tourForm = this.fb.group({
       name: ['', Validators.required],
-      code: ['', Validators.required],
+      code: [{ value: '', disabled: true }], // Luôn disable
       thumbnailUrl: [''],
       description: [''],
-      tourType: ['FIXED'], // Mặc định là FIXED cho role Business
-      tourStatus: ['DRAFT'], // Mặc định là DRAFT khi tạo mới
+      tourStatus: ['DRAFT'],
       departLocationId: [null, Validators.required],
       destinationLocationIds: [[], Validators.required],
       tourThemeIds: [[], Validators.required],
@@ -109,60 +107,60 @@ export class TourFormComponent implements OnInit, OnDestroy {
   }
 
   private patchFormWithTourData(tour: TourDetail): void {
-    // Cập nhật giá trị cho form từ dữ liệu tour
     this.tourForm.patchValue({
       name: tour.name,
       code: tour.code,
       thumbnailUrl: tour.thumbnailUrl,
       description: tour.description,
-      tourType: tour.tourType,
       tourStatus: tour.tourStatus,
       departLocationId: tour.departLocation.id,
-      // map để lấy ra mảng các id
       destinationLocationIds: tour.destinations.map((d) => d.id),
       tourThemeIds: tour.themes.map((t) => t.id),
     });
-
-    // Không cho phép chỉnh sửa mã tour
-    this.tourForm.get('code')?.disable();
   }
 
-  // --- Public Methods (Handlers) ---
   public onSubmit(): void {
     if (this.tourForm.invalid) {
-      this.tourForm.markAllAsTouched(); // Hiển thị lỗi validation nếu form không hợp lệ
-      console.warn('Form is invalid!');
+      this.tourForm.markAllAsTouched();
       return;
     }
 
-    // Lấy dữ liệu từ form, bao gồm cả các trường bị disable (như 'code')
     const formValue = this.tourForm.getRawValue();
 
     if (this.isEditMode && this.tourId) {
-      // --- Xử lý CẬP NHẬT ---
-      const updateData: UpdateTourRequest = formValue;
+      const updateData: UpdateTourRequest = {
+        name: formValue.name,
+        thumbnailUrl: formValue.thumbnailUrl,
+        description: formValue.description,
+        tourStatus: formValue.tourStatus,
+        departLocationId: formValue.departLocationId,
+        destinationLocationIds: formValue.destinationLocationIds,
+        tourThemeIds: formValue.tourThemeIds,
+      };
       this.tourService.updateTour(this.tourId, updateData).subscribe({
         next: () => {
-          alert('Cập nhật tour thành công! ✅');
+          alert('Cập nhật tour thành công!');
           this.router.navigate(['/business/tours']);
         },
-        error: (err) => {
-          console.error('Lỗi khi cập nhật tour:', err);
-          alert(err.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
-        },
+        error: (err) => console.error('Lỗi khi cập nhật tour:', err),
       });
     } else {
-      // --- Xử lý TẠO MỚI ---
-      const createData: CreateTourRequest = formValue;
+      const createData: CreateTourRequest = {
+        name: formValue.name,
+        thumbnailUrl: formValue.thumbnailUrl,
+        description: formValue.description,
+        departLocationId: formValue.departLocationId,
+        destinationLocationIds: formValue.destinationLocationIds,
+        tourThemeIds: formValue.tourThemeIds,
+      };
       this.tourService.createTour(createData).subscribe({
-        next: () => {
-          alert('Tạo tour thành công! 🎉');
-          this.router.navigate(['/business/tours']);
+        next: (createdTour) => {
+          alert(`Tạo tour thành công! Mã tour của bạn là: ${createdTour.code}`);
+          // CHUYỂN HƯỚNG TỚI TRANG TẠO LỊCH TRÌNH (SẼ LÀM SAU)
+          // this.router.navigate(['/business/tours', createdTour.id, 'schedule']);
+          this.router.navigate(['/business/tours']); // Tạm thời về trang list
         },
-        error: (err) => {
-          console.error('Lỗi khi tạo tour:', err);
-          alert(err.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
-        },
+        error: (err) => console.error('Lỗi khi tạo tour:', err),
       });
     }
   }
