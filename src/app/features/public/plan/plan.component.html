@@ -4,33 +4,41 @@
         <app-spinner [isLoading]="isLoading"></app-spinner>
 
         <p class="text-sm text-gray-500">Bước {{ currentStep + 1 }}/4</p>
-        <p *ngIf="currentStep > 1" class="text-sm text-gray-500">
-            {{ "Chuyến đi " + selectedLocation?.name }}
-        </p>
         <div class="w-[45%] bg-gray-200 rounded-full h-2 dark:bg-gray-700 !mb-20">
             <div class="bg-blue-600 h-2 rounded-full" [style.width.%]="widthProgress * (currentStep + 1)"></div>
         </div>
-        <div *ngIf="currentStep === 1" class="flex flex-col items-center text-center ">
+        <div *ngIf="currentStep === 1"
+            class="flex flex-col items-center text-center opacity-0 animate-[slideInRight_0.5s_ease-out_forwards]">
             <h1 class="text-5xl font-bold mb-3">Chọn nơi bạn muốn khám phá?</h1>
             <h1 class="text-md font-light text-gray-400 !mb-8">
                 Bạn sẽ nhận được các đề xuất tùy chỉnh mà bạn có thể lưu và biến thành
                 hành trình.
             </h1>
 
-            <div class="relative  py-10 text-white text-center rounded-xl overflow-hidden">
+            <div class="relative  py-10 text-white text-center rounded-xl overflow-hidden max-w-[900px]">
                 <!-- Dây và ảnh -->
-                <div  class="flex justify-center items-end gap-6 mt-8 px-4 relative z-10">
+                <div class="flex flex-wrap justify-center items-end gap-6 mt-8 px-4 relative z-10">
                     <!-- Card 1 -->
-                    <div [ngClass]="'-rotate-' + ((index + 1) % 3 + 1)" class="relative  bg-white rounded-md shadow-md p-2 w-48" *ngFor="let i of [].constructor(numberDays); let index = index">
-                        <img src="https://cdn3.ivivu.com/2023/07/Nha-Trang-ivivu.jpg"
+                    <div [ngClass]="'rotate-' + ((index + 45) % 3 + 1)" (click)="openModal(index)"
+                        class="flex-1 max-w-[200px] min-w-[160px] relative  bg-white rounded-md shadow-lg p-2 w-48"
+                        *ngFor="let i of [].constructor(numberDays); let index = index">
+                        <img [src]="selectedDestinations[index]?.image || 'https://cdn3.ivivu.com/2023/07/Nha-Trang-ivivu.jpg'"
                             class="rounded-md w-full h-48 object-cover" alt="Nha Trang">
-                        <p class="mt-2 text-center text-blue-700 font-medium italic">Nha Trang</p>
+                        <p class="mt-2 text-center text-blue-700 font-medium italic">
+                            Ngày {{ index + 1 }}
+                            <span class="text-sm text-gray-600">({{ selectedDestinations[index] ?
+                                selectedDestinations[index].name : 'Chưa chọn' }})</span>
+                        </p>
                         <div
                             class="absolute -top-3 left-1/2 -translate-x-1/2 w-3 h-4 bg-yellow-400 rounded-sm shadow -rotate-6">
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Modal -->
+
+
 
             <!-- Next Button -->
             <div class="flex justify-between items-center text-center w-full">
@@ -46,7 +54,50 @@
             </div>
         </div>
 
-        <div *ngIf="currentStep === 0" class="flex flex-col items-center text-center ">
+
+        <div id="destinationModal" tabindex="-1" (click)="closeModal()"
+            class="fixed inset-0 z-50 hidden bg-black/30 flex justify-center items-center p-4">
+            <div class="bg-white rounded-lg shadow dark:bg-gray-700 w-full max-w-xl max-h-[80vh] overflow-hidden"
+                (click)="$event.stopPropagation()">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white p-4">
+                    Chọn điểm đến cho ngày {{ currentDayIndex! + 1 }}
+                </h3>
+                <div class="p-4 overflow-y-auto max-h-[70vh] min-h-[70vh] custom-scrollbar ">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                            </svg>
+                        </div>
+                        <input type="text" id="default-search" (input)="filterDestination($event)"
+                            class="block w-full p-4 !pl-8 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            placeholder="Tìm kiếm..." required />
+                    </div>
+
+                    <ul class="mt-4 w-full rounded-lg ">
+                        <li *ngFor="let location of locations" (click)="selectDestination(location)"
+                            class="hover:bg-gray-100 cursor-pointer text-left">
+                            <div class="flex items-center space-x-5 p-4">
+                                <img [src]="location?.image" alt="" class="w-12 h-12 object-cover rounded-lg" />
+                                <div>
+                                    <p class="font-medium">{{ location.name }}</p>
+                                    <p class="text-sm text-gray-500">
+                                        {{ location.description }}...
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div *ngIf="currentStep === 0"
+            class="flex flex-col items-center text-center transition-all duration-500 opacity-0 animate-[fadeIn_0.5s_forwards]">
             <h1 class="text-5xl font-bold mb-3">Thời gian bạn muốn đi?</h1>
             <h1 class="text-md font-light text-gray-400 !mb-8 ">
                 Chọn thời gian bạn muốn đi và thời gian bạn muốn quay lại. Bạn có thể không chọn mục này
@@ -67,64 +118,35 @@
             </div>
 
             <h1 class="text-md font-light text-gray-400 !mb-8 !mt-8">
-                Chọn loại hình du lịch của bạn
+                Khám phá các điểm đến thú vị và tạo hành trình du lịch của riêng bạn.
             </h1>
 
-            <div class="flex justify-center items-center w-full gap-8">
-
-                <!-- CARD 1: Đi nhiều nơi -->
-                <div (click)="select('multi')" [ngClass]="{
-      'ring-4 ring-blue-500 scale-105': selectedType === 'multi',
-      'hover:scale-105': selectedType !== 'multi'
-    }" class="flex flex-col items-center cursor-pointer transition-all duration-300 rounded-lg p-2">
-                    <div class="w-48 h-48 bg-gray-300 flex items-center justify-center rounded-lg">
+            <div class="w-full">
+                <div class="flex flex-col items-center cursor-pointer transition-all duration-300 rounded-lg p-2">
+                    <div class="w-full h-72 bg-gray-300 flex items-center justify-center rounded-lg">
                         <img src="https://bcp.cdnchinhphu.vn/334894974524682240/2022/2/10/qn-16444811865572132133352.jpg"
                             alt="multi" class="w-full h-full object-cover rounded-lg" />
                     </div>
-                    <p class="mt-3 pl-2 w-full font-bold">Khám phá nhiều điểm đến</p>
-                    <p class="text-justify text-sm text-gray-500 w-50 px-2">
-                        Phù hợp với người thích di chuyển, khám phá nhiều vùng đất trong một hành trình.
-                    </p>
-                </div>
 
-                <!-- CARD 2: Đi một nơi -->
-                <div (click)="select('single')" [ngClass]="{
-      'ring-4 ring-blue-500 scale-105': selectedType === 'single',
-      'hover:scale-105': selectedType !== 'single'
-    }" class="flex flex-col items-center cursor-pointer transition-all duration-300 rounded-lg p-2">
-                    <div class="w-48 h-48 bg-gray-300 flex items-center justify-center rounded-lg">
-                        <img src="https://topvip.vn/wp-content/uploads/2021/06/cac-dia-diem-du-lich-63-tinh-thanh-Viet-Nam-3.jpg"
-                            alt="single" class="w-full h-full object-cover rounded-lg" />
-                    </div>
-                    <p class="mt-3 pl-2 w-full font-bold">Thư giãn tại một điểm đến</p>
-                    <p class="text-justify text-sm text-gray-500 w-50 px-2">
-                        Tuyệt vời cho những ai muốn tận hưởng trọn vẹn một nơi, không cần di chuyển nhiều.
-                    </p>
                 </div>
-
             </div>
-
-
-
-
-
 
             <div class="flex justify-center items-center text-center w-full">
                 <!-- Next Button -->
-                <button type="button" (click)="nextStep()" [disabled]="!selectedType"
+                <button type="button" (click)="nextStep()"
                     class="bg-black text-white text-lg px-6 py-2 rounded-full !mb-10 !mt-10 hover:bg-gray-800">
                     Tiếp theo
                 </button>
             </div>
         </div>
 
-        <div *ngIf="currentStep === 2" class="flex flex-col items-center text-center ">
+        <div *ngIf="currentStep === 2"
+            class="flex flex-col items-center text-center opacity-0 animate-[slideInRight_0.5s_ease-out_forwards] min-h-[600px]">
             <h1 class="text-5xl font-bold mb-3">
                 Loại hình du lịch mong muốn của bạn?
             </h1>
-            <h1 class="text-md  font-light text-gray-400 !mb-8">
-                Lựa chọn loại hình du lịch mà bạn muốn. Bạn có thể thay đổi điều này
-                sau.
+            <h1 class="text-md  font-light text-gray-400 !mb-8  mt-8">
+                Lựa chọn loại hình du lịch mà bạn muốn. Bạn có thể thay đổi điều này sau.
             </h1>
 
             <!-- Date Picker -->
@@ -134,40 +156,76 @@
                     <button type="button" *ngFor="let trip of tripTypes; let i = index" (click)="selectTrip(trip)"
                         [ngClass]="{
               'bg-emerald-400 text-black border-none': selectedTrip === trip,
-              'bg-white border border-gray-300': selectedTrip !== trip
-            }" class="flex flex-col items-center justify-center px-6 py-4 rounded-lg w-40 h-24 transition">
+              'bg-white border border-gray-300 hover:bg-emerald-100': selectedTrip !== trip
+            }" class="flex flex-col items-center justify-center px-6 py-4 rounded-lg w-40 h-24 transition cursor-pointer ">
                         <div class="text-2xl mb-1" [innerHTML]="trip.icon"></div>
                         <span class="font-medium">{{ trip.label }}</span>
-                        <div *ngIf="selectedTrip === trip" class="absolute top-2 right-2 text-black">
-                            ✓
-                        </div>
                     </button>
                 </div>
 
                 <!-- Pet Question -->
-                <div class="text-center">
+                <div class="text-center mt-12">
                     <p class="text-gray-500 flex items-center justify-center gap-1">
                         Bạn có đi cùng trẻ em không?
                         <span class="text-gray-400 text-sm cursor-help">?</span>
                     </p>
                     <div class="flex justify-center mt-4 gap-4">
                         <button type="button" (click)="isTravelingWithChildren = true" [ngClass]="{
-                'bg-white border border-gray-300': !isTravelingWithChildren,
+                'bg-white border border-gray-300 hover:bg-emerald-100' : !isTravelingWithChildren,
                 'bg-emerald-400 text-black': isTravelingWithChildren
-              }" class="px-6 py-2 rounded-full font-semibold w-24">
+              }" class="px-6 py-2 rounded-full font-semibold w-24 cursor-pointer ">
                             Có
                         </button>
                         <button type="button" (click)="isTravelingWithChildren = false" [ngClass]="{
                 'bg-emerald-400 text-black': !isTravelingWithChildren,
-                'bg-white border border-gray-300': isTravelingWithChildren
-              }" class="px-6 py-2 rounded-full font-semibold w-24">
+                'bg-white border border-gray-300 hover:bg-emerald-100': isTravelingWithChildren
+              }" class="px-6 py-2 rounded-full font-semibold w-24 cursor-pointer ">
                             Không
                         </button>
                     </div>
                 </div>
+                <h2 class="text-md  font-light text-gray-400 mt-8 mb-4">Ngân sách dự kiến cho chuyến đi?</h2>
+
+                <!-- Các lựa chọn ngân sách -->
+                <div class="flex justify-center gap-4 flex-wrap">
+                    <button type="button" (click)="selectBudget('low')" [ngClass]="{
+                        'bg-emerald-400 ': selectedBudget === 'low',
+                        'bg-white text-black border hover:bg-emerald-100': selectedBudget !== 'low'
+                        }"
+                        class="px-6 py-2 rounded-full font-semibold border border-gray-300 transition cursor-pointer hover:bg-emerald-100">
+                        Tiết kiệm
+                    </button>
+
+                    <button type="button" (click)="selectBudget('medium')" [ngClass]="{
+                        'bg-emerald-400': selectedBudget === 'medium',
+                        'bg-white text-black border hover:bg-emerald-100': selectedBudget !== 'medium'
+                        }"
+                        class="px-6 py-2 rounded-full font-semibold border border-gray-300 transition cursor-pointer hover:bg-emerald-100">
+                        Vừa phải
+                    </button>
+
+                    <button type="button" (click)="selectBudget('high')" [ngClass]="{
+                        'bg-emerald-400 ': selectedBudget === 'high',
+                        'bg-white text-black border hover:bg-emerald-100': selectedBudget !== 'high'
+                        }"
+                        class="px-6 py-2 rounded-full font-semibold border border-gray-300 hover:bg-emerald-100 transition cursor-pointer">
+                        Cao cấp
+                    </button>
+
+                    <button type="button" (click)="selectBudget('custom')" [ngClass]="{
+                        'bg-emerald-400 ': selectedBudget === 'custom',
+                        'bg-white text-black border hover:bg-emerald-100': selectedBudget !== 'custom'
+                        }"
+                        class="px-6 py-2 rounded-full font-semibold border border-gray-300 hover:bg-emerald-100 transition cursor-pointer"
+                        (click)="openBudgetModal()">
+                        {{ customBudgetValue ? customBudgetValue : 'Tùy chỉnh' }}
+                    </button>
+                </div>
+
+
             </div>
 
-            <div class="flex justify-between items-center text-center w-full">
+            <div class="flex justify-between items-center text-center w-full mt-24">
                 <button type="button" (click)="prevStep()"
                     class="underline text-black text-lg px-6 py-2 rounded-full !mb-10 !mt-10 hover:bg-gray-200">
                     Quay lại
@@ -180,7 +238,48 @@
             </div>
         </div>
 
-        <div *ngIf="currentStep === 3">
+        <!-- Modal ngân sách -->
+        <div id="budgetModal" class="fixed inset-0 z-50 hidden bg-black/30 flex justify-center items-center p-4"
+            (click)="closeBudgetModal()">
+            <div class="bg-white rounded-lg shadow w-full max-w-md p-6" (click)="$event.stopPropagation()">
+                <!-- Tiêu đề -->
+                <h3 class="text-lg font-semibold mb-4 text-center">
+                    Nhập khoảng ngân sách bạn mong muốn (VNĐ)
+                </h3>
+
+                <!-- Input min/max -->
+                <div class="flex flex-col gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Ngân sách tối thiểu</label>
+                        <input type="text" [value]="formattedMinBudget" (input)="onBudgetInput($event, false)"
+                            class="w-full border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            placeholder="5,000,000" [min]="numberDays * 500000" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Ngân sách tối đa</label>
+                        <input type="text" [value]="formattedMaxBudget" (input)="onBudgetInput($event, true)"
+                            class="w-full border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            placeholder="15,000,000" [min]="numberDays * 600000" />
+                    </div>
+                </div>
+
+                <!-- Nút hành động -->
+                <div class="mt-6 flex justify-end gap-2">
+                    <button type="button" (click)="closeBudgetModal()"
+                        class="px-4 py-2 rounded-md border hover:bg-gray-100">
+                        Hủy
+                    </button>
+                    <button type="button" (click)="saveBudgetRange()"
+                        class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                        Lưu
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <div *ngIf="currentStep === 3" class="opacity-0 animate-[slideInRight_0.5s_ease-out_forwards]">
             <div class="interests-container">
                 <h1 class="text-5xl font-bold mb-3">
                     Cho chúng tôi biết sở thích của bạn

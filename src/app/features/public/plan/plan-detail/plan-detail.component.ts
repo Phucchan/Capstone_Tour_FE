@@ -9,23 +9,17 @@ import { PlanService } from '../../services/plan.service';
   selector: 'app-plan-detail',
   imports: [SpinnerComponent, RouterModule],
   templateUrl: './plan-detail.component.html',
-  styleUrl: './plan-detail.component.css'
+  styleUrl: './plan-detail.component.css',
 })
-export class PlanDetailComponent {
-
+export class PlanPreviewComponent {
   isLoading: boolean = false;
-
 
   constructor(
     private planService: PlanService,
     private fb: FormBuilder,
     private router: Router,
     private imageSearchService: ImageSearchService
-  ) {
-
-
-  }
-
+  ) {}
 
   plan: any;
 
@@ -33,78 +27,60 @@ export class PlanDetailComponent {
 
   restaurants: any[] = [];
   hotels: any[] = [];
-  activities: any[] = []
+  activities: any[] = [];
 
   ngOnInit() {
-    const planId = Number(this.router.url.split('/').pop());
+    const planId = this.router.url.split('/').pop();
 
-    console.log(planId)
+    console.log(planId);
 
     if (planId) {
       this.getPlanById(planId);
     }
   }
-  getPlanById(planId: number) {
+  getPlanById(planId: any) {
     this.isLoading = true;
     this.planService.getPlanById(planId).subscribe({
       next: (response) => {
         this.plan = response.data;
 
+        console.log('Plan data:', this.plan);
 
+        this.restaurants = Array.from(
+          new Map(
+            this.plan.days
+              .flatMap((dayObj: any) => dayObj.restaurants || [])
+              .map((rest: any) => [rest.name, rest]) // dùng name làm key
+          ).values()
+        );
 
-        const cleanJsonString = this.plan.content
-          .replace(/^```json\n/, '')  // Remove the opening triple backticks
-          .replace(/\n```$/, '');
-        let parsedData: any;
+        console.log('Restaurants (unique):', this.restaurants);
 
+        this.hotels = Array.from(
+          new Map(
+            this.plan.days
+              .flatMap((dayObj: any) => dayObj.hotels || [])
+              .map((rest: any) => [rest.name, rest]) // dùng name làm key
+          ).values()
+        );
 
+        console.log('Hotels (unique):', this.hotels);
 
-        try {
-          parsedData = JSON.parse(cleanJsonString);
-          this.planContent = parsedData;
+        console.log('hotels (unique):', this.hotels);
 
+        this.activities = this.plan.days.flatMap(
+          (dayObj: any) => dayObj.activities || []
+        );
 
-
-          this.restaurants = Array.from(
-            new Map(
-              this.planContent.plan.days
-                .flatMap((dayObj: any) => dayObj.restaurants || [])
-                .map((rest: any) => [rest.name, rest]) // dùng name làm key
-            ).values()
-          );
-          
-          console.log('Restaurants (unique):', this.restaurants);
-
-          this.hotels = Array.from(
-            new Map(
-              this.planContent.plan.days
-                .flatMap((dayObj: any) => dayObj.hotels || [])
-                .map((rest: any) => [rest.name, rest]) // dùng name làm key
-            ).values()
-          );
-          
-          console.log('Hotels (unique):', this.hotels);
-
-          console.log('hotels (unique):', this.hotels);
-
-          this.activities = this.planContent.plan.days
-            .flatMap((dayObj: any) => dayObj.activities || []);
-
-          console.log('All activities:', this.activities);;
-
-        } catch (error) {
-          console.error('Error parsing JSON:', error);
-        }
+        console.log('All activities:', this.activities);
 
         this.isLoading = false;
-
       },
       error: (error) => {
         console.error('Error fetching plan', error);
-      }
+      },
     });
   }
-
 
   onSave() {
     this.planService.updateStatusPlan(this.plan.id).subscribe({
@@ -114,9 +90,7 @@ export class PlanDetailComponent {
       },
       error: (error) => {
         console.error('Error generating plan', error);
-      }
+      },
     });
-
   }
-
 }
