@@ -3,6 +3,7 @@ import { Component, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CustomerService } from '../../services/customer.service';
 import { UserStorageService } from '../../../../core/services/user-storage/user-storage.service';
+import { BirthDate } from '../../../../shared/pipes/birthdate.pipe';
 
 @Component({
   selector: 'app-customer-profile',
@@ -15,35 +16,50 @@ import { UserStorageService } from '../../../../core/services/user-storage/user-
 })
 
 export class CustomerProfileComponent {
-  [x: string]: any;
-  @Input() user: UserProfile | null = null;
+  @Input() currentUser: UserProfile | null = null;
   editableUser: Partial<UserProfile> = {};
-  
-  constructor
-  (private customerService: CustomerService,
-  private userStorageService: UserStorageService
+
+  constructor(
+    private customerService: CustomerService,
+    private userStorageService: UserStorageService
   ) { }
-  ngOnChanges() {
-    if (this.user) {
-      console.log('User data changed:', this.user);
-      this.editableUser = { ...this.user };
-      console.log('Editable user data:', this.editableUser);
+  
+  ngOnInit() {
+    const userId = this.userStorageService.getUserId();
+    console.log('UserId:', userId);
+    if (userId !== null) {
+      this.customerService.getUserProfile(userId).subscribe((res) => {
+        this.currentUser = res.data;
+        this.editableUser = { ...res.data };
+      });
+    } else {
+      console.error('Không tìm thấy userId!');
     }
   }
 
+  ngOnChanges() {
+    if (this.currentUser) {
+      this.editableUser = { ...this.currentUser };
+    }
+  }
 
   onSave() {
     const updateData = {
+      email: this.editableUser.email,
       fullName: this.editableUser.fullName,
       gender: this.editableUser.gender,
-      email: this.editableUser.email,
       phone: this.editableUser.phone,
       address: this.editableUser.address,
-      avatarImg: this.editableUser.avatarImg
+      avatarImg: this.editableUser.avatarImg,
+      dateOfBirth: this.editableUser.dateOfBirth
     };
     this.customerService.updateProfile(updateData).subscribe({
-      next: (updatedUser: UserProfile) => {
-        this.user = updatedUser;
+      next: () => {
+        // Lấy lại profile mới nhất, lưu ý lấy từ res.data
+        this.customerService.getUserProfile(this.userStorageService.getUserId()!).subscribe((res) => {
+          this.currentUser = res.data;
+          this.editableUser = { ...res.data };
+        });
         alert('Cập nhật thành công!');
       },
       error: () => {
@@ -51,21 +67,16 @@ export class CustomerProfileComponent {
       }
     });
   }
-
-
 }
 
-interface UserProfile {
-  id: number;
-  username: string;
+export interface UserProfile {
   email: string;
   fullName: string;
-  gender: string;
+  gender: 'MALE' | 'FEMALE' | 'OTHER';
+  totalToursBooked: number;
   phone: string;
   address: string;
   avatarImg: string;
-  createAt: string;
-  birthDay?: string;
-  totalTours?: number;
-  points?: number;
+  dateOfBirth: string; // yyyy-MM-dd
+  points: number;
 }

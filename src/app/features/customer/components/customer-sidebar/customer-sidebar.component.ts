@@ -1,6 +1,9 @@
-import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { UserStorageService } from '../../../../core/services/user-storage/user-storage.service';
+import { SocketSerivce } from '../../../../core/services/socket/socket.service';
+import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
 
 export interface UserProfile {
   id: number;
@@ -23,11 +26,29 @@ export interface UserProfile {
   styleUrl: './customer-sidebar.component.css'
 })
 export class CustomerSidebarComponent implements OnInit {
-  @Input() user: UserProfile | null = null;
+  
   @Output() photoUploaded = new EventEmitter<File>();
+  @Input() currentUser: any;
+ 
 
-
-  constructor() { }
+   constructor(
+    private userStorageService: UserStorageService,
+    private router: Router,
+    private socketService: SocketSerivce,
+    private currentUserService: CurrentUserService,
+    private elRef: ElementRef,
+  ) {}
+  
+  onLogout() {
+    if (!this.currentUser && !this.currentUser.id) {
+      console.error('No user is currently logged in.');
+      return;
+    }
+    this.socketService.disconnect(this.currentUser);
+    this.userStorageService.logout();
+    this.currentUserService.clearCurrentUser();
+    this.router.navigate(['/homepage']);
+  }
 
   ngOnInit(): void { }
 

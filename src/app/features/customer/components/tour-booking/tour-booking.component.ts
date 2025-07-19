@@ -353,7 +353,7 @@ export class TourBookingComponent implements OnInit {
 
   getUserData() {
     this.customerService
-      .getUserBasic(this.currentUserService.getCurrentUser().username)
+      .getUserProfile(this.currentUserService.getCurrentUser().username)
       .subscribe({
         next: (response) => {
           this.userInformation = response.data;

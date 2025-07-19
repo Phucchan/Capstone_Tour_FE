@@ -43,6 +43,10 @@ export const PUBLIC_ROUTES: Route[] = [
         component: CustomTourBookingComponent,
       },
       {
+        path: 'customer/profile',
+        component: ProfileComponent,
+      },
+      {
         path: 'blogs',
         // Tải các routes con từ file blog.routes.ts
         loadChildren: () => import('../blog/blog.routes').then(r => r.BLOG_ROUTES),
