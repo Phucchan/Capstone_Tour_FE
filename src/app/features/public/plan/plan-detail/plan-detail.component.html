@@ -1,0 +1,107 @@
+<div class="space-y-10 p-6 max-w-7xl mx-auto pt-12 pb-40">
+
+  <app-spinner [isLoading]="isLoading"></app-spinner>
+
+  <header class="max-w-7xl mx-auto pt-10 pb-4 border-b border-gray-200">
+    
+    <h1 class="text-4xl font-bold mb-2">{{planContent?.plan.location}}</h1>
+    <p class="text-gray-700 text-sm">{{planContent?.plan.plan_category}} • April • {{planContent?.plan.numberDays}} ngày</p>
+
+    <img [src]="planContent?.plan?.thumbnail_image_url" alt="Petit Palais" class="w-full h-[400px] object-cover" />
+
+  </header>
+
+  <!-- Section: Cultural Gems -->
+  <section>
+    <h2 class="text-2xl font-semibold text-gray-800">
+      {{planContent?.plan.title}}
+    </h2>
+    <p class="text-gray-600 mt-2">
+      {{planContent?.plan.description}}
+    </p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+
+      @for (activity of activities; track $index) {
+        <div class="relative bg-white shadow rounded overflow-hidden">
+          <img [src]="activity?.imageUrl" alt="Petit Palais" class="w-full h-48 object-cover" />
+          
+          <div class="p-4">
+            <h3 class="text-lg font-semibold text-gray-800">{{activity?.title}}</h3>
+            <p class="text-sm text-emerald-700">{{activity?.category}} </p>
+            <p class="text-sm text-gray-500">Thời lượng: 2- 3 giờ</p>
+            <p class="text-sm text-gray-500"><strong>Nội dung: </strong> <span class="italic">{{activity?.content}}</span></p>
+          </div>
+        </div>
+      }
+
+      
+
+      <!-- Duplicate the card above and replace data for each item -->
+    </div>
+  </section>
+
+  <!-- Section: Dinner Picks -->
+  <section>
+    <h2 class="text-2xl font-semibold text-gray-800">
+      Nhà hàng bạn có thể ghé qua
+    </h2>
+    <p class="text-gray-600 mt-2">Một vài nhà hàng phù hợp với chuyến đi của bạn</p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+
+      
+      <!-- Repeat Card Format with Different Content -->
+      @for (restaurant of restaurants; track $index) {
+        <div class="relative bg-white shadow rounded overflow-hidden">
+          <img [src]="restaurant?.imageUrl" alt="Petit Palais" class="w-full h-48 object-cover" />
+          
+          <div class="p-4">
+            <h3 class="text-lg font-semibold text-gray-800"> {{restaurant?.name}}</h3>
+            <p class="text-sm text-gray-500">Địa chỉ: {{restaurant?.address}}</p>
+          </div>
+        </div>
+      }
+
+      
+
+
+    </div>
+  </section>
+
+  <!-- Section: Gardens and River Views -->
+  <section>
+    <h2 class="text-2xl font-semibold text-gray-800">
+      Khách sạn bạn có thể ghé qua
+    </h2>
+    <p class="text-gray-600 mt-2">
+      Dưới đây là những khách sạn được đánh giá cao, thuận tiện cho việc di chuyển và nghỉ ngơi trong hành trình của bạn.
+    </p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+      @for (hotel of hotels; track $index) {
+        <div class="relative bg-white shadow rounded overflow-hidden">
+          <img [src]="hotel?.imageUrl" alt="Petit Palais" class="w-full h-48 object-cover" />
+         
+          <div class="p-4">
+            <h3 class="text-lg font-semibold text-gray-800"> {{hotel?.name}}</h3>
+            <p class="text-sm text-gray-500">Địa chỉ: {{hotel?.address}}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+</div>
+
+
+<div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[80%] text-xl">
+  <div class="bg-green-50 border border-gray-200 shadow-md rounded-lg px-4 py-3 flex justify-between">
+    <button type="button" [routerLink]="['/plan']"   class="px-4 py-2 rounded-full  px-5 py-2.5  bg-gray-200 text-black rounded hover:bg-gray-300">
+      Tạo lại
+    </button>
+    <button type="button" (click)="onSave()" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full  px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">
+      Lưu kế hoạch
+    </button>
+  </div>
+</div>
+

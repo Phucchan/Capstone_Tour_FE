@@ -7,6 +7,7 @@ import { TourBookingComponent } from '../customer/components/tour-booking/tour-b
 import { ProfileComponent } from '../customer/components/profile/profile.component';
 import { CustomTourBookingComponent } from '../customer/components/custom-tour-booking/custom-tour-booking.component';
 import { TourBookingConfirmComponent } from '../customer/components/tour-booking/tour-booking-confirm/tour-booking-confirm.component';
+import { PlanComponent } from './plan/plan.component';
 
 export const PUBLIC_ROUTES: Route[] = [
   {
@@ -41,6 +42,10 @@ export const PUBLIC_ROUTES: Route[] = [
       {
         path: 'custom-tour-booking',
         component: CustomTourBookingComponent,
+      },
+      {
+        path: 'plan-generation',
+        component: PlanComponent,
       },
       {
         path: 'blogs',
