@@ -8,6 +8,7 @@ import {
   TourOptionsData,
   CreateTourRequest,
   UpdateTourRequest,
+  TourDetailWithOptions,
 } from '../models/tour.model';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
@@ -45,18 +46,19 @@ export class TourService {
   /**
    * @description Tạo một tour mới.
    */
-  createTour(tourData: CreateTourRequest): Observable<any> {
+  createTour(tourData: CreateTourRequest): Observable<TourDetail> {
     return this.http
-      .post<ApiResponse<any>>(this.apiUrl, tourData)
+      .post<ApiResponse<TourDetail>>(this.apiUrl, tourData)
       .pipe(map((response) => response.data));
   }
 
   /**
    * @description Lấy thông tin chi tiết của một tour theo ID.
+   * API này giờ trả về cả detail và options.
    */
-  getTourById(id: number): Observable<TourDetail> {
+  getTourById(id: number): Observable<TourDetailWithOptions> {
     return this.http
-      .get<ApiResponse<TourDetail>>(`${this.apiUrl}/${id}`)
+      .get<ApiResponse<TourDetailWithOptions>>(`${this.apiUrl}/${id}`)
       .pipe(map((response) => response.data));
   }
 

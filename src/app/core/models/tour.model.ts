@@ -46,7 +46,7 @@ export interface TourDetail {
  */
 export interface CreateTourRequest {
   name: string;
-  code: string;
+  // code không cần gửi đi, backend tự tạo
   thumbnailUrl: string;
   description: string;
   departLocationId: number;
@@ -59,7 +59,7 @@ export interface CreateTourRequest {
  */
 export interface UpdateTourRequest {
   name: string;
-  code: string;
+  // code: string;
   thumbnailUrl: string;
   description: string;
   tourStatus: string; // Cho phép sửa trạng thái
@@ -75,4 +75,12 @@ export interface TourOptionsData {
   themes: TourOption[];
   departures: TourOption[];
   destinations: TourOption[];
+}
+
+/**
+ * @description Dữ liệu trả về từ API chi tiết tour, bao gồm cả options.
+ */
+export interface TourDetailWithOptions {
+  detail: TourDetail;
+  options: TourOptionsData;
 }
