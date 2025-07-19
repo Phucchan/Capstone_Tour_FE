@@ -30,7 +30,7 @@
       <span>Ngày đăng: {{ blog.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
     </div>
 
-    <img class="w-full h-auto max-h-96 object-cover rounded-lg mb-8" [src]="blog.thumbnailImageUrl" [alt]="blog.title">
+    <img class="w-full h-auto max-h-96 object-cover rounded-lg mb-8" [src]="blog.thumbnailImageUrl" alt="{{ blog.title }}" title="{{ blog.title }}">
 
     <div class="prose dark:prose-invert max-w-none" [innerHTML]="blog.content"></div>
 
