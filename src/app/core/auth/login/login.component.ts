@@ -48,7 +48,7 @@ export class LoginComponent implements OnInit {
     private ssrService: SsrService,
     private route: ActivatedRoute,
     private currentUserService: CurrentUserService
-  ) {}
+  ) { }
 
   ngOnInit() {
     const rememberedUsername = this.ssrService
@@ -152,6 +152,8 @@ export class LoginComponent implements OnInit {
   }
 
   navigateAfterLogin(user: any) {
+    this.userStorageService.saveUser(user);
+    this.currentUserService.setCurrentUser(user);
     // Lấy roles trực tiếp từ đối tượng user vừa nhận được
     const userRoles = user.roles?.map((roleObj: any) => roleObj.roleName) || [];
 

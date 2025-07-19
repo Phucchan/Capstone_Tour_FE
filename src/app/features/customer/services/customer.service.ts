@@ -8,21 +8,23 @@ import { UserProfile } from '../components/customer-sidebar/customer-sidebar.com
   providedIn: 'root',
 })
 export class CustomerService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  getUserBasic(username: string): Observable<any> {
-    console.log('Fetching user basic information for username:', username);
-    return this.http.get<any[]>(`${environment.apiUrl}/users/profile`, {
-      params: new HttpParams().set('username', username),
+  getUserProfile(userId: number): Observable<any> {
+    console.log('{CustomerService} Fetching user profile with userId:', userId);
+    return this.http.get<{ data: any }>(`${environment.apiUrl}/users/profile`, {
+      params: new HttpParams().set('userId', userId.toString()),
     });
   }
-  updateProfile(data: Partial<UserProfile>): Observable<UserProfile> {
-  return this.http.put<{ data: UserProfile }>(
-    `${environment.apiUrl}/users/profile`,
-    data
-  ).pipe(
-    map(res => res.data)
-  );
-}
+  updateProfile(data: any): Observable<UserProfile> {
+    return this.http.put<{ data: UserProfile }>(`${environment.apiUrl}/users/profile`, data)
+      .pipe(
+        map(res => res.data)
+      );
+  }
+  getProfile(): Observable<UserProfile> {
+    return this.http.get<{ data: UserProfile }>(`${environment.apiUrl}/users/profile`)
+      .pipe(map(res => res.data));
+  }
 
 }

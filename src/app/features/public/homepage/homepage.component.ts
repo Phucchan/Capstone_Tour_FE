@@ -27,7 +27,7 @@ import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.
 })
 export class HomepageComponent implements OnInit {
   blogs: Blog[] = [];
-  highlyRatedTours: HighlyRatedTour[] = [];
+  saleTours: SaleTour[] = [];
   locations: Location[] = [];
   isLoading = true;
   errorMessage: string | null = null;
@@ -49,7 +49,7 @@ export class HomepageComponent implements OnInit {
       next: (response) => {
         const data = response.data || {};
         this.blogs = data.recentBlogs || [];
-        this.highlyRatedTours = data.highlyRatedTours || [];
+        this.saleTours = data.saleTours || [];
         this.locations = data.locations || [];
         this.isLoading = false;
       },
@@ -73,7 +73,7 @@ export class HomepageComponent implements OnInit {
       target.scrollBy({ left: -100, behavior: 'smooth' });
     }
   }
-  
+
   // Scroll phải
   scrollRight(tourId: number): void {
     const target = this.getScrollContainerByTourId(tourId);
@@ -94,8 +94,13 @@ export class HomepageComponent implements OnInit {
     return null;
   }
   navigateToTour(id: number): void {
-  this.router.navigate(['/tours', id]);
-}
+    this.router.navigate(['/tours', id]);
+  }
+  getDiscountedPrice(tour: SaleTour): number {
+    if (!tour.discountPercent) return tour.startingPrice;
+    return Math.round(tour.startingPrice * (1 - tour.discountPercent / 100));
+  }
+
 }
 
 interface Blog {
@@ -106,7 +111,7 @@ interface Blog {
   createdAt: string;
 }
 
-interface HighlyRatedTour {
+interface SaleTour {
   id: number;
   name: string;
   thumbnailUrl: string;
@@ -115,11 +120,10 @@ interface HighlyRatedTour {
   region: string;
   locationName: string;
   startingPrice: number;
-  departureDates: string[];
-  code: string,
+  code: string;
   tourTransport: string;
-
-
+  departureDates: string[];
+  discountPercent: number;
 }
 
 interface Location {

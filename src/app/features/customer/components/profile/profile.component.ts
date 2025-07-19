@@ -6,7 +6,6 @@ import { CustomerService } from '../../services/customer.service';
 import { RouterOutlet } from '@angular/router';
 import { CustomerProfileComponent } from '../customer-profile/customer-profile.component';
 import { UserStorageService } from '../../../../core/services/user-storage/user-storage.service';
-import { HeaderComponent } from "../../../../shared/components/header/header.component";
 
 @Component({
   selector: 'app-profile',
@@ -14,40 +13,40 @@ import { HeaderComponent } from "../../../../shared/components/header/header.com
     FormsModule,
     CustomerSidebarComponent,
     RouterOutlet,
-    CustomerProfileComponent, 
-    HeaderComponent],
+    CustomerProfileComponent,
+    ],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
 export class ProfileComponent {
-  @Input() user: UserProfile | null = null;
+  @Input() currentUser: UserProfile | null = null;
+  
   isLoading = true;
 
   // Có thể tạo bản sao để sửa không ảnh hưởng data gốc
   editableUser: Partial<UserProfile> = {};
   constructor(private customerService: CustomerService
-  , private userStorageService: UserStorageService
+    , private userStorageService: UserStorageService
   ) { }
 
   ngOnInit(): void {
-  const user = this.userStorageService.getUser();
-  const username = user?.username || '';
-  if (!username) {
-    // Xử lý trường hợp chưa đăng nhập
-    return;
-  }
-  this.customerService.getUserBasic(username).subscribe({
-    next: (response : any ) => {
-      this.user = response.data;
-      this.editableUser = { ...this.user };
-      this.isLoading = false;
-    },
-    error: () => {
+    const user = this.userStorageService.getUser();
+    const username = user?.username || '';
+    if (!username) {
+      // Xử lý trường hợp chưa đăng nhập
+      return;
+    }
+    const userId = this.userStorageService.getUserId();
+    if (userId !== null) {
+      this.customerService.getUserProfile(userId).subscribe((res) => {
+        this.currentUser = res.data;
+        this.editableUser = { ...res.data };
+      });
+    } else {
       this.isLoading = false;
       // handle error
     }
-  });
-}
+  }
   getCurrentUsername(): string {
     // Lấy username từ localStorage, authService, hoặc bất kỳ đâu bạn lưu
     // Ví dụ (giả sử lưu ở localStorage):
@@ -55,8 +54,8 @@ export class ProfileComponent {
   }
 
   ngOnChanges() {
-    if (this.user) {
-      this.editableUser = { ...this.user };
+    if (this.currentUser) {
+      this.editableUser = { ...this.currentUser };
     }
   }
 
@@ -67,9 +66,9 @@ export class ProfileComponent {
   }
   // Xử lý sự kiện khi người dùng upload ảnh đại diện
   onPhotoUploaded(file: File) {
-  // Gọi API upload avatar
-  // Sau khi upload thành công thì load lại profile
-}
+    // Gọi API upload avatar
+    // Sau khi upload thành công thì load lại profile
+  }
 }
 export interface UserProfile {
   id: number;

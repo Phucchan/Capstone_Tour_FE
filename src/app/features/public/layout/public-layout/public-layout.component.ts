@@ -49,7 +49,7 @@ export class PublicLayoutComponent {
     });
   }
   getUserBasicInfo() {
-    this.customerService.getUserBasic(this.currentUser.username).subscribe({
+    this.customerService.getUserProfile(this.currentUser.username).subscribe({
       next: (response) => {
         console.log('User basic information:', response?.data);
         this.customerBasicInfo = response?.data || {};
@@ -70,11 +70,13 @@ export class PublicLayoutComponent {
       });
   }
 
-  getUserChatGroups() {
+  getUserChatGroups() { 
+    console.log('{PublicLayoutComponent} Fetching chat groups for user:', this.customerBasicInfo.id);
     this.chatService
       .getChatGroups(this.customerBasicInfo.id)
       .subscribe((response: any) => {
         this.chatGroups = response?.data || [];
+        console.log('{PublicLayoutComponent} User chat groups:', this.chatGroups);
       });
   }
 }

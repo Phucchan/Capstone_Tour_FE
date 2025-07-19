@@ -17,8 +17,12 @@ export class TourBookingConfirmComponent {
 
   numberAdults: number = 1;
   numberChildren: number = 0;
+  numberInfants: number = 0;
+  numberToddlers: number = 0;
 
   childrenPrice: number = 0;
+  infantPrice: number = 0;
+  toddlerPrice: number = 0;
 
   numberSingleRooms: number = 1;
 
@@ -70,9 +74,22 @@ export class TourBookingConfirmComponent {
 
         this.numberSingleRooms = this.bookingData.adults.filter((t: any) => t?.singleRoom === true).length
 
+        if(this.bookingData?.needHelp) {
+          this.numberSingleRooms = this.bookingData?.singleRooms || 1;
+        }
+
 
         this.numberAdults = this.bookingData.adults.length;
         this.numberChildren = this.bookingData.children.length;
+        this.numberInfants = this.bookingData.infants.length;
+        this.numberToddlers = this.bookingData.toddlers.length;
+
+        this.childrenPrice = this.bookingData.sellingPrice! * 0.75;
+        this.infantPrice = this.bookingData.sellingPrice! * 0.5;
+        this.toddlerPrice = 500000;
+        
+
+
 
         console.log(this.bookingData)
 
@@ -92,19 +109,20 @@ export class TourBookingConfirmComponent {
     const childrenArray = this.bookingData.children;
 
     const adultPrice = this.bookingData.sellingPrice;
-    const childrenPrice = adultPrice * 0.75;
+    const childrenPrice = this.childrenPrice || adultPrice! * 0.75;
+    const infantPrice = this.infantPrice || adultPrice! * 0.5;
+    const toddlerPrice = this.toddlerPrice || 500000;
 
-    this.childrenPrice = adultPrice * 0.75;
 
     const adultTotal = adultsArray.length * adultPrice!;
     const childrenTotal = childrenArray.length * childrenPrice;
+    const infantTotal = this.numberInfants * infantPrice!;
+    const toddlerTotal = this.numberToddlers * toddlerPrice!;
 
     const extra = this.numberSingleRooms * this.bookingData.extraHotelCost!;
 
-    this.total = adultTotal + childrenTotal + extra;
+    this.total = adultTotal + childrenTotal + extra + infantTotal + toddlerTotal;
 
-
-    //this.bookingForm.patchValue({ total: this.total }, { emitEvent: false });
   }
 
 

@@ -13,6 +13,9 @@ import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { TourDetailService } from '../../services/tour-detail.service';
 import { BookingInfoService } from '../../services/booking-infor.service';
+import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
+import { CustomerService } from '../../services/customer.service';
+import { filter, take } from 'rxjs';
 
 @Component({
   selector: 'app-tour-booking',
@@ -35,11 +38,11 @@ export class TourBookingComponent implements OnInit {
   numberAdults: number = 1;
   numberChildren: number = 0;
   numberInfants: number = 0;
-  numberToddleres: number = 0;
+  numberToddlers: number = 0;
 
   childrenPrice: number = 0;
   infantsPrice: number = 0;
-  toddleresPrice: number = 500000;
+  toddlersPrice: number = 500000;
 
   numberSingleRooms: number = 1;
 
@@ -54,12 +57,16 @@ export class TourBookingComponent implements OnInit {
 
   warningMessage: string = '';
 
+  isHelpingInput: boolean = false;
+
   constructor(
     private bookingInforService: BookingInfoService,
     private fb: FormBuilder,
     private userStorageService: UserStorageService,
     private router: Router,
-    private tourDetailService: TourDetailService
+    private tourDetailService: TourDetailService,
+    private customerService: CustomerService,
+    private currentUserService: CurrentUserService
   ) {
     this.bookingForm = this.fb.group({
       userId: ['', Validators.required],
@@ -74,17 +81,21 @@ export class TourBookingComponent implements OnInit {
       adults: this.fb.array([]),
       children: this.fb.array([]),
       infants: this.fb.array([]),
-      toddleres: this.fb.array([]),
+      toddlers: this.fb.array([]),
       total: [0],
       sellingPrice: [0, Validators.required],
       extraHotelCost: [0, Validators.required],
+      numberSingleRooms: [1, Validators.required],
     });
 
     // Dynamically add adult form groups based on numberAdults
     this.addAdults(this.numberAdults);
 
     this.adultsFormArray.valueChanges.subscribe(() => {
-      this.updateNumberOfSingleRooms();
+      if (!this.isHelpingInput) {
+        this.updateSingleRoomValues();
+      }
+
       this.calculateTotal();
     });
   }
@@ -100,8 +111,16 @@ export class TourBookingComponent implements OnInit {
     console.log('{TourBookingComponent} Schedule ID:', this.scheduleId);
 
     this.getTourDetails(tourId);
-    this.getUserData();
-    
+    this.currentUserService.currentUser$
+      .pipe(
+        // chỉ lấy khi user có (khác null)
+        filter((user: any) => !!user),
+        take(1) // chỉ lấy 1 lần
+      )
+      .subscribe((user) => {
+        this.getUserData();
+      });
+
     const today = new Date();
     const twelveYearsAgo = new Date(
       today.getFullYear() - 13,
@@ -119,17 +138,18 @@ export class TourBookingComponent implements OnInit {
 
     const adultPrice = this.tourSchedule?.price;
     const childrenPrice = this.childrenPrice;
-    const toddleresPrice = this.toddleresPrice;
+    const toddlersPrice = this.toddlersPrice;
     const infantsPrice = this.tourSchedule?.price! * 0.5;
 
     const adultTotal = adultsArray.controls.length * adultPrice!;
     const childrenTotal = childrenArray.controls.length * childrenPrice;
     const infantsTotal = this.numberInfants * infantsPrice;
-    const toddleresTotal = this.numberToddleres * toddleresPrice;
+    const toddlersTotal = this.numberToddlers * toddlersPrice;
 
     const extra = this.numberSingleRooms * this.tourSchedule?.extraHotelCost!;
 
-    this.total = adultTotal + childrenTotal + extra + infantsTotal + toddleresTotal;
+    this.total =
+      adultTotal + childrenTotal + extra + infantsTotal + toddlersTotal;
 
     this.bookingForm.patchValue({ total: this.total }, { emitEvent: false });
   }
@@ -141,22 +161,106 @@ export class TourBookingComponent implements OnInit {
     ).length;
   }
 
+  changeHelpingInput() {
+    console.log('{TourBookingComponent} isHelpingInput:', this.isHelpingInput);
+    this.isHelpingInput = !this.isHelpingInput;
+
+    if (this.isHelpingInput) {
+      this.clearAllPassengerGroups();
+    } else {
+      this.addAllPassengerGroupValidators();
+    }
+  }
+
+  createCustomerGroup(isSingleRoom: boolean, paxType: string): FormGroup {
+    return this.fb.group({
+      fullName: [''],
+      gender: ['MALE'],
+      dateOfBirth: [''],
+      singleRoom: isSingleRoom, // Checkbox value (default: false)
+      paxType: [paxType, Validators.required], // Default to ADULT
+    });
+  }
+
   // Helper method to create a single adult FormGroup
   createAdultGroup(): FormGroup {
+    if (this.isHelpingInput) {
+      return this.createCustomerGroup(this.numberAdults == 1, 'ADULT');
+    }
+
     return this.fb.group({
       fullName: ['', Validators.required],
       gender: ['MALE', Validators.required],
       dateOfBirth: ['', Validators.required],
       singleRoom: this.numberAdults == 1 ? [true] : [false], // Checkbox value (default: false)
+      paxType: ['ADULT', Validators.required],
     });
   }
 
-  createChildrenGroup(): FormGroup {
+  createChildrenGroup(paxType: string): FormGroup {
+    if (this.isHelpingInput) {
+      return this.createCustomerGroup(false, paxType);
+    }
     return this.fb.group({
       fullName: ['', Validators.required],
       gender: ['MALE', Validators.required],
       dateOfBirth: ['', Validators.required],
       singleRoom: [false],
+      paxType: [paxType, Validators.required], // Default to CHILD
+    });
+  }
+
+  clearAllPassengerGroups() {
+    console.log(
+      '{TourBookingComponent} Clearing all passenger groups validators'
+    );
+
+    const groups = ['adults', 'children', 'toddlers', 'infants'];
+    groups.forEach((group) => {
+      const arr = this.bookingForm.get(group) as FormArray;
+      arr.controls.forEach((ctrl) => {
+        const fg = ctrl as FormGroup;
+        Object.keys(fg.controls).forEach((key) => {
+          fg.get(key)?.clearValidators();
+          fg.get(key)?.updateValueAndValidity();
+        });
+      });
+      arr.clearValidators();
+      arr.updateValueAndValidity();
+    });
+  }
+
+  addAllPassengerGroupValidators() {
+    const groups = ['adults', 'children', 'toddlers', 'infants'];
+
+    groups.forEach((group) => {
+      const arr = this.bookingForm.get(group) as FormArray;
+
+      // Thêm validator cho từng field trong mỗi FormGroup
+      arr.controls.forEach((ctrl) => {
+        const fg = ctrl as FormGroup;
+
+        if (fg.get('fullName')) {
+          fg.get('fullName')?.setValidators([Validators.required]);
+        }
+
+        if (fg.get('gender')) {
+          fg.get('gender')?.setValidators([Validators.required]);
+        }
+
+        if (fg.get('dateOfBirth')) {
+          fg.get('dateOfBirth')?.setValidators([Validators.required]);
+        }
+
+        // Cập nhật lại giá trị và trạng thái
+        Object.values(fg.controls).forEach((control) => {
+          control.updateValueAndValidity();
+        });
+      });
+
+      // Thêm validator cho toàn bộ FormArray
+      arr.setValidators([Validators.required, Validators.minLength(1)]);
+      arr.updateValueAndValidity();
     });
   }
 
@@ -169,17 +273,17 @@ export class TourBookingComponent implements OnInit {
 
   addChildren(): void {
     const childrenArray = this.childrenFormArray;
-    childrenArray.push(this.createChildrenGroup());
+    childrenArray.push(this.createChildrenGroup('CHILD'));
   }
 
   addInfants(): void {
     const infantsArray = this.infantsFormArray;
-    infantsArray.push(this.createChildrenGroup());
+    infantsArray.push(this.createChildrenGroup('INFANT'));
   }
 
-  addToddleres(): void {
-    const toddleresArray = this.toddleresFormArray;
-    toddleresArray.push(this.createChildrenGroup());
+  addtoddlers(): void {
+    const toddlersArray = this.toddlersFormArray;
+    toddlersArray.push(this.createChildrenGroup('TODDLER'));
   }
 
   updateSingleRoomValues(): void {
@@ -189,8 +293,12 @@ export class TourBookingComponent implements OnInit {
     adultsArray.controls.forEach((adultGroup) => {
       const singleRoomControl = adultGroup.get('singleRoom');
       if (singleRoomControl) {
-        singleRoomControl.setValue(isSingleAdult); // Set to true if only one adult, otherwise false
+        singleRoomControl.setValue(isSingleAdult, { emitEvent: false }); // Set to true if only one adult, otherwise false
       }
+    });
+
+    this.bookingForm.patchValue({
+      numberSingleRooms: this.numberSingleRooms,
     });
   }
 
@@ -209,9 +317,9 @@ export class TourBookingComponent implements OnInit {
     return this.bookingForm.get('infants') as FormArray;
   }
 
-  // Getter for the toddleres FormArray
-  get toddleresFormArray(): FormArray {
-    return this.bookingForm.get('toddleres') as FormArray;
+  // Getter for the toddlers FormArray
+  get toddlersFormArray(): FormArray {
+    return this.bookingForm.get('toddlers') as FormArray;
   }
 
   getTourDetails(tourId: number) {
@@ -229,7 +337,7 @@ export class TourBookingComponent implements OnInit {
 
         this.bookingForm.patchValue({
           tourId: this.tourDetails?.id,
-          scheduleId: this.tourSchedule?.scheduleId,
+          scheduleId: this.tourSchedule?.id,
           sellingPrice: this.tourSchedule?.price,
           extraHotelCost: this.tourSchedule?.extraHotelCost,
         });
@@ -244,14 +352,24 @@ export class TourBookingComponent implements OnInit {
   }
 
   getUserData() {
-    const user = this.userStorageService.getUser();
-    this.bookingForm.patchValue({
-      userId: user?.id,
-      fullName: user?.fullName,
-      email: user?.email,
-      phone: user?.phone,
-      address: user?.address,
-    });
+    this.customerService
+      .getUserProfile(this.currentUserService.getCurrentUser().username)
+      .subscribe({
+        next: (response) => {
+          this.userInformation = response.data;
+          this.bookingForm.patchValue({
+            userId: this.userInformation?.id,
+            fullName: this.userInformation?.fullName,
+            email: this.userInformation?.email,
+            phone: this.userInformation?.phone,
+            address: this.userInformation?.address,
+          });
+        },
+        error: (error) => {
+          console.error('Failed to load user data:', error);
+          this.isLoading = false;
+        },
+      });
   }
 
   onSubmit() {
@@ -280,17 +398,43 @@ export class TourBookingComponent implements OnInit {
     }
   }
 
+  increamentSingleRooms() {
+    if (this.numberSingleRooms < this.numberAdults) {
+      this.numberSingleRooms++;
+      this.bookingForm.patchValue({
+        numberSingleRooms: this.numberSingleRooms,
+      });
+      this.calculateTotal();
+    }
+  }
+
+  decrementSingleRooms() {
+    if (
+      this.numberSingleRooms > 1 ||
+      (this.numberAdults > 1 && this.numberSingleRooms > 0)
+    ) {
+      this.numberSingleRooms--;
+      this.calculateTotal();
+    } // Prevent negative values
+    this.bookingForm.patchValue({
+      numberSingleRooms: this.numberSingleRooms,
+    });
+  }
+
   incrementAldults() {
     if (
       this.numberAdults +
         this.numberChildren +
         this.numberInfants +
-        this.numberToddleres <
+        this.numberToddlers <
       this.tourSchedule?.availableSeats!
     ) {
       this.numberAdults++;
       this.addAdults(1);
-      this.updateSingleRoomValues();
+      if (!this.isHelpingInput) {
+        this.updateSingleRoomValues();
+      }
+      this.calculateTotal();
     } else {
       this.warningMessage =
         'Sorry, the current tour has only ' +
@@ -304,7 +448,15 @@ export class TourBookingComponent implements OnInit {
     if (this.numberAdults > 1) {
       this.numberAdults--;
       this.adultsFormArray.removeAt(this.numberAdults); // Remove the last adult form group
-      this.updateSingleRoomValues();
+
+      if (this.numberAdults < this.numberSingleRooms) {
+        this.numberSingleRooms = this.numberAdults; // Adjust single rooms if needed
+      }
+
+      if (!this.isHelpingInput) {
+        this.updateSingleRoomValues();
+      }
+      this.calculateTotal();
     } // Prevent negative values
   }
 
@@ -313,7 +465,7 @@ export class TourBookingComponent implements OnInit {
       this.numberAdults +
         this.numberChildren +
         this.numberInfants +
-        this.numberToddleres <
+        this.numberToddlers <
       this.tourSchedule?.availableSeats!
     ) {
       this.numberChildren++;
@@ -341,11 +493,12 @@ export class TourBookingComponent implements OnInit {
       this.numberAdults +
         this.numberChildren +
         this.numberInfants +
-        this.numberToddleres <
+        this.numberToddlers <
       this.tourSchedule?.availableSeats!
     ) {
       this.numberInfants++;
-      this.infantsFormArray.push(this.createChildrenGroup());
+      this.addInfants();
+      this.calculateTotal();
     } else {
       this.warningMessage =
         'Sorry, the current tour has only ' +
@@ -363,16 +516,17 @@ export class TourBookingComponent implements OnInit {
     } // Prevent negative values
   }
 
-  incrementToddleres() {
+  incrementToddlers() {
     if (
       this.numberAdults +
         this.numberChildren +
         this.numberInfants +
-        this.numberToddleres <
+        this.numberToddlers <
       this.tourSchedule?.availableSeats!
     ) {
-      this.numberToddleres++;
-      this.toddleresFormArray.push(this.createChildrenGroup());
+      this.numberToddlers++;
+      this.addtoddlers();
+      this.calculateTotal();
     } else {
       this.warningMessage =
         'Sorry, the current tour has only ' +
@@ -382,10 +536,10 @@ export class TourBookingComponent implements OnInit {
     }
   }
 
-  decrementToddleres() {
-    if (this.toddleresFormArray.length > 0) {
-      this.numberToddleres--;
-      this.toddleresFormArray.removeAt(this.numberToddleres);
+  decrementToddlers() {
+    if (this.toddlersFormArray.length > 0) {
+      this.numberToddlers--;
+      this.toddlersFormArray.removeAt(this.numberToddlers);
       this.calculateTotal();
     } // Prevent negative values
   }
