@@ -1,4 +1,12 @@
-// Interface cho một tour trong danh sách
+// src/app/core/models/tour.model.ts - PHIÊN BẢN HOÀN CHỈNH
+
+// Dùng cho các dropdown
+export interface TourOption {
+  id: number;
+  name: string;
+}
+
+// Dùng cho danh sách tour
 export interface TourListItem {
   id: number;
   name: string;
@@ -8,39 +16,33 @@ export interface TourListItem {
   durationDays: number;
 }
 
-// Interface cho đối tượng phân trang từ backend
+// Dùng cho phân trang
 export interface PagingDTO<T> {
   items: T[];
   total: number;
   page: number;
   size: number;
-  // Backend không trả về totalPages, ta có thể tự tính nếu cần
 }
 
-
 /**
- * @description Interface cho chi tiết một tour.
- * Khớp với `TourDetailManagerDTO.java`.
+ * @description Dữ liệu chi tiết tour trả về từ API.
+ * Cấu trúc này khớp với TourDetailManagerDTO đã sửa ở backend.
  */
 export interface TourDetail {
-    id: number;
-    name: string;
-    thumbnailUrl: string;
-    tourThemeName: string; // Dùng để hiển thị
-    tourThemeId?: number; // Cần backend trả về để điền vào form
-    departLocationName: string; // Dùng để hiển thị
-    departLocationId?: number; // Cần backend trả về để điền vào form
-    destinationLocationId?: number; // Cần backend trả về để điền vào form
-    durationDays: number;
-    description: string;
-    code?: string;
-    tourType?: string;
-    tourStatus?: string;
+  id: number;
+  name: string;
+  code: string;
+  thumbnailUrl: string;
+  description: string;
+  tourType: string;
+  tourStatus: string;
+  departLocation: TourOption; // <-- Đã sửa: object
+  destinations: TourOption[]; // <-- Đã sửa: mảng object
+  themes: TourOption[]; // <-- Đã sửa: mảng object
 }
 
 /**
- * @description Interface cho request tạo tour mới.
- * Khớp với `TourCreateManagerRequestDTO.java`.
+ * @description Dữ liệu gửi đi khi TẠO tour.
  */
 export interface CreateTourRequest {
   name: string;
@@ -48,31 +50,27 @@ export interface CreateTourRequest {
   thumbnailUrl: string;
   description: string;
   departLocationId: number;
-  destinationLocationIds: number[]; // Mảng các ID điểm đến
-  tourThemeIds: number[]; // Mảng các ID chủ đề
-  // tourType và tourStatus sẽ được backend tự xử lý
-  // `durationDays` sẽ được backend tự tính, không cần gửi lên.
+  destinationLocationIds: number[];
+  tourThemeIds: number[];
 }
 
-// /**
-//  * @description Interface cho request cập nhật tour.
-//  * Khớp với `TourUpdateManagerRequestDTO.java`.
-//  */
-// export interface UpdateTourRequest {
-//   thumbnailUrl: string;
-//   tourThemeId: number;
-//   departLocationId: number;
-//   destinationLocationId: number;
-//   durationDays: number;
-//   description: string;
-// }
-// Interface cho các lựa chọn trong dropdown
-export interface TourOption {
-  id: number;
+/**
+ * @description Dữ liệu gửi đi khi CẬP NHẬT tour.
+ */
+export interface UpdateTourRequest {
   name: string;
+  code: string;
+  thumbnailUrl: string;
+  description: string;
+  tourStatus: string; // Cho phép sửa trạng thái
+  departLocationId: number;
+  destinationLocationIds: number[];
+  tourThemeIds: number[];
 }
 
-// Interface cho dữ liệu trả về từ API /tours/options
+/**
+ * @description Dữ liệu cho các dropdowns từ API /options.
+ */
 export interface TourOptionsData {
   themes: TourOption[];
   departures: TourOption[];
