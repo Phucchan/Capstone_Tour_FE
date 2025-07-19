@@ -59,24 +59,30 @@
       </div>
 
       <!-- Phần chọn nhiều -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t">
+     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t">
         <div>
           <label for="destinationLocationIds" class="form-label">Điểm đến (chọn nhiều)</label>
-          <div class="multi-select-box">
-            <select id="destinationLocationIds" formControlName="destinationLocationIds" multiple class="input-style h-48">
-              <option *ngFor="let loc of options.destinations" [value]="loc.id">{{ loc.name }}</option>
-            </select>
-          </div>
-          <p class="text-xs text-gray-500 mt-1">Giữ Ctrl (hoặc Cmd trên Mac) để chọn nhiều.</p>
+          <ng-select
+              [items]="options.destinations"
+              bindLabel="name"
+              bindValue="id"
+              [multiple]="true"
+              [closeOnSelect]="false"
+              placeholder="Chọn các điểm đến"
+              formControlName="destinationLocationIds">
+          </ng-select>
         </div>
         <div>
           <label for="tourThemeIds" class="form-label">Chủ đề (chọn nhiều)</label>
-          <div class="multi-select-box">
-            <select id="tourThemeIds" formControlName="tourThemeIds" multiple class="input-style h-48">
-              <option *ngFor="let theme of options.themes" [value]="theme.id">{{ theme.name }}</option>
-            </select>
-          </div>
-          <p class="text-xs text-gray-500 mt-1">Giữ Ctrl (hoặc Cmd trên Mac) để chọn nhiều.</p>
+          <ng-select
+              [items]="options.themes"
+              bindLabel="name"
+              bindValue="id"
+              [multiple]="true"
+              [closeOnSelect]="false"
+              placeholder="Chọn các chủ đề"
+              formControlName="tourThemeIds">
+          </ng-select>
         </div>
       </div>
 

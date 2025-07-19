@@ -10,6 +10,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subscription, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
+// --- Thêm import cho NgSelectModule ---
+import { NgSelectModule } from '@ng-select/ng-select';
+
 import { TourService } from '../../../../core/services/tour.service';
 import {
   TourOptionsData,
@@ -22,7 +25,11 @@ import {
 @Component({
   selector: 'app-tour-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule, // <-- Component này dùng Reactive Forms
+    NgSelectModule, // <-- Thêm NgSelectModule để sử dụng ng-select
+  ],
   templateUrl: './tour-form.component.html',
   styleUrls: ['./tour-form.component.css'],
 })
@@ -65,7 +72,7 @@ export class TourFormComponent implements OnInit, OnDestroy {
       })
     );
 
-    tourWithOptions$.subscribe((data) => {
+    tourWithOptions$.subscribe((data: any) => {
       this.tourOptions$ = of(data.options);
       if (this.isEditMode && data.detail) {
         this.pageTitle = 'Chi tiết & Cập nhật Tour';
