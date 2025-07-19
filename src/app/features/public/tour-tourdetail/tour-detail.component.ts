@@ -15,17 +15,17 @@ import { DurationFormatPipe } from '../../../shared/pipes/duration-format.pipe';
 @Component({
   selector: 'app-tour-detail',
   imports: [FullCalendarModule,
-     CommonModule, 
-     CurrencyVndPipe, 
-     TruncatePipe, 
-     DurationFormatPipe,
+    CommonModule,
+    CurrencyVndPipe,
+    TruncatePipe,
+    DurationFormatPipe,
   ],
   standalone: true,
   templateUrl: './tour-detail.component.html',
   styleUrls: ['./tour-detail.component.css'],
   providers: [DatePipe]
 })
-export class TourDetailComponent  {
+export class TourDetailComponent {
   tourDetails: any | undefined;
   isLoading = true;
   events: { scheduleId: number; title: string; start: string; }[] | undefined = [];
@@ -33,6 +33,8 @@ export class TourDetailComponent  {
   selectedSchedule: any | undefined;
   price: number | undefined;
   isBrowser: boolean = false;
+  selectedRange: string[] = [];
+
 
   @ViewChild('calendar') calendarComponent!: FullCalendarComponent;
 
@@ -64,7 +66,7 @@ export class TourDetailComponent  {
     this.userId = this.userStorageService.getUserId();
     this.isBrowser = this.ssrService.isBrowser;
 
-   }
+  }
 
   ngOnInit(): void {
     const tourId = Number(this.router.url.split('/').pop());
@@ -101,7 +103,7 @@ export class TourDetailComponent  {
           });
 
           this.isLoading = false;
-        
+
         },
         error: (err) => {
           console.error('Failed to load tour:', err);
@@ -137,26 +139,76 @@ export class TourDetailComponent  {
     }
   }
 
-  resetSchedule() {
-    this.selectedSchedule = undefined;
-    this.scrollToSchedule('schedule2');
-  }
+  // resetSchedule() {
+  //   this.selectedSchedule = undefined;
+  //   this.scrollToSchedule('schedule2');
+  // }
 
+  // handleDateClick(arg: any) {
+  //   const eventOnDate = this.events?.find(event => event.start === arg.dateStr);
+  //   if (eventOnDate) {
+  //     this.selectedSchedule = this.tourDetails?.schedules?.find((schedule: any) => schedule.id === eventOnDate.scheduleId);
+  //   }
+  // }
   handleDateClick(arg: any) {
     const eventOnDate = this.events?.find(event => event.start === arg.dateStr);
     if (eventOnDate) {
       this.selectedSchedule = this.tourDetails?.schedules?.find((schedule: any) => schedule.id === eventOnDate.scheduleId);
+
+      // Tính toán các ngày cần bôi đen
+      const startDate = new Date(arg.dateStr);
+      const duration = this.tourDetails?.durationDays || 0;
+      this.selectedRange = [];
+      for (let i = 0; i < duration; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        this.selectedRange.push(date.toISOString().split('T')[0]);
+      }
+
+      // Cập nhật lại background event cho calendar
+
+      this.calendarOptions = {
+        ...this.calendarOptions,
+        events: [
+          ...(this.events || []),
+          ...this.selectedRange.map(dateStr => ({
+            start: dateStr,
+            display: 'background',
+            backgroundColor: '#1d4ed8',
+            ...this.selectedRange.map(dateStr => ({
+              start: dateStr,
+              allDay: true,
+              display: 'auto',
+              title: '',
+              classNames: ['selected-day-border'],
+            }))
+          })),
+        ]
+      };
     }
   }
+
+
+  resetSchedule() {
+    this.selectedSchedule = undefined;
+    this.selectedRange = [];
+    this.calendarOptions = {
+      ...this.calendarOptions,
+      events: [...this.events!],
+    };
+    this.scrollToSchedule('schedule2');
+  }
+
+
 
   goToMonth(month: string, year: string) {
     const calendarApi = this.calendarComponent.getApi();
     calendarApi.gotoDate(`${year}-${month.padStart(2, '0')}-01`);
   }
 
-  navigateToDetails() { 
+  navigateToDetails() {
     if (this.tourDetails && this.selectedSchedule && this.userId) {
-      this.router.navigate(['/tour-booking', this.tourDetails.id,this.selectedSchedule.id]).then(() => {
+      this.router.navigate(['/tour-booking', this.tourDetails.id, this.selectedSchedule.id]).then(() => {
         this.viewportScroller.scrollToPosition([0, 0]);
       });
     } else {
