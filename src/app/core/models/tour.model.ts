@@ -1,4 +1,4 @@
-// src/app/core/models/tour.model.ts - PHIÊN BẢN HOÀN CHỈNH
+// src/app/core/models/tour.model.ts
 
 // Dùng cho các dropdown
 export interface TourOption {
@@ -83,4 +83,37 @@ export interface TourOptionsData {
 export interface TourDetailWithOptions {
   detail: TourDetail;
   options: TourOptionsData;
+}
+
+
+
+/**
+ * @description Dữ liệu của một ngày trong tour khi hiển thị
+ */
+export interface TourDayManagerDTO {
+  id: number; // ID của TourDay
+  dayNumber: number;
+  title: string;
+  description: string | null;
+  location: TourOption | null; // Dùng TourOption vì nó có cấu trúc {id, name}
+  serviceTypes: ServiceTypeShortDTO[];
+}
+
+/**
+ * @description Dữ liệu để tạo hoặc cập nhật một ngày trong tour
+ */
+export interface TourDayManagerCreateRequestDTO {
+  title: string;
+  locationId: number | null;
+  serviceTypeIds: number[];
+  description?: string;
+}
+
+/**
+ * @description Dữ liệu rút gọn của một loại dịch vụ
+ */
+export interface ServiceTypeShortDTO {
+  id: number;
+  name: string;
+  code?: string; // Thêm code để khớp với backend
 }
