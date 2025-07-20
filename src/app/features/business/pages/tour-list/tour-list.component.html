@@ -73,7 +73,9 @@
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button (click)="viewTourDetails(tour.id)" class="text-blue-600 hover:text-blue-900 mr-4">Chi tiết</button>
+                <!-- ĐÃ SỬA: Thay button bằng thẻ <a> và thêm nút Lịch trình -->
+                <a [routerLink]="['/business/tours', tour.id]" class="text-blue-600 hover:text-blue-900 mr-4">Chi tiết</a>
+                <a [routerLink]="['/business/tours', tour.id, 'schedule']" class="text-green-600 hover:text-green-900 mr-4">Lịch trình</a>
                 <button (click)="calculateTourPrice(tour.id)" class="text-indigo-600 hover:text-indigo-900">Chiết tính</button>
               </td>
             </tr>
