@@ -1,0 +1,76 @@
+<!-- Modal Backdrop -->
+<div
+  *ngIf="isVisible"
+  class="fixed inset-0 z-40 bg-black bg-opacity-50 transition-opacity"
+  (click)="onClose()"
+></div>
+
+<!-- Modal Panel -->
+<div
+  *ngIf="isVisible"
+  class="fixed inset-0 z-50 flex items-center justify-center p-4"
+>
+  <div class="relative w-full max-w-2xl bg-white rounded-lg shadow-xl">
+    <form [formGroup]="dayForm" (ngSubmit)="onSave()">
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between p-4 border-b rounded-t">
+        <h3 class="text-xl font-semibold text-gray-900">{{ formTitle }}</h3>
+        <button
+          type="button"
+          (click)="onClose()"
+          class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
+        >
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            ></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 space-y-6">
+        <div>
+          <label for="title" class="block mb-2 text-sm font-medium text-gray-900">Tiêu đề</label>
+          <input type="text" id="title" formControlName="title" class="input-style" placeholder="Ví dụ: Khám phá trung tâm thành phố">
+        </div>
+        <div>
+          <label for="locationId" class="block mb-2 text-sm font-medium text-gray-900">Địa điểm chính</label>
+          <ng-select
+            [items]="locations$ | async"
+            bindLabel="name"
+            bindValue="id"
+            placeholder="Chọn địa điểm (nếu có)"
+            formControlName="locationId">
+          </ng-select>
+        </div>
+        <div>
+          <label for="serviceTypeIds" class="block mb-2 text-sm font-medium text-gray-900">Các loại dịch vụ</label>
+          <ng-select
+            [items]="serviceTypes$ | async"
+            bindLabel="name"
+            bindValue="id"
+            [multiple]="true"
+            [closeOnSelect]="false"
+            placeholder="Chọn các dịch vụ trong ngày"
+            formControlName="serviceTypeIds">
+          </ng-select>
+        </div>
+        <div>
+          <label for="description" class="block mb-2 text-sm font-medium text-gray-900">Mô tả</label>
+          <textarea id="description" formControlName="description" rows="4" class="input-style" placeholder="Mô tả ngắn về các hoạt động trong ngày..."></textarea>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
+        <button type="submit" [disabled]="dayForm.invalid" class="submit-button">Lưu</button>
+        <button type="button" (click)="onClose()" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">
+          Hủy
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
