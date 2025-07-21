@@ -30,13 +30,13 @@ export class ListTourService {
   }
 
 
-  getDepartLocations(): Observable<any> {
-    return this.http.get<any>(`${environment.apiUrl}/public/depart-locations`);
-  }
+  // getDepartLocations(): Observable<any> {
+  //   return this.http.get<any>(`${environment.apiUrl}/public/depart-locations`);
+  // }
 
-  getDestinations(): Observable<any> {
-    return this.http.get<any>(`${environment.apiUrl}/public/destinations`);
-  }
+  // getDestinations(): Observable<any> {
+  //   return this.http.get<any>(`${environment.apiUrl}/public/destinations`);
+  // }
   private removeUndefined(obj: any): any {
     return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined && v !== null));
   }
