@@ -9,7 +9,7 @@ import { DurationFormatPipe } from "../../../shared/pipes/duration-format.pipe";
 import { PaginationComponent } from "../../../shared/components/pagination/pagination.component";
 import { IconTransportPipe } from "../../../shared/pipes/icon-transport.pipe";
 import { SkeletonComponent } from "../../../shared/components/skeleton/skeleton.component";
-
+import { ActivatedRoute, Router } from "@angular/router";
 
 
 @Component({
@@ -49,16 +49,30 @@ export class ListTourComponent implements OnInit {
   departLocations: any[] = [];
   destinations: any[] = [];
 
-  constructor(private tourService: ListTourService) { }
+  constructor(private tourService: ListTourService,
+    private route: ActivatedRoute,      // <-- Thêm
+    private router: Router,
+  ) { }
 
   ngOnInit(): void {
-    this.loadFiltersData();
-    this.fetchFilteredTours();
+    // Lấy destId từ route param và fetch luôn khi vào trang hoặc khi thay đổi
+    this.route.paramMap.subscribe(params => {
+      const paramDestId = +(params.get('destId') ?? 0);
+      if (paramDestId) {
+        this.filters.destId = paramDestId;
+        this.page = 0; // reset trang về 0 khi đổi địa điểm
+        this.fetchFilteredTours();
+      } else {
+        // Nếu không có destId hợp lệ, có thể redirect về homepage hoặc show thông báo
+        this.router.navigate(['/']);
+      }
+    });
   }
 
   fetchFilteredTours(): void {
     this.isLoading = true;
-    const destId = this.filters.destId ?? 0; // chỉnh lại giá trị mặc định nếu cần
+    // Luôn lấy destId từ filter (đã được đồng bộ với route param ở trên)
+    const destId = this.filters.destId ?? 0;
     this.tourService.getFilteredTours({
       destId,
       priceMin: this.filters.priceMin,
@@ -115,9 +129,13 @@ export class ListTourComponent implements OnInit {
   }
 
   applyFilters(): void {
-    this.page = 0;
+  if (this.filters.destId) {
+    this.router.navigate(['/tours/location', this.filters.destId]);
+    // Sẽ reload đúng tour cho địa điểm mới
+  } else {
     this.fetchFilteredTours();
   }
+}
   getSortField(): string {
     if (this.sort === 'price_asc' || this.sort === 'price_desc') return 'startingPrice';
     return 'createdAt';
