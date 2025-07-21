@@ -11,19 +11,24 @@ export class ListTourService {
 
 
   getFilteredTours(params: {
+    destId: number;
     priceMin?: number;
     priceMax?: number;
     departId?: number;
-    destId?: number;
     date?: string;
     page: number;
     size: number;
-    sortField?: string;       // Thêm dòng này
-    sortDirection?: string;   // Thêm dòng này
+    sortField?: string;
+    sortDirection?: string;
   }): Observable<any> {
-    const cleanParams = this.removeUndefined(params);
-    return this.http.get<any>(`${environment.apiUrl}/public/tours/search`, { params: cleanParams });
+    const { destId, ...query } = params;
+    const cleanQuery = this.removeUndefined(query);
+    return this.http.get<any>(
+      `${environment.apiUrl}/public/tours/destinations/${destId}/search`,
+      { params: cleanQuery }
+    );
   }
+
 
   getDepartLocations(): Observable<any> {
     return this.http.get<any>(`${environment.apiUrl}/public/depart-locations`);

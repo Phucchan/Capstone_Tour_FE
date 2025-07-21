@@ -58,25 +58,32 @@ export class ListTourComponent implements OnInit {
 
   fetchFilteredTours(): void {
     this.isLoading = true;
+    const destId = this.filters.destId ?? 0; // chỉnh lại giá trị mặc định nếu cần
     this.tourService.getFilteredTours({
-      ...this.filters,
+      destId,
+      priceMin: this.filters.priceMin,
+      priceMax: this.filters.priceMax,
+      departId: this.filters.departId,
+      date: this.filters.date,
       page: this.page,
       size: this.size,
-      sortField: this.getSortField(),      // → ví dụ: "startingPrice"
-      sortDirection: this.getSortDirection()
+      sortField: this.getSortField(),
+      sortDirection: this.getSortDirection(),
     }).subscribe({
       next: (res) => {
-        console.log(res)
-        this.tours = res.data.items;
-        this.total = res.data.total;
+        this.tours = res.data.tours.items;
+        this.total = res.data.tours.total;
+        this.departLocations = res.data.options.departures;
+        this.destinations = res.data.options.destinations;
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Lỗi khi lấy tour:', err);
         this.isLoading = false;
+        // handle error
       }
     });
   }
+
 
   loadFiltersData(): void {
     // this.tourService.getDepartLocations().subscribe({
