@@ -1,0 +1,411 @@
+<form [formGroup]="generatePlanForm" class="space-y-4" (ngSubmit)="onSubmit()">
+    <div class="flex flex-col items-center text-center space-y-6 w-full pt-12">
+
+        <app-spinner [isLoading]="isLoading"></app-spinner>
+
+        <p class="text-sm text-gray-500">Bước {{ currentStep + 1 }}/4</p>
+        <div class="w-[45%] bg-gray-200 rounded-full h-2 dark:bg-gray-700 !mb-20">
+            <div class="bg-blue-600 h-2 rounded-full" [style.width.%]="widthProgress * (currentStep + 1)"></div>
+        </div>
+        <div *ngIf="currentStep === 1"
+            class="flex flex-col items-center text-center opacity-0 animate-[slideInRight_0.5s_ease-out_forwards]">
+            <h1 class="text-5xl font-bold mb-3">Chọn nơi bạn muốn khám phá?</h1>
+            <h1 class="text-md font-light text-gray-400 !mb-8">
+                Bạn sẽ nhận được các đề xuất tùy chỉnh mà bạn có thể lưu và biến thành
+                hành trình.
+            </h1>
+
+            <div class="relative  py-10 text-white text-center rounded-xl overflow-hidden max-w-[900px]">
+                <!-- Dây và ảnh -->
+                <div class="flex flex-wrap justify-center items-end gap-6 mt-8 px-4 relative z-10">
+                    <!-- Card 1 -->
+                    <div [ngClass]="'rotate-' + ((index + 45) % 3 + 1)" (click)="openModal(index)"
+                        class="flex-1 max-w-[200px] min-w-[160px] relative  bg-white rounded-md shadow-lg p-2 w-48"
+                        *ngFor="let i of [].constructor(numberDays); let index = index">
+                        <img [src]="selectedDestinations[index]?.image || 'https://cdn3.ivivu.com/2023/07/Nha-Trang-ivivu.jpg'"
+                            class="rounded-md w-full h-48 object-cover" alt="Nha Trang">
+                        <p class="mt-2 text-center text-blue-700 font-medium italic">
+                            Ngày {{ index + 1 }}
+                            <span class="text-sm text-gray-600">({{ selectedDestinations[index] ?
+                                selectedDestinations[index].name : 'Chưa chọn' }})</span>
+                        </p>
+                        <div
+                            class="absolute -top-3 left-1/2 -translate-x-1/2 w-3 h-4 bg-yellow-400 rounded-sm shadow -rotate-6">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal -->
+
+
+
+            <!-- Next Button -->
+            <div class="flex justify-between items-center text-center w-full">
+                <button type="button" (click)="prevStep()"
+                    class="underline text-black text-lg px-6 py-2 rounded-full !mb-10 !mt-10 hover:bg-gray-200">
+                    Quay lại
+                </button>
+                <!-- Next Button -->
+                <button type="button" (click)="nextStep()"
+                    class="bg-black text-white text-lg px-6 py-2 rounded-full !mb-10 !mt-10 hover:bg-gray-800">
+                    Tiếp theo
+                </button>
+            </div>
+        </div>
+
+
+        <div id="destinationModal" tabindex="-1" (click)="closeModal()"
+            class="fixed inset-0 z-50 hidden bg-black/30 flex justify-center items-center p-4">
+            <div class="bg-white rounded-lg shadow dark:bg-gray-700 w-full max-w-xl max-h-[80vh] overflow-hidden"
+                (click)="$event.stopPropagation()">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white p-4">
+                    Chọn điểm đến cho ngày {{ currentDayIndex! + 1 }}
+                </h3>
+                <div class="p-4 overflow-y-auto max-h-[70vh] min-h-[70vh] custom-scrollbar ">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                            </svg>
+                        </div>
+                        <input type="text" id="default-search" (input)="filterDestination($event)"
+                            class="block w-full p-4 !pl-8 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            placeholder="Tìm kiếm..." required />
+                    </div>
+
+                    <ul class="mt-4 w-full rounded-lg ">
+                        <li *ngFor="let location of locations" (click)="selectDestination(location)"
+                            class="hover:bg-gray-100 cursor-pointer text-left">
+                            <div class="flex items-center space-x-5 p-4">
+                                <img [src]="location?.image" alt="" class="w-12 h-12 object-cover rounded-lg" />
+                                <div>
+                                    <p class="font-medium">{{ location.name }}</p>
+                                    <p class="text-sm text-gray-500">
+                                        {{ location.description }}...
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div *ngIf="currentStep === 0"
+            class="flex flex-col items-center text-center transition-all duration-500 opacity-0 animate-[fadeIn_0.5s_forwards]">
+            <h1 class="text-5xl font-bold mb-3">Thời gian bạn muốn đi?</h1>
+            <h1 class="text-md font-light text-gray-400 !mb-8 ">
+                Chọn thời gian bạn muốn đi và thời gian bạn muốn quay lại. Bạn có thể không chọn mục này
+            </h1>
+
+            <!-- Date Picker -->
+            <div class="flex justify-between w-[80%] items-center text-center ">
+                <div class="flex flex-col items-center">
+                    <label class="text-lg font-bold mb-3">Ngày bắt đầu</label>
+                    <input type="date" formControlName="startDate" [min]="minStartDate"
+                        class="border rounded-full px-4 py-2" (change)="calculateEndDate()" />
+                </div>
+                <div class="flex flex-col items-center">
+                    <label class="text-lg font-bold mb-3">Ngày kết thúc</label>
+                    <input type="date" formControlName="endDate" [max]="maxEndDate" [min]="minEndDate"
+                        class="border rounded-full px-4 py-2" />
+                </div>
+            </div>
+
+            <h1 class="text-md font-light text-gray-400 !mb-8 !mt-8">
+                Khám phá các điểm đến thú vị và tạo hành trình du lịch của riêng bạn.
+            </h1>
+
+            <div class="w-full">
+                <div class="flex flex-col items-center cursor-pointer transition-all duration-300 rounded-lg p-2">
+                    <div class="w-full h-72 bg-gray-300 flex items-center justify-center rounded-lg">
+                        <img src="https://bcp.cdnchinhphu.vn/334894974524682240/2022/2/10/qn-16444811865572132133352.jpg"
+                            alt="multi" class="w-full h-full object-cover rounded-lg" />
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="flex justify-center items-center text-center w-full">
+                <!-- Next Button -->
+                <button type="button" (click)="nextStep()"
+                    class="bg-black text-white text-lg px-6 py-2 rounded-full !mb-10 !mt-10 hover:bg-gray-800">
+                    Tiếp theo
+                </button>
+            </div>
+        </div>
+
+        <div *ngIf="currentStep === 2"
+            class="flex flex-col items-center text-center opacity-0 animate-[slideInRight_0.5s_ease-out_forwards] min-h-[600px]">
+            <h1 class="text-5xl font-bold mb-3">
+                Loại hình du lịch mong muốn của bạn?
+            </h1>
+            <h1 class="text-md  font-light text-gray-400 !mb-8  mt-8">
+                Lựa chọn loại hình du lịch mà bạn muốn. Bạn có thể thay đổi điều này sau.
+            </h1>
+
+            <!-- Date Picker -->
+            <div class="flex flex-col items-center gap-8">
+                <!-- Trip Type Selection -->
+                <div class="flex gap-4">
+                    <button type="button" *ngFor="let trip of tripTypes; let i = index" (click)="selectTrip(trip)"
+                        [ngClass]="{
+              'bg-emerald-400 text-black border-none': selectedTrip === trip,
+              'bg-white border border-gray-300 hover:bg-emerald-100': selectedTrip !== trip
+            }" class="flex flex-col items-center justify-center px-6 py-4 rounded-lg w-40 h-24 transition cursor-pointer ">
+                        <div class="text-2xl mb-1" [innerHTML]="trip.icon"></div>
+                        <span class="font-medium">{{ trip.label }}</span>
+                    </button>
+                </div>
+
+                <!-- Pet Question -->
+                <div class="text-center mt-12">
+                    <p class="text-gray-500 flex items-center justify-center gap-1">
+                        Bạn có đi cùng trẻ em không?
+                        <span class="text-gray-400 text-sm cursor-help">?</span>
+                    </p>
+                    <div class="flex justify-center mt-4 gap-4">
+                        <button type="button" (click)="isTravelingWithChildren = true" [ngClass]="{
+                'bg-white border border-gray-300 hover:bg-emerald-100' : !isTravelingWithChildren,
+                'bg-emerald-400 text-black': isTravelingWithChildren
+              }" class="px-6 py-2 rounded-full font-semibold w-24 cursor-pointer ">
+                            Có
+                        </button>
+                        <button type="button" (click)="isTravelingWithChildren = false" [ngClass]="{
+                'bg-emerald-400 text-black': !isTravelingWithChildren,
+                'bg-white border border-gray-300 hover:bg-emerald-100': isTravelingWithChildren
+              }" class="px-6 py-2 rounded-full font-semibold w-24 cursor-pointer ">
+                            Không
+                        </button>
+                    </div>
+                </div>
+                <h2 class="text-md  font-light text-gray-400 mt-8 mb-4">Ngân sách dự kiến cho chuyến đi?</h2>
+
+                <!-- Các lựa chọn ngân sách -->
+                <div class="flex justify-center gap-4 flex-wrap">
+                    <button type="button" (click)="selectBudget('low')" [ngClass]="{
+                        'bg-emerald-400 ': selectedBudget === 'low',
+                        'bg-white text-black border hover:bg-emerald-100': selectedBudget !== 'low'
+                        }"
+                        class="px-6 py-2 rounded-full font-semibold border border-gray-300 transition cursor-pointer hover:bg-emerald-100">
+                        Tiết kiệm
+                    </button>
+
+                    <button type="button" (click)="selectBudget('medium')" [ngClass]="{
+                        'bg-emerald-400': selectedBudget === 'medium',
+                        'bg-white text-black border hover:bg-emerald-100': selectedBudget !== 'medium'
+                        }"
+                        class="px-6 py-2 rounded-full font-semibold border border-gray-300 transition cursor-pointer hover:bg-emerald-100">
+                        Vừa phải
+                    </button>
+
+                    <button type="button" (click)="selectBudget('high')" [ngClass]="{
+                        'bg-emerald-400 ': selectedBudget === 'high',
+                        'bg-white text-black border hover:bg-emerald-100': selectedBudget !== 'high'
+                        }"
+                        class="px-6 py-2 rounded-full font-semibold border border-gray-300 hover:bg-emerald-100 transition cursor-pointer">
+                        Cao cấp
+                    </button>
+
+                    <button type="button" (click)="selectBudget('custom')" [ngClass]="{
+                        'bg-emerald-400 ': selectedBudget === 'custom',
+                        'bg-white text-black border hover:bg-emerald-100': selectedBudget !== 'custom'
+                        }"
+                        class="px-6 py-2 rounded-full font-semibold border border-gray-300 hover:bg-emerald-100 transition cursor-pointer"
+                        (click)="openBudgetModal()">
+                        {{ customBudgetValue ? customBudgetValue : 'Tùy chỉnh' }}
+                    </button>
+                </div>
+
+
+            </div>
+
+            <div class="flex justify-between items-center text-center w-full mt-24">
+                <button type="button" (click)="prevStep()"
+                    class="underline text-black text-lg px-6 py-2 rounded-full !mb-10 !mt-10 hover:bg-gray-200">
+                    Quay lại
+                </button>
+                <!-- Next Button -->
+                <button type="button" (click)="nextStep()"
+                    class="bg-black text-white text-lg px-6 py-2 rounded-full !mb-10 !mt-10 hover:bg-gray-800">
+                    Tiếp theo
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal ngân sách -->
+        <div id="budgetModal" class="fixed inset-0 z-50 hidden bg-black/30 flex justify-center items-center p-4"
+            (click)="closeBudgetModal()">
+            <div class="bg-white rounded-lg shadow w-full max-w-md p-6" (click)="$event.stopPropagation()">
+                <!-- Tiêu đề -->
+                <h3 class="text-lg font-semibold mb-4 text-center">
+                    Nhập khoảng ngân sách bạn mong muốn (VNĐ)
+                </h3>
+
+                <!-- Input min/max -->
+                <div class="flex flex-col gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Ngân sách tối thiểu</label>
+                        <input type="text" [value]="formattedMinBudget" (input)="onBudgetInput($event, false)"
+                            class="w-full border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            placeholder="5,000,000" [min]="numberDays * 500000" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Ngân sách tối đa</label>
+                        <input type="text" [value]="formattedMaxBudget" (input)="onBudgetInput($event, true)"
+                            class="w-full border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            placeholder="15,000,000" [min]="numberDays * 600000" />
+                    </div>
+                </div>
+
+                <!-- Nút hành động -->
+                <div class="mt-6 flex justify-end gap-2">
+                    <button type="button" (click)="closeBudgetModal()"
+                        class="px-4 py-2 rounded-md border hover:bg-gray-100">
+                        Hủy
+                    </button>
+                    <button type="button" (click)="saveBudgetRange()"
+                        class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                        Lưu
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <div *ngIf="currentStep === 3" class="opacity-0 animate-[slideInRight_0.5s_ease-out_forwards]">
+            <div class="interests-container">
+                <h1 class="text-5xl font-bold mb-3">
+                    Cho chúng tôi biết sở thích của bạn
+                </h1>
+                <h1 class="text-md font-light text-gray-400 !mb-8">
+                    Chọn tất cả lựa chọn phù hợp
+                </h1>
+                <div class="interests-grid">
+                    <!-- Tags Container -->
+                    <div class="flex flex-wrap justify-center gap-4 max-w-4xl">
+                        <ng-container *ngFor="let interest of interests">
+                            <button type="button" (click)="toggleInterest(interest)" [ngClass]="{
+                  'bg-emerald-400 text-white hover:bg-emerald-500':
+                    isSelected(interest),
+                  'bg-white text-black hover:bg-gray-100': !isSelected(interest)
+                }" class="px-5 py-2 rounded-full border border-gray-300 text-lg transition">
+                                {{ interest }}
+                            </button>
+                        </ng-container>
+
+                        <!-- Add interest button (không cần toggle) -->
+                        <button type="button" data-modal-target="interest-modal" data-modal-toggle="interest-modal"
+                            [ngClass]="{
+                            'bg-emerald-400 text-white hover:bg-emerald-500':
+                            otherInterest.length > 1,
+                            'bg-white text-black hover:bg-gray-100': otherInterest.length < 1
+                          }"
+                            class="flex items-center gap-2 px-5 py-2 rounded-full border border-gray-300 text-lg  transition">
+                            @if(otherInterest.length < 1) { <span class="text-xl">＋</span> Thêm sở thích
+                                } @else {
+                                {{otherInterest}}
+                                }
+
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-between items-center text-center w-full">
+                <button type="button" (click)="prevStep()"
+                    class="underline text-black text-lg px-6 py-2 rounded-full !mb-10 !mt-10 hover:bg-gray-200">
+                    Quay lại
+                </button>
+
+                <!-- Next Button -->
+                <button *ngIf="selectedInterests.length > 0" type="button" (click)="onSubmit()"
+                    class="bg-black text-white text-lg px-6 py-2 rounded-full !mb-10 !mt-10 hover:bg-gray-800">
+                    Hoàn tất
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div id="interest-modal" tabindex="-1" aria-hidden="true"
+    class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-2xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+            <!-- Modal body -->
+            <div class="p-4 md:p-5 space-y-4">
+                <!-- Tiêu đề -->
+                <label for="interests" class="block text-base font-semibold text-black">
+                    Thêm sở thích của bạn
+                </label>
+
+                <!-- Ô nhập -->
+                <form [formGroup]="addInterestForm">
+                    <textarea id="interests" maxlength="50" rows="3"
+                        class="w-full border border-black rounded-md px-4 py-3 text-base text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black"
+                        formControlName="interest" placeholder="Enter additional interests"></textarea>
+                </form>
+
+
+                <!-- Phần mô tả -->
+                <div class="flex justify-between text-sm text-gray-500">
+                    <span>
+                        Sở thích nên phân cách bởi dấu phẩy (,) và không nên chứa các ký tự đặc biệt
+                    </span>
+                    <span>{{addInterestForm.value.interest.length}}/50 kí tự tối đa </span>
+                </div>
+            </div>
+            <!-- Modal footer -->
+            <div class="flex justify-end items-center p-4 md:p-5 rounded-b ">
+                <button data-modal-hide="interest-modal" type="button" (click)="addInterest()"
+                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    Thêm
+                </button>
+                <button data-modal-hide="interest-modal" type="button"
+                    class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                    Hủy
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if(showError) {
+<!-- Warning Notification (Only One at a Time) -->
+<div class="fixed top-[11rem] left-1/2 transform -translate-x-1/2 z-999 w-80">
+    <div class="flex items-center bg-white shadow-md border border-gray-200 rounded-md p-3 animate-slide-in">
+        <span class="text-red-500 text-xl mr-2">X</span>
+        <p class="text-red-800 text-sm">
+            {{ errorMessage }}
+        </p>
+    </div>
+</div>
+}
+
+
+
+
+@if(isGenerating) {
+<!-- Modal Overlay (Black Background with blur) -->
+<div class="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm transition-opacity z-50">
+    <!-- Modal Box -->
+    <div id="loadingModal" tabindex="-1" class="w-full max-w-md p-4">
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-800 animate-fadeIn">
+            <!-- Modal Content -->
+            <div class="p-6 text-center">
+                <div
+                    class="px-3 py-1 text-xs font-medium leading-none text-center text-blue-800 bg-blue-200 rounded-full animate-pulse dark:bg-blue-900 dark:text-blue-200">
+                    Đang thực hiện tạo chương trình du lịch cho bạn...</div>
+                <br />
+                Vui lòng đợi trong giây lát.
+            </div>
+        </div>
+    </div>
+</div>
+}

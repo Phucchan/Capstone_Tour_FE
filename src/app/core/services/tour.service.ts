@@ -9,6 +9,9 @@ import {
   CreateTourRequest,
   UpdateTourRequest,
   TourDetailWithOptions,
+  TourDayManagerDTO,
+  TourDayManagerCreateRequestDTO,
+  ServiceTypeShortDTO,
 } from '../models/tour.model';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
@@ -17,7 +20,8 @@ import { ApiResponse } from '../models/api-response.model';
   providedIn: 'root',
 })
 export class TourService {
-  private apiUrl = `${environment.apiUrl}/business/tours`;
+  private baseApiUrl = `${environment.apiUrl}/business`;
+  private toursApiUrl = `${this.baseApiUrl}/tours`;
 
   constructor(private http: HttpClient) {}
 
@@ -30,7 +34,7 @@ export class TourService {
     if (filters.tourStatus)
       params = params.set('tourStatus', filters.tourStatus);
     return this.http
-      .get<ApiResponse<PagingDTO<TourListItem>>>(this.apiUrl, { params })
+      .get<ApiResponse<PagingDTO<TourListItem>>>(this.toursApiUrl, { params })
       .pipe(map((response) => response.data));
   }
 
@@ -39,7 +43,7 @@ export class TourService {
    */
   getTourOptions(): Observable<TourOptionsData> {
     return this.http
-      .get<ApiResponse<TourOptionsData>>(`${this.apiUrl}/options`)
+      .get<ApiResponse<TourOptionsData>>(`${this.toursApiUrl}/options`)
       .pipe(map((response) => response.data));
   }
 
@@ -48,7 +52,7 @@ export class TourService {
    */
   createTour(tourData: CreateTourRequest): Observable<TourDetail> {
     return this.http
-      .post<ApiResponse<TourDetail>>(this.apiUrl, tourData)
+      .post<ApiResponse<TourDetail>>(this.toursApiUrl, tourData)
       .pipe(map((response) => response.data));
   }
 
@@ -58,7 +62,7 @@ export class TourService {
    */
   getTourById(id: number): Observable<TourDetailWithOptions> {
     return this.http
-      .get<ApiResponse<TourDetailWithOptions>>(`${this.apiUrl}/${id}`)
+      .get<ApiResponse<TourDetailWithOptions>>(`${this.toursApiUrl}/${id}`)
       .pipe(map((response) => response.data));
   }
 
@@ -67,7 +71,70 @@ export class TourService {
    */
   updateTour(id: number, tourData: UpdateTourRequest): Observable<TourDetail> {
     return this.http
-      .put<ApiResponse<TourDetail>>(`${this.apiUrl}/${id}`, tourData)
+      .put<ApiResponse<TourDetail>>(`${this.toursApiUrl}/${id}`, tourData)
       .pipe(map((response) => response.data));
+  }
+  /**
+   * Lấy danh sách các ngày trong lịch trình của một tour
+   */
+  getTourDays(tourId: number): Observable<TourDayManagerDTO[]> {
+    return this.http
+      .get<ApiResponse<TourDayManagerDTO[]>>(
+        `${this.toursApiUrl}/${tourId}/days`
+      )
+      .pipe(map((res) => res.data));
+  }
+
+  /**
+   * Thêm một ngày mới vào lịch trình
+   */
+  addTourDay(
+    tourId: number,
+    data: TourDayManagerCreateRequestDTO
+  ): Observable<TourDayManagerDTO> {
+    return this.http
+      .post<ApiResponse<TourDayManagerDTO>>(
+        `${this.toursApiUrl}/${tourId}/days`,
+        data
+      )
+      .pipe(map((res) => res.data));
+  }
+
+  /**
+   * Cập nhật một ngày trong lịch trình
+   */
+  updateTourDay(
+    tourId: number,
+    dayId: number,
+    data: TourDayManagerCreateRequestDTO
+  ): Observable<TourDayManagerDTO> {
+    return this.http
+      .put<ApiResponse<TourDayManagerDTO>>(
+        `${this.toursApiUrl}/${tourId}/days/${dayId}`,
+        data
+      )
+      .pipe(map((res) => res.data));
+  }
+
+  /**
+   * Xóa một ngày khỏi lịch trình
+   */
+  deleteTourDay(tourId: number, dayId: number): Observable<string> {
+    return this.http
+      .delete<ApiResponse<string>>(
+        `${this.toursApiUrl}/${tourId}/days/${dayId}`
+      )
+      .pipe(map((res) => res.message));
+  }
+
+  /**
+   * Lấy danh sách các loại dịch vụ để hiển thị trong form
+   */
+  getServiceTypes(): Observable<ServiceTypeShortDTO[]> {
+    return this.http
+      .get<ApiResponse<ServiceTypeShortDTO[]>>(
+        `${this.baseApiUrl}/service-types`
+      )
+      .pipe(map((res) => res.data));
   }
 }

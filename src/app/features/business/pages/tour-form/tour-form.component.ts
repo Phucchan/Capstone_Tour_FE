@@ -6,7 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable, Subscription, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
@@ -29,6 +29,7 @@ import {
     CommonModule,
     ReactiveFormsModule, // <-- Component này dùng Reactive Forms
     NgSelectModule, // <-- Thêm NgSelectModule để sử dụng ng-select
+    RouterLink,
   ],
   templateUrl: './tour-form.component.html',
   styleUrls: ['./tour-form.component.css'],
@@ -43,7 +44,7 @@ export class TourFormComponent implements OnInit, OnDestroy {
   public tourForm!: FormGroup;
   public pageTitle = 'Tạo Tour mới';
   public isEditMode = false;
-  private tourId: number | null = null;
+  public tourId: number | null = null;
   public tourOptions$!: Observable<TourOptionsData>;
 
   public durationDays = 0;
@@ -121,6 +122,7 @@ export class TourFormComponent implements OnInit, OnDestroy {
 
   public onSubmit(): void {
     if (this.tourForm.invalid) {
+      alert('Vui lòng điền đầy đủ các thông tin bắt buộc.');
       this.tourForm.markAllAsTouched();
       return;
     }
@@ -140,11 +142,16 @@ export class TourFormComponent implements OnInit, OnDestroy {
       this.tourService.updateTour(this.tourId, updateData).subscribe({
         next: () => {
           alert('Cập nhật tour thành công!');
-          this.router.navigate(['/business/tours']);
+          // Không điều hướng đi đâu cả, để người dùng có thể tiếp tục
+          // this.router.navigate(['/business/tours']);
         },
-        error: (err) => console.error('Lỗi khi cập nhật tour:', err),
+        error: (err) => {
+          console.error('Lỗi khi cập nhật tour:', err);
+          alert('Có lỗi xảy ra khi cập nhật tour.');
+        },
       });
     } else {
+      // Logic tạo mới giữ nguyên
       const createData: CreateTourRequest = {
         name: formValue.name,
         thumbnailUrl: formValue.thumbnailUrl,
@@ -156,11 +163,12 @@ export class TourFormComponent implements OnInit, OnDestroy {
       this.tourService.createTour(createData).subscribe({
         next: (createdTour) => {
           alert(`Tạo tour thành công! Mã tour của bạn là: ${createdTour.code}`);
-          // CHUYỂN HƯỚNG TỚI TRANG TẠO LỊCH TRÌNH (SẼ LÀM SAU)
-          // this.router.navigate(['/business/tours', createdTour.id, 'schedule']);
-          this.router.navigate(['/business/tours']); // Tạm thời về trang list
+          this.router.navigate(['/business/tours', createdTour.id, 'schedule']);
         },
-        error: (err) => console.error('Lỗi khi tạo tour:', err),
+        error: (err) => {
+          console.error('Lỗi khi tạo tour:', err);
+          alert('Có lỗi xảy ra khi tạo tour.');
+        },
       });
     }
   }

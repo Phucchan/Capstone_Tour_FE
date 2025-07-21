@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   Observable,
   Subject,
@@ -18,7 +18,12 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
 @Component({
   selector: 'app-tour-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, PaginationComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    PaginationComponent,
+    RouterLink,
+  ],
   templateUrl: './tour-list.component.html',
   styleUrls: ['./tour-list.component.css'],
 })
@@ -68,9 +73,7 @@ export class TourListComponent implements OnInit {
   navigateToCreateTour(): void {
     this.router.navigate(['/business/tours/new']);
   }
-  viewTourDetails(tourId: number): void {
-    this.router.navigate(['/business/tours', tourId]);
-  }
+
   calculateTourPrice(tourId: number): void {
     /* Sẽ làm sau */
   }
