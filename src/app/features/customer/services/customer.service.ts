@@ -27,4 +27,10 @@ export class CustomerService {
       .pipe(map(res => res.data));
   }
 
+  changePassword(userId: number, body: { currentPassword: string, newPassword: string, rePassword: string }) {
+  return this.http.put<any>(`${environment.apiUrl}/users/change-password`, body, {
+    params: { userId }
+  });
+}
+
 }

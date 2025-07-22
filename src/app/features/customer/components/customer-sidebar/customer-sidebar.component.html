@@ -17,7 +17,7 @@
         Tài Khoản
       </div>
       <div class="ml-8 mt-1 text-gray-500 space-y-1 text-sm">
-        <a [routerLink]="['/customer/profile']"
+        <a [routerLink]="['customer/profile-info']" routerLinkActive="active"
           class="block text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Thông tin cá nhân</a>
         <div>Đổi Mật Khẩu</div>
         <a (click)="onLogout()"
