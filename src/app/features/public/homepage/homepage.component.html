@@ -190,25 +190,29 @@
   </ng-container>
   <!-- Featured Destinations Section -->
   <section class="bg-white py-16 px-4 sm:px-6 lg:px-8">
-    <div class="text-center max-w-3xl mx-auto mb-10">
-      <h2 class="text-3xl sm:text-4xl font-bold text-blue-700">ĐIỂM DU LỊCH HẤP DẪN</h2>
-      <p class="text-gray-600 mt-4">
-        "Đi Đâu" luôn có những sản phẩm đến các điểm du lịch hấp dẫn trải dài khắp mảnh đất hình chữ S.
-      </p>
-      <p class="mt-2 font-semibold text-blue-600">Điểm đến trong nước</p>
-    </div>
+  <div class="text-center max-w-3xl mx-auto mb-10">
+    <h2 class="text-3xl sm:text-4xl font-bold text-blue-700">ĐIỂM DU LỊCH HẤP DẪN</h2>
+    <p class="text-gray-600 mt-4">
+      "Đi Đâu" luôn có những sản phẩm đến các điểm du lịch hấp dẫn trải dài khắp mảnh đất hình chữ S.
+    </p>
+    <p class="mt-2 font-semibold text-blue-600">Điểm đến trong nước</p>
+  </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-      <div *ngFor="let location of locations"
-        class="bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition">
-        <img [src]="location.image || 'assets/images/default-location.jpg'" alt="{{ location.name }}"
-          class="w-full h-[180px] object-cover" />
-        <div class="p-4 text-center">
-          <h3 class="text-lg font-semibold text-gray-800">{{ location.name }}</h3>
-        </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+    <div
+      *ngFor="let location of locations"
+      class="bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition cursor-pointer"
+      (click)="goToLocation(location.id)"
+    >
+      <img [src]="location.image || 'assets/images/default-location.jpg'" alt="{{ location.name }}"
+        class="w-full h-[180px] object-cover" />
+      <div class="p-4 text-center">
+        <h3 class="text-lg font-semibold text-gray-800">{{ location.name }}</h3>
       </div>
     </div>
-  </section>
+  </div>
+</section>
+
 
 
   <!-- Recent Blogs Section -->

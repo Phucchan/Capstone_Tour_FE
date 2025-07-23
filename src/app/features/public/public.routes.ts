@@ -26,7 +26,7 @@ export const PUBLIC_ROUTES: Route[] = [
         component: HomepageComponent,
       },
       {
-        path: 'tours',
+        path: 'tours/location/:destId',
         component: ListTourComponent,
       },
       {

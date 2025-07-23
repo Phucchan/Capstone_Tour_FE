@@ -101,7 +101,13 @@ export class HomepageComponent implements OnInit {
     return Math.round(tour.startingPrice * (1 - tour.discountPercent / 100));
   }
 
+  goToLocation(destId: number) {
+    this.router.navigate(['/tours/location', destId]);
+    // hoặc '/list-tour', destId nếu bạn đặt route là vậy
+  }
+
 }
+
 
 interface Blog {
   id: number;

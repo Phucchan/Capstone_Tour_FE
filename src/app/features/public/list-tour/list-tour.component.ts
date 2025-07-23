@@ -1,22 +1,24 @@
-import { Component, ElementRef, OnInit, QueryList, ViewChildren } from "@angular/core";
+import {
+  Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren
+} from "@angular/core";
 import { ListTourService } from "../services/list-tour.service";
 import { CommonModule } from "@angular/common";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { RouterModule } from "@angular/router";
+import { RouterModule, ActivatedRoute, Router } from "@angular/router";
 import { FormatDatePipe } from "../../../shared/pipes/format-date.pipe";
 import { CurrencyVndPipe } from "../../../shared/pipes/currency-vnd.pipe";
 import { DurationFormatPipe } from "../../../shared/pipes/duration-format.pipe";
 import { PaginationComponent } from "../../../shared/components/pagination/pagination.component";
 import { IconTransportPipe } from "../../../shared/pipes/icon-transport.pipe";
 import { SkeletonComponent } from "../../../shared/components/skeleton/skeleton.component";
-
-
+import { Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
 
 @Component({
   standalone: true,
-  selector: 'app-list-tour',
-  templateUrl: './list-tour.component.html',
-  styleUrls: ['./list-tour.component.css'],
+  selector: "app-list-tour",
+  templateUrl: "./list-tour.component.html",
+  styleUrls: ["./list-tour.component.css"],
   imports: [
     CommonModule,
     RouterModule,
@@ -27,17 +29,23 @@ import { SkeletonComponent } from "../../../shared/components/skeleton/skeleton.
     PaginationComponent,
     IconTransportPipe,
     SkeletonComponent,
-  ]
+  ],
 })
+export class ListTourComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
 
-export class ListTourComponent implements OnInit {
+  // Danh sách tour, tổng số tour, phân trang
   tours: any[] = [];
   total = 0;
   page = 0;
   size = 10;
-  sort = 'latest'; // hoặc 'price_asc', 'price_desc'
+
+  // Mặc định sort là 'latest'
+  sort = "latest"; // hoặc 'price_asc', 'price_desc'
+
   isLoading = true;
 
+  // Bộ lọc
   filters = {
     priceMin: undefined as number | undefined,
     priceMax: undefined as number | undefined,
@@ -49,138 +57,208 @@ export class ListTourComponent implements OnInit {
   departLocations: any[] = [];
   destinations: any[] = [];
 
-  constructor(private tourService: ListTourService) { }
+  // Thông tin điểm đến (nếu có)
+  locationInfo: { name: string; description: string } | null = null;
+
+  // Để xác định giá đang lọc theo mức nào
+  selectedPriceRangeKey: string | null = null;
+
+  @ViewChildren("scrollRef") scrollContainers!: QueryList<ElementRef>;
+
+  constructor(
+    private tourService: ListTourService,
+    private route: ActivatedRoute,
+    private router: Router,
+  ) { }
 
   ngOnInit(): void {
-    this.loadFiltersData();
-    this.fetchFilteredTours();
+    // Lắng nghe thay đổi route param để load đúng tours theo location (destId)
+    this.route.paramMap
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((params) => {
+        const paramDestId = +(params.get("destId") ?? 0);
+        if (paramDestId) {
+          // Nếu khác id cũ mới fetch lại tours
+          if (this.filters.destId !== paramDestId) {
+            this.filters.destId = paramDestId;
+            this.page = 0;
+            this.fetchFilteredTours();
+          }
+        } else {
+          // Không có destId, về trang chủ
+          this.router.navigate(["/"]);
+        }
+      });
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // Lấy tours theo filter hiện tại
   fetchFilteredTours(): void {
     this.isLoading = true;
-    this.tourService.getFilteredTours({
-      ...this.filters,
-      page: this.page,
-      size: this.size,
-      sortField: this.getSortField(),      // → ví dụ: "startingPrice"
-      sortDirection: this.getSortDirection()
-    }).subscribe({
-      next: (res) => {
-        console.log(res)
-        this.tours = res.data.items;
-        this.total = res.data.total;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Lỗi khi lấy tour:', err);
-        this.isLoading = false;
-      }
-    });
-  }
+    const destId = this.filters.destId ?? 0;
+    this.tourService
+      .getFilteredTours({
+        destId,
+        priceMin: this.filters.priceMin,
+        priceMax: this.filters.priceMax,
+        departId: this.filters.departId,
+        date: this.filters.date,
+        page: this.page,
+        size: this.size,
+        sortField: this.getSortField(),
+        sortDirection: this.getSortDirection(),
+      })
+      .subscribe({
+        next: (res) => {
+          this.tours = res.data.tours.items;
 
-  loadFiltersData(): void {
-    // this.tourService.getDepartLocations().subscribe({
-    //   next: (res) => (this.departLocations = res.data),
-    //   error: (err) => console.error('Lỗi load điểm đi:', err)
-    // });
+          // --- Tìm đúng destination theo id để lấy name và description:
+           this.destinations = res.data.options.destinations;
+          const matched = this.destinations.find((d: any) => Number(d.id) === Number(destId));
+          this.locationInfo = matched
+            ? { name: matched.name, description: matched.description }
+            : null;
 
-    // this.tourService.getDestinations().subscribe({
-    //   next: (res) => (this.destinations = res.data),
-    //   error: (err) => console.error('Lỗi load điểm đến:', err)
-    // });
+          this.applySortToTours();
+          // Log debug nếu muốn
+          // console.log("Sort value:", this.sort, this.tours.map(t => t.startingPrice));
+          // console.log("Sau khi sort:", this.tours.map(t => t.startingPrice));
+
+          this.total = res.data.tours.total;
+          this.departLocations = res.data.options.departures;
+          this.destinations = res.data.options.destinations;
+        
+          this.isLoading = false;
+        },
+        error: (err) => {
+          this.isLoading = false;
+          // TODO: Xử lý lỗi nếu cần
+        },
+      });
   }
-  get selectedPriceLabel(): string {
-    switch (this.selectedPriceRangeKey) {
-      case 'under5': return 'Dưới 5 triệu';
-      case '5to10': return '5 - 10 triệu';
-      case '10to20': return '10 - 20 triệu';
-      case 'above20': return 'Trên 20 triệu';
-      default: return '';
+  applySortToTours(): void {
+    if (this.sort === "price_asc") {
+      this.tours = [...this.tours].sort((a, b) => a.startingPrice - b.startingPrice);
+    } else if (this.sort === "price_desc") {
+      this.tours = [...this.tours].sort((a, b) => b.startingPrice - a.startingPrice);
     }
   }
-  clearPriceFilter(): void {
-    this.filters.priceMin = undefined;
-    this.filters.priceMax = undefined;
-    this.selectedPriceRangeKey = null;
 
-    this.page = 0;
-    this.fetchFilteredTours();
-  }
 
-  applyFilters(): void {
-    this.page = 0;
-    this.fetchFilteredTours();
-  }
+  // Tìm field sort gửi xuống API
   getSortField(): string {
-    if (this.sort === 'price_asc' || this.sort === 'price_desc') return 'startingPrice';
-    return 'createdAt';
+    if (this.sort === "price_asc" || this.sort === "price_desc") return "startingPrice";
+    return "createdAt";
   }
 
+  // Tìm hướng sort gửi xuống API
   getSortDirection(): string {
-    if (this.sort === 'price_asc') return 'asc';
-    return 'desc';
+    if (this.sort === "price_asc") return "asc";
+    return "desc";
   }
 
+  // Khi đổi sort ở dropdown
   onSortChange(value: string): void {
     this.sort = value;
-    this.fetchFilteredTours();
+    this.applySortToTours();
   }
+
+
+  // Khi chuyển trang
   onPageChange(newPage: number): void {
     if (newPage < 0 || newPage >= this.totalPages) return;
     this.page = newPage;
     this.fetchFilteredTours();
   }
 
+  // Tổng số trang
   get totalPages(): number {
-    console.log('Total items:', this.total, 'Page size:', this.size);
     return Math.ceil(this.total / this.size);
   }
 
+  // Mảng trang cho UI pagination
   get pages(): number[] {
     return Array.from({ length: this.totalPages }, (_, i) => i);
   }
-  selectedPriceRangeKey: string | null = null;
 
+  // Nhãn cho filter ngân sách
+  get selectedPriceLabel(): string {
+    switch (this.selectedPriceRangeKey) {
+      case "under5":
+        return "Dưới 5 triệu";
+      case "5to10":
+        return "5 - 10 triệu";
+      case "10to20":
+        return "10 - 20 triệu";
+      case "above20":
+        return "Trên 20 triệu";
+      default:
+        return "";
+    }
+  }
+
+  // Xóa lọc ngân sách
+  clearPriceFilter(): void {
+    this.filters.priceMin = undefined;
+    this.filters.priceMax = undefined;
+    this.selectedPriceRangeKey = null;
+    this.page = 0;
+    this.fetchFilteredTours();
+  }
+
+  // Đặt lọc ngân sách
   setPriceRange(min: number, max: number | undefined, key: string): void {
     this.filters.priceMin = min;
     this.filters.priceMax = max;
     this.selectedPriceRangeKey = key;
-
-    this.page = 0; // Reset về trang đầu
+    this.page = 0;
     this.fetchFilteredTours();
   }
 
+  // Áp dụng bộ lọc (khi bấm nút "Áp dụng")
+  applyFilters(): void {
+    // Nếu đổi điểm đến, chuyển route
+    if (
+      this.filters.destId &&
+      this.filters.destId !== +(this.route.snapshot.paramMap.get("destId") ?? 0)
+    ) {
+      this.router.navigate(["/tours/location", this.filters.destId]);
+    } else {
+      this.fetchFilteredTours();
+    }
+  }
 
-  @ViewChildren('scrollRef') scrollContainers!: QueryList<ElementRef>;
-
-  // Scroll trái
+  // Scroll ngày khởi hành trái/phải cho từng tour
   scrollLeft(tourId: number): void {
     const target = this.getScrollContainerByTourId(tourId);
     if (target) {
-      target.scrollBy({ left: -100, behavior: 'smooth' });
+      target.scrollBy({ left: -100, behavior: "smooth" });
     }
   }
-
-  // Scroll phải
   scrollRight(tourId: number): void {
     const target = this.getScrollContainerByTourId(tourId);
     if (target) {
-      target.scrollBy({ left: 100, behavior: 'smooth' });
+      target.scrollBy({ left: 100, behavior: "smooth" });
     }
   }
-  // Tìm scroll container ứng với tour id
   private getScrollContainerByTourId(tourId: number): HTMLElement | null {
     const containers = this.scrollContainers.toArray();
     for (let c of containers) {
       const el = c.nativeElement as HTMLElement;
-      if (el.dataset['tourId'] === tourId.toString()) {
+      if (el.dataset["tourId"] === tourId.toString()) {
         return el;
       }
     }
     return null;
   }
 
+  // Thêm vào wishlist
   addToWishlist(tourId: number): void {
+    // Mở lại nếu muốn dùng localStorage
     // const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
     // if (!wishlist.includes(tourId)) {
     //   wishlist.push(tourId);
@@ -188,27 +266,4 @@ export class ListTourComponent implements OnInit {
     //   alert('Đã thêm vào danh sách yêu thích!');
     // }
   }
-
-}
-
-
-
-
-interface TourItem {
-  id: number;
-  name: string;
-  thumbnailUrl: string;
-  averageRating: number;
-  durationDays: number;
-  region: string;
-  locationName: string;
-  startingPrice: number;
-  departureDate: string[];
-}
-
-interface TourListResponse {
-  page: number;
-  size: number;
-  total: number;
-  items: TourItem[];
 }

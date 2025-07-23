@@ -27,6 +27,12 @@ export class CustomerService {
       .pipe(map(res => res.data));
   }
 
+  changePassword(userId: number, body: { currentPassword: string, newPassword: string, rePassword: string }) {
+  return this.http.put<any>(`${environment.apiUrl}/users/change-password`, body, {
+    params: { userId }
+  });
+}
+
   getUserBasic(username: string): Observable<any> {
     return this.http.get<{ data: any }>(`${environment.apiUrl}/public/users/info`, {
       params: new HttpParams().set('username', username),

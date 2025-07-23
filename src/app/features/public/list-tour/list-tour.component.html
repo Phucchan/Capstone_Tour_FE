@@ -1,15 +1,19 @@
-<app-skeleton 
-[isLoading]="isLoading" 
-[showHeader]="true" 
-[showImageSection]="true" 
-[showPriceBox]="true"
-[showCalendar]="true"
-[showSchedule]="true"
-[showImportantInfo]="true"
-[showOtherTours]="true">
+<app-skeleton [isLoading]="isLoading" [showHeader]="true" [showImageSection]="true" [showPriceBox]="true"
+  [showCalendar]="true" [showSchedule]="true" [showImportantInfo]="true" [showOtherTours]="true">
 </app-skeleton>
-
+ 
+ 
 <div *ngIf="!isLoading">
+   <div *ngIf="locationInfo" class ="text-center mb-8 mt-10">
+    <!-- Tiêu đề và mô tả -->
+    <h1 class="text-3xl font-bold text-center text-blue-800 mb-2">
+      DU LỊCH {{ locationInfo.name | uppercase }}
+    </h1>
+    <div class="text-gray-700 text-center max-w-3xl mx-auto mb-4">
+      {{ locationInfo.description }}
+    </div>
+  </div>
+ 
   <div class="flex gap-6 max-w-[70%] m-auto mt-10">
     <!-- Bộ lọc bên trái -->
     <aside class="w-[300px] bg-gray-100 p-4 rounded shadow-md text-sm h-fit sticky top-20">
@@ -37,17 +41,19 @@
           triệu</button>
       </div>
 
-      <label class="block mb-1 font-medium">Điểm khởi hành</label>
-      <select [(ngModel)]="filters.departId" class="w-full border rounded px-2 py-1 mb-4">
-        <option [ngValue]="undefined">Tất cả</option>
-        <option *ngFor="let d of departLocations" [ngValue]="d.id">{{ d.name }}</option>
-      </select>
-
       <!-- Điểm đến -->
       <label class="block mb-1 font-medium">Điểm đến</label>
       <select [(ngModel)]="filters.destId" class="w-full border rounded px-2 py-1 mb-4">
         <option [ngValue]="undefined">Tất cả</option>
         <option *ngFor="let d of destinations" [ngValue]="d.id">{{ d.name }}</option>
+      </select>
+
+
+      <!-- Điểm Khởi hành -->
+      <label class="block mb-1 font-medium">Điểm Khởi hành</label>
+      <select [(ngModel)]="filters.departId" class="w-full border rounded px-2 py-1 mb-4">
+        <option [ngValue]="undefined">Tất cả</option>
+        <option *ngFor="let d of departLocations" [ngValue]="d.id">{{ d.name }}</option>
       </select>
 
       <label class="block mb-1 font-medium">Ngày đi</label>
@@ -58,14 +64,14 @@
       </button>
     </aside>
 
-    <!-- Danh sách tour -->
+    <!-- Bộ lọc bên phải -->
     <div class="flex-1">
       <!-- Header & Sort -->
       <div class="flex justify-between items-center mb-4">
         <p>Chúng tôi tìm thấy <strong>{{ total }}</strong> chương trình tour cho quý khách</p>
         <div class="flex items-center gap-2">
           <label for="sort" class="text-sm text-black-500">Sắp xếp theo: </label>
-          <select id="sort" [(ngModel)]="sort" (change)="onSortChange(sort) "
+          <select id="sort" [(ngModel)]="sort" (ngModelChange)="onSortChange($event) "
             class="border rounded px-2 py-1 text-sm w-56">
             <option value="">Tất cả</option>
             <option value="price_desc">Giá từ cao đến thấp </option>
