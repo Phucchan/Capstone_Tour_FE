@@ -85,14 +85,14 @@ export class UserStorageService {
     return decodedToken ? decodedToken.roles || [] : [];
   }
 
-  // getUserId(): number | null {
-  //   const decodedToken = this.decodeToken();
-  //   return decodedToken ? decodedToken.id || null : null;
-  // }
   getUserId(): number | null {
-    const user = this.getUser();
-    return user && user.id ? Number(user.id) : null;
+    const decodedToken = this.decodeToken();
+    return decodedToken ? decodedToken.id || null : null;
   }
+  // getUserId(): number | null {
+  //   const user = this.getUser();
+  //   return user && user.id ? Number(user.id) : null;
+  // }
 
   decodeToken(): any {
     const token = this.getToken();

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CustomerService } from '../../services/customer.service';
 import { UserStorageService } from '../../../../core/services/user-storage/user-storage.service';
 import { BirthDate } from '../../../../shared/pipes/birthdate.pipe';
+import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
 
 @Component({
   selector: 'app-customer-profile',
@@ -21,11 +22,15 @@ export class CustomerProfileComponent {
 
   constructor(
     private customerService: CustomerService,
-    private userStorageService: UserStorageService
+    private userStorageService: UserStorageService,
+    private currentUserService: CurrentUserService
   ) { }
   
   ngOnInit() {
-    const userId = this.userStorageService.getUserId();
+    const userId = this.currentUserService.getCurrentUser().id;
+
+    console.log('{ProfileComponent} Current User:', this.currentUser);
+
     console.log('UserId:', userId);
     if (userId !== null) {
       this.customerService.getUserProfile(userId).subscribe((res) => {
