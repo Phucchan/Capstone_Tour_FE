@@ -12,7 +12,11 @@ declare const window: any;
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ChatComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    RouterModule, 
+    ChatComponent],
   templateUrl: './header.component.html',
 })
 export class HeaderComponent implements OnInit {

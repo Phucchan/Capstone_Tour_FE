@@ -4,13 +4,15 @@ import { RouterOutlet } from '@angular/router';
 import { CustomerSidebarComponent } from '../customer-sidebar/customer-sidebar.component';
 
 @Component({
-  selector: 'app-profile',
+  selector: 'app-customer-layout',
   imports: [
     CommonModule,
     CustomerSidebarComponent,
     RouterOutlet
   ],
-  templateUrl: './profile.component.html',
-  styleUrl: './profile.component.css'
+  templateUrl: './customer-layout.component.html',
+  styleUrls: ['./customer-layout.component.css']
 })
-export class ProfileComponent {}
+export class CustomerLayoutComponent {
+
+}

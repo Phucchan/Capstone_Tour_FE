@@ -4,7 +4,7 @@ import { HomepageComponent } from './homepage/homepage.component';
 import { ListTourComponent } from './list-tour/list-tour.component';
 import { TourDetailComponent } from './tour-tourdetail/tour-detail.component';
 import { TourBookingComponent } from '../customer/components/tour-booking/tour-booking.component';
-import { ProfileComponent } from '../customer/components/profile/profile.component';
+import { CustomerLayoutComponent } from '../customer/components/Customer-layout/Customer-layout.component';
 import { CustomTourBookingComponent } from '../customer/components/custom-tour-booking/custom-tour-booking.component';
 import { TourBookingConfirmComponent } from '../customer/components/tour-booking/tour-booking-confirm/tour-booking-confirm.component';
 import { PlanComponent } from './plan/plan.component';
@@ -47,7 +47,7 @@ export const PUBLIC_ROUTES: Route[] = [
       },
       {
         path: 'customer/profile',
-        component: ProfileComponent,
+        component: CustomerLayoutComponent,
       },
       {
         path: 'plan-generation',
