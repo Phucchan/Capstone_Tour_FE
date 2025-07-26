@@ -33,4 +33,10 @@ export class CustomerService {
   });
 }
 
+  getUserBasic(username: string): Observable<any> {
+    return this.http.get<{ data: any }>(`${environment.apiUrl}/public/users/info`, {
+      params: new HttpParams().set('username', username),
+    });
+  }
+
 }

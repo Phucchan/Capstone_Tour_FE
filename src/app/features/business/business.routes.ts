@@ -3,13 +3,29 @@ import { LayoutComponent } from './layout/layout.component';
 import { TourListComponent } from './pages/tour-list/tour-list.component';
 import { TourFormComponent } from './pages/tour-form/tour-form.component';
 import { TourScheduleComponent } from './pages/tour-schedule/tour-schedule.component';
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { LocationManagementComponent } from './pages/location-management/location-management.component';
 
 export const BUSINESS_ROUTES: Routes = [
   {
     path: '',
     component: LayoutComponent,
     children: [
-      { path: '', redirectTo: 'tours', pathMatch: 'full' },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
+      // Route cho trang Dashboard
+      {
+        path: 'dashboard',
+        component: DashboardComponent,
+        data: { title: 'Dashboard' },
+      },
+
+      //ROUTE CHO LOCATION
+      {
+        path: 'locations',
+        component: LocationManagementComponent,
+        data: { title: 'Quản lý Địa điểm' },
+      },
 
       // Route cho trang danh sách Tour
       {
@@ -32,7 +48,7 @@ export const BUSINESS_ROUTES: Routes = [
         data: { title: 'Chi tiết Tour' },
       },
 
-      // ROUTE MỚI CHO TRANG LỊCH TRÌNH
+      // ROUTE CHO TRANG LỊCH TRÌNH
       {
         path: 'tours/:id/schedule',
         component: TourScheduleComponent,

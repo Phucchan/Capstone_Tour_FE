@@ -73,7 +73,8 @@ export class PlanComponent {
   }
 
   addInterest() {
-    this.otherInterest = this.addInterestForm.value.interest;
+    this.otherInterest = this.addInterestForm.value.interest.trim();
+    this.closeInterestModal();
   }
 
   addDay(dayNumber: number, location: any) {
@@ -160,6 +161,7 @@ export class PlanComponent {
         (response) => {
           console.log(response);
           this.isGenerating = false;
+          this.route.navigate(['/plan-preview', response.data.id]);
         },
         (error) => {
           console.error('Error generating plan:', error);
@@ -238,7 +240,7 @@ export class PlanComponent {
 
   isSelected(interest: string): boolean {
     return (
-      this.selectedInterests.includes(interest) || this.otherInterest != ''
+      this.selectedInterests.includes(interest) 
     );
   }
 
@@ -325,6 +327,16 @@ export class PlanComponent {
     if (this.currentStep < this.steps.length - 1) {
       this.currentStep++;
     }
+  }
+
+  closeInterestModal() {
+    const modal = document.getElementById('interestModal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  openInterestModal() {
+    const modal = document.getElementById('interestModal');
+    if (modal) modal.classList.remove('hidden');
   }
 
   goToStep(index: number) {

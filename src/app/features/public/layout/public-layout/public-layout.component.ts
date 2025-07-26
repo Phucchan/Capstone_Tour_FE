@@ -49,7 +49,7 @@ export class PublicLayoutComponent {
     });
   }
   getUserBasicInfo() {
-    this.customerService.getUserProfile(this.currentUser.username).subscribe({
+    this.customerService.getUserBasic(this.currentUser.username).subscribe({
       next: (response) => {
         console.log('User basic information:', response?.data);
         this.customerBasicInfo = response?.data || {};

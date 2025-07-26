@@ -12,6 +12,7 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "^19.2.14",
+    "@angular/cdk": "~19.2.14",
     "@angular/common": "^19.0.0",
     "@angular/compiler": "^19.0.0",
     "@angular/core": "^19.0.0",
@@ -29,6 +30,7 @@
     "@fullcalendar/timegrid": "^6.1.17",
     "@ng-select/ng-select": "^14.9.0",
     "@stomp/stompjs": "^7.1.1",
+    "@swimlane/ngx-charts": "^20.5.0",
     "@tailwindcss/postcss": "^4.1.10",
     "angular-svg-icon": "^19.1.1",
     "date-fns": "^4.1.0",
