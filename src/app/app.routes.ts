@@ -15,15 +15,15 @@ export const routes: Routes = [
     path: 'register',
     component: RegisterComponent,
   },
-  {
-    path: 'customer',
-    loadChildren: () =>
-      import('./features/customer/customer.routes').then(
-        (m) => m.CUSTOMER_ROUTES
-      ),
-    canActivate: [AuthGuard],
-    data: { expectedRoles: ['CUSTOMER'] },
-  },
+  // {
+  //   path: 'customer',
+  //   loadChildren: () =>
+  //     import('./features/customer/customer.routes').then(
+  //       (m) => m.CUSTOMER_ROUTES
+  //     ),
+  //   canActivate: [AuthGuard],
+  //   data: { expectedRoles: ['CUSTOMER'] },
+  // },
   {
     path: 'admin',
     loadChildren: () =>

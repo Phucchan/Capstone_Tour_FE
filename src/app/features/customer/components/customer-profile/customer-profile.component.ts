@@ -12,8 +12,9 @@ import { CurrentUserService } from '../../../../core/services/user-storage/curre
     CommonModule,
     FormsModule,
   ],
+  standalone: true,
   templateUrl: './customer-profile.component.html',
-  styleUrl: './customer-profile.component.css'
+  styleUrls: ['./customer-profile.component.css']
 })
 
 export class CustomerProfileComponent {

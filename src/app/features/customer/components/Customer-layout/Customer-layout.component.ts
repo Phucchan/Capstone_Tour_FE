@@ -10,6 +10,7 @@ import { CustomerSidebarComponent } from '../customer-sidebar/customer-sidebar.c
     CustomerSidebarComponent,
     RouterOutlet
   ],
+  standalone: true,
   templateUrl: './customer-layout.component.html',
   styleUrls: ['./customer-layout.component.css']
 })

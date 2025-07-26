@@ -13,6 +13,7 @@ import { ChatService } from '../../../customer/services/chat.service';
   selector: 'app-public-layout',
   templateUrl: './public-layout.component.html',
   styleUrls: ['./public-layout.component.css'],
+  standalone: true,
   imports: [
     RouterOutlet,
     HeaderComponent,

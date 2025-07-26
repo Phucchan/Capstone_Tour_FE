@@ -10,6 +10,7 @@ import { TourBookingConfirmComponent } from '../customer/components/tour-booking
 import { PlanComponent } from './plan/plan.component';
 import { AuthGuard } from '../../core/guards/auth.guard';
 import { PlanPreviewComponent } from './plan/plan-detail/plan-detail.component';
+import { CUSTOMER_ROUTES } from '../customer/customer.routes';
 
 export const PUBLIC_ROUTES: Route[] = [
   {
@@ -45,9 +46,12 @@ export const PUBLIC_ROUTES: Route[] = [
         path: 'custom-tour-booking',
         component: CustomTourBookingComponent,
       },
-      {
-        path: 'customer/profile',
+       {
+        path: 'customer',
         component: CustomerLayoutComponent,
+        canActivate: [AuthGuard],
+        data: { expectedRoles: ['CUSTOMER'] },
+        children: CUSTOMER_ROUTES // ✅ Sử dụng routes từ file riêng
       },
       {
         path: 'plan-generation',
