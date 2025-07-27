@@ -12,6 +12,7 @@ import {
   TourDayManagerDTO,
   TourDayManagerCreateRequestDTO,
   ServiceTypeShortDTO,
+  PartnerServiceShortDTO,
 } from '../models/tour.model';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
@@ -134,6 +135,17 @@ export class TourService {
     return this.http
       .get<ApiResponse<ServiceTypeShortDTO[]>>(
         `${this.baseApiUrl}/service-types`
+      )
+      .pipe(map((res) => res.data));
+  }
+
+  /**
+   * Lấy danh sách TẤT CẢ các dịch vụ từ đối tác để hiển thị trong dropdown
+   */
+  getAllPartnerServices(): Observable<PartnerServiceShortDTO[]> {
+    return this.http
+      .get<ApiResponse<PartnerServiceShortDTO[]>>(
+        `${this.baseApiUrl}/partner-services` // Giả định API endpoint là đây
       )
       .pipe(map((res) => res.data));
   }

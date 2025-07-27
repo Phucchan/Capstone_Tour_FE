@@ -76,7 +76,7 @@
                 <!-- ĐÃ SỬA: Thay button bằng thẻ <a> và thêm nút Lịch trình -->
                 <a [routerLink]="['/business/tours', tour.id]" class="text-blue-600 hover:text-blue-900 mr-4">Chi tiết</a>
                 <a [routerLink]="['/business/tours', tour.id, 'schedule']" class="text-green-600 hover:text-green-900 mr-4">Lịch trình</a>
-                <button (click)="calculateTourPrice(tour.id)" class="text-indigo-600 hover:text-indigo-900">Chiết tính</button>
+                 <a [routerLink]="['/business/tours', tour.id, 'costing']" class="text-indigo-600 hover:text-indigo-900">Chiết tính</a>
               </td>
             </tr>
           </tbody>

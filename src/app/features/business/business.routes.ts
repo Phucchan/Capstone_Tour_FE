@@ -5,6 +5,7 @@ import { TourFormComponent } from './pages/tour-form/tour-form.component';
 import { TourScheduleComponent } from './pages/tour-schedule/tour-schedule.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { LocationManagementComponent } from './pages/location-management/location-management.component';
+import { TourCostingComponent } from './pages/tour-costing/tour-costing.component';
 
 export const BUSINESS_ROUTES: Routes = [
   {
@@ -25,6 +26,13 @@ export const BUSINESS_ROUTES: Routes = [
         path: 'locations',
         component: LocationManagementComponent,
         data: { title: 'Quản lý Địa điểm' },
+      },
+
+      // ROUTE CHO TRANG CHIẾT TÍNH
+      {
+        path: 'tours/:id/costing',
+        component: TourCostingComponent,
+        data: { title: 'Chiết tính Giá Tour' },
       },
 
       // Route cho trang danh sách Tour

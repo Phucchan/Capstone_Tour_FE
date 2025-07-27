@@ -74,7 +74,5 @@ export class TourListComponent implements OnInit {
     this.router.navigate(['/business/tours/new']);
   }
 
-  calculateTourPrice(tourId: number): void {
-    /* Sẽ làm sau */
-  }
+
 }

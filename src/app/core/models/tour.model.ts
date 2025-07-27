@@ -117,3 +117,67 @@ export interface ServiceTypeShortDTO {
   name: string;
   code?: string; // Thêm code để khớp với backend
 }
+
+//CÁC MODEL CHO TRANG CHIẾT TÍNH
+
+/**
+ * @description Dữ liệu chi tiết của một dịch vụ trong bảng chiết tính
+ */
+export interface ServiceBreakdownDTO {
+  dayId: number;
+  serviceId: number;
+  dayNumber: number;
+  serviceTypeName: string;
+  partnerName: string;
+  partnerAddress: string;
+  nettPrice: number;
+  sellingPrice: number;
+}
+
+/**
+ * @description Dữ liệu đầy đủ của một khoảng khách, bao gồm cả giá đã tính
+ */
+export interface TourPaxFullDTO {
+  id: number;
+  tourId: number;
+  minQuantity: number;
+  maxQuantity: number;
+  fixedPrice: number | null;
+  extraHotelCost: number | null;
+  sellingPrice: number | null;
+  isDeleted: boolean;
+}
+
+/**
+ * @description Dữ liệu gửi lên khi yêu cầu tính giá
+ */
+export interface TourPriceCalculateRequestDTO {
+  profitRate: number;
+  extraCost: number;
+}
+
+/**
+ * @description Dữ liệu gửi đi khi TẠO một khoảng khách mới
+ */
+export interface TourPaxCreateRequestDTO {
+  minQuantity: number;
+  maxQuantity: number;
+}
+
+/**
+ * @description Dữ liệu gửi đi khi CẬP NHẬT một khoảng khách
+ */
+export interface TourPaxUpdateRequestDTO {
+  minQuantity: number;
+  maxQuantity: number;
+}
+
+/**
+ * @description Dữ liệu rút gọn của một dịch vụ từ đối tác
+ */
+export interface PartnerServiceShortDTO {
+  id: number;
+  name: string; // Ví dụ: "Phòng Deluxe Double"
+  partnerName: string; // Ví dụ: "Khách sạn Grand Saigon"
+  serviceTypeName: string; // Ví dụ: "Khách sạn"
+}
