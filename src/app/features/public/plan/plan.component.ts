@@ -81,7 +81,7 @@ export class PlanComponent {
     const dayGroup = this.fb.group({
       dayNumber: [dayNumber],
       locationId: [location.id],
-      locationName: [location.name],
+      locationName: [location.name]
     });
 
     // Nếu ngày đó đã tồn tại → cập nhật
@@ -170,34 +170,6 @@ export class PlanComponent {
     } else {
       console.log('Form is invalid:', this.generatePlanForm.value);
     }
-  }
-
-  async loadImagesForActivities(): Promise<void> {
-    this.isGenerating = true;
-    const imageFetchTasks: Promise<void>[] = [];
-
-    this.response.plan.days.forEach((day: any) => {
-      day.activities.forEach((activity: any) => {
-        const task = this.imageSearchService
-          .getImageUrl(activity.title)
-          .toPromise()
-          .then((res) => {
-            activity.imageUrl =
-              res.images_results?.[0]?.thumbnail ||
-              'https://statics.vinpearl.com/pho-co-ha-noi-10_1687918089.jpg';
-          })
-          .catch((err) => {
-            console.error(`Error fetching image for ${activity.title}:`, err);
-            activity.imageUrl =
-              'https://statics.vinpearl.com/pho-co-ha-noi-10_1687918089.jpg';
-          });
-
-        imageFetchTasks.push(task);
-      });
-    });
-
-    await Promise.all(imageFetchTasks);
-    this.isGenerating = false;
   }
 
   selectTrip(trip: any) {

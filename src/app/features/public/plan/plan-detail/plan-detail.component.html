@@ -1,15 +1,195 @@
-<div class="space-y-10 p-6 max-w-7xl mx-auto pt-12 pb-40">
+<div class="space-y-10 p-6 max-w-7xl mx-auto pt-8 pb-40">
+
+  <div class="fixed bottom-40 left-4 w-[320px] max-w-xs bg-white  text-sm text-gray-800 z-51">
+    <div
+      class="flex flex-col w-full w-[320px] leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl dark:bg-gray-700">
+      <div class="flex items-center space-x-2 rtl:space-x-reverse">
+        <span class="text-sm font-semibold text-gray-900 dark:text-white">Đi Đâu Duck</span>
+      </div>
+      <p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">
+        {{ displayedText }}
+      </p>
+      <button type="button" class="text-md text-gray-500 dark:text-gray-400 text-right cursor-pointer hover:text-blue-500" (click)="nextStep()">
+        Tiếp theo >>
+      </button>
+    </div>
+  </div>
+
 
 
   <div class="fixed bottom-4 left-1 z-50">
-    <video src="/assets/video/walking-duck.mp4" autoplay loop muted playsinline class="w-60 h-auto ">
+    <video src="/assets/video/walking-duck.mp4" autoplay loop muted playsinline class="w-60 h-auto " preload="auto">
       Trình duyệt của bạn không hỗ trợ video.
     </video>
   </div>
 
+  <div class="opacity-0 animate-[slideInRight_0.5s_ease-out_forwards]" *ngIf="step > 0">
+    <section class="mt-8 text-center py-8">
+      <h1 class="text-4xl font-bold text-blue-900 mb-12">
+        Ngày {{ selectedDay?.dayNumber }}
+        <br>
+        <span class="text-blue-500">
+          {{ selectedDay?.title }}
+        </span>
+      </h1>
+      <p class="text-gray-600 mb-14 max-w-[1000px] mx-auto">
+        Mỗi ngày trong hành trình được thiết kế kỹ lưỡng nhằm mang đến cho bạn những trải nghiệm đáng nhớ nhất – từ việc
+        khám phá các điểm đến mang đậm dấu ấn văn hóa, thưởng thức những món ăn đặc sản hấp dẫn, đến việc hòa mình vào
+        nhịp sống địa phương. Hãy cùng bắt đầu chuyến đi với tinh thần khám phá và tận hưởng từng khoảnh khắc!
+      </p>
+      <div class="max-w-[1280px] mx-auto flex flex-wrap gap-4 justify-center">
+
+        <div
+          class="bg-gray-300 cursor-pointer rounded-lg h-[350px] flex-1 mt-32 max-w-[350px] flex items-center justify-center text-white font-bold relative bg-cover bg-center"
+          *ngIf="selectedDay?.activities[0]"
+          [ngStyle]="{ 'background-image': selectedDay?.activities[0]?.imageUrl? 'url(' + selectedDay.activities[0].imageUrl + ')': 'none'}">
+          <div class="absolute inset-0 bg-black/10 rounded-lg"></div>
+          <div class="relative z-10 flex flex-col h-full p-4">
+            <div class="flex-1"></div> <!-- đẩy xuống -->
+            <span class="text-center">{{ selectedDay?.activities[0].title }}</span>
+          </div>
+        </div>
+
+
+
+        <div class="flex flex-col gap-4">
+          <div
+            class="bg-gray-300 cursor-pointer rounded-lg h-[300px] max-w-[320px] flex items-center justify-center text-white font-bold relative bg-cover bg-center"
+            *ngIf="selectedDay?.activities[1]"
+            [style.backgroundImage]="'url(' + selectedDay?.activities[1].imageUrl + ')'">
+            <div class="absolute inset-0 bg-black/10 rounded-lg"></div>
+            <div class="relative z-10 flex flex-col h-full p-4">
+              <div class="flex-1"></div> <!-- đẩy xuống -->
+              <span class="text-center">{{ selectedDay?.activities[1].title }}</span>
+            </div>
+          </div>
+
+
+          <div
+            class="bg-gray-300 cursor-pointer rounded-lg h-[300px] max-w-[320px] flex items-center justify-center text-white font-bold relative bg-cover bg-center"
+            *ngIf="selectedDay?.activities[2]"
+            [style.backgroundImage]="'url(' + selectedDay?.activities[2].imageUrl + ')'">
+            <div class="absolute inset-0 bg-black/10 rounded-lg"></div>
+            <div class="relative z-10 flex flex-col h-full p-4">
+              <div class="flex-1"></div> <!-- đẩy xuống -->
+              <span class="text-center">{{ selectedDay?.activities[2].title }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-gray-300 cursor-pointer rounded-lg h-[350px] flex-1 mt-32 max-w-[350px] flex items-center justify-center text-white font-bold relative bg-cover bg-center"
+          *ngIf="selectedDay?.activities[3]"
+          [style.backgroundImage]="'url(' + selectedDay?.activities[3].imageUrl + ')'">
+          <div class="absolute inset-0 bg-black/10 rounded-lg"></div>
+          <div class="relative z-10 flex flex-col h-full p-4">
+            <div class="flex-1"></div> <!-- đẩy xuống -->
+            <span class="text-center">{{ selectedDay?.activities[3].title }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-5xl mx-auto px-4 py-8">
+      <div class="space-y-10">
+        <div *ngFor="let activity of selectedDay?.activities; index as i" class="flex gap-4 items-start">
+          <div
+            class="flex-shrink-0 bg-sky-100 text-blue-900 font-bold rounded-full w-10 h-10 flex items-center justify-center shadow-md">
+            {{ i + 1 }}
+          </div>
+          <div>
+
+            <h3 class="font-bold text-lg text-blue-900">
+              {{ activity.title }}
+            </h3>
+
+            <p>
+              <span class="text-blue-500 italic">
+                {{ activity?.category }} - <span class="not-italic">🕐</span> {{ activity?.duration }} ( {{
+                activity?.startTime | time}} - {{ activity?.endTime | time }}) - {{ activity?.estimatedCost | currency
+                }}
+              </span>
+            </p>
+
+            <p class="text-md text-gray-500 mt-1">
+              {{ activity.content }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="my-8 max-w-3xl mx-auto border-gray-400">
+
+    <section class="max-w-5xl mx-auto px-4 py-8">
+      <p class="text-gray-600 mt-2">
+        Dưới đây là những khách sạn, nhà hàng được đánh giá cao, thuận tiện cho việc di chuyển và nghỉ ngơi trong hành
+        trình của
+        bạn.
+      </p>
+
+      <div class="mb-8 mt-8">
+        @for (hotel of selectedDay?.hotels; track $index) {
+        <div class="flex bg-white shadow rounded overflow-hidden">
+          <img [src]="hotel?.logoUrl" alt="Petit Palais" class="w-48 h-48 object-cover" />
+
+          <div class="p-4 space-y-1">
+            <h3 class="text-lg font-semibold text-gray-800"> {{hotel?.name}}</h3>
+            <p class="text-sm text-gray-500">
+              Website: <a [href]="hotel?.websiteUrl" class="text-blue-500 hover:underline"
+                target="_blank">{{hotel?.websiteUrl}}</a>
+            </p>
+            <p class="text-sm text-gray-500"> {{hotel?.roomDetails}}</p>
+            <p class="text-sm text-gray-500">
+              Ước tính: {{hotel?.estimatedCost | currency}}
+            </p>
+            <p class="text-sm text-gray-500">
+              Ngày nhận phòng: {{hotel?.checkInDate | date: 'dd/MM/yyyy'}}
+              <br>
+              Ngày trả phòng: {{hotel?.checkOutDate | date: 'dd/MM/yyyy'}}
+            </p>
+
+          </div>
+        </div>
+        }
+      </div>
+
+      <div>
+
+        <!-- Repeat Card Format with Different Content -->
+        @for (restaurant of selectedDay?.restaurants; track $index) {
+        <div class="flex bg-white shadow rounded overflow-hidden">
+          <img [src]="restaurant?.logoUrl" alt="Petit Palais" class="w-48 h-48 object-cover" />
+
+          <div class="p-4 space-y-1">
+            <h3 class="text-lg font-semibold text-gray-800"> {{restaurant?.name}}</h3>
+            <p class="text-sm text-gray-500">Website: <a [href]="restaurant?.websiteUrl"
+                class="text-blue-500 hover:underline" target="_blank">{{restaurant?.websiteUrl}}</a></p>
+            <p class="text-sm text-gray-500"> Ước tính: {{restaurant?.estimatedCost | currency}}
+            </p>
+            <p class="text-sm text-gray-500">
+              Ngày sử dụng: {{restaurant?.useDate | date: 'dd/MM/yyyy'}}
+            </p>
+            <div class="flex flex-wrap mt-2 gap-x-2 gap-y-1 text-sm text-gray-500">
+              Menu:
+              <span *ngFor="let item of restaurant?.menuItems; let i = index">
+                {{ item }}{{ i < restaurant?.menuItems.length - 1 ? ' ,' : '' }} </span>
+            </div>
+
+
+          </div>
+        </div>
+        }
+      </div>
+    </section>
+  </div>
+
+
+
+
   <!-- Balkans Travel Poster UI -->
-  <div
-    class="w-full max-w-screen-lg mx-auto p-4 font-sans transition-all duration-500 opacity-0 animate-[fadeIn_0.5s_forwards]">
+  <div *ngIf="step === 0"
+    class="w-full max-w-screen-lg mx-auto p-4 mt-12 font-sans transition-all duration-500 opacity-0 animate-[fadeIn_0.5s_forwards]">
     <!-- Image grid -->
     <div class="relative">
       <div class="grid grid-cols-2 gap-4 max-w-5xl mx-auto p-4">
@@ -25,16 +205,6 @@
           <img [src]="activities[3]?.imageUrl" alt="Ảnh 4" class="w-full h-80 object-cover rounded-lg " />
         </div>
       </div>
-      <button
-        class="absolute top-1/2 right-[-10%] transform -translate-y-1/2 bg-white shadow-md rounded-full p-2 hover:bg-gray-100 transition cursor-pointer"
-        aria-label="Next">
-        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-          width="24" height="24" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M19 12H5m14 0-4 4m4-4-4-4" />
-        </svg>
-
-      </button>
     </div>
 
 
