@@ -1,0 +1,130 @@
+<div class="container mx-auto p-4 md:p-6 lg:p-8 bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <ng-container *ngIf="tourDetail$ | async as tour">
+    <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Chiết tính giá tour</h1>
+        <p class="text-lg text-blue-600 font-semibold">{{ tour.name }}</p>
+      </div>
+      <a [routerLink]="['/business/tours']" class="mt-4 sm:mt-0 text-blue-600 hover:text-blue-800 transition-colors">
+        &larr; Quay lại danh sách
+      </a>
+    </header>
+  </ng-container>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="text-center py-20">
+    <p class="text-gray-500">Đang tải dữ liệu chiết tính...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Left Column: Service Breakdown -->
+    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-gray-700">Bảng Chiết Tính Dịch Vụ</h2>
+         <button (click)="openServiceModal()" class="bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-600">
+          + Thêm Dịch Vụ
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dịch vụ</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nhà cung cấp</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Giá NET</th>
+               <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Hành động</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <ng-container *ngIf="serviceBreakdown$ | async as services">
+              <tr *ngIf="services.length === 0">
+                <td colspan="4" class="px-4 py-10 text-center text-gray-500">Chưa có dịch vụ nào được thêm vào.</td>
+              </tr>
+              <tr *ngFor="let service of services">
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">Ngày {{ service.dayNumber }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ service.serviceTypeName }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{{ service.partnerName }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-800 text-right font-semibold">{{ service.nettPrice | currency:'VND':'symbol':'1.0-0' }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-right text-sm">
+                  <button (click)="handleServiceDelete(service)" class="text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
+                  </button>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right Column: Configuration and Results -->
+    <div class="space-y-6">
+      <!-- Pax Configuration -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold text-gray-700">Cấu hình Khách</h2>
+          <button (click)="openPaxModal()" class="text-blue-600 text-sm font-medium hover:underline">Quản lý</button>
+        </div>
+        <ul class="space-y-2">
+          <ng-container *ngIf="tourPaxConfigs$ | async as paxConfigs">
+            <li *ngIf="paxConfigs.length === 0" class="text-sm text-gray-500">Chưa có khoảng khách nào.</li>
+            <li *ngFor="let pax of paxConfigs" class="flex justify-between items-center text-sm p-2 bg-gray-50 rounded group">
+              <span class="font-medium text-gray-800">Nhóm {{pax.minQuantity}} - {{pax.maxQuantity}} khách</span>
+              <div class="flex items-center">
+                <span class="font-bold text-lg text-green-600 mr-4">
+                  {{ (pax.sellingPrice || 0) | currency:'VND':'symbol':'1.0-0' }}
+                </span>
+                <!-- Edit and Delete buttons -->
+                <button (click)="openPaxModal(pax)" class="text-gray-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
+                </button>
+                <button (click)="handlePaxDelete(pax.id)" class="text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
+                </button>
+              </div>
+            </li>
+          </ng-container>
+        </ul>
+      </div>
+
+      <!-- Price Calculation -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-bold text-gray-700 mb-4">Tính toán Giá bán</h2>
+        <form [formGroup]="costingForm" (ngSubmit)="calculatePrices()" class="space-y-4">
+          <div>
+            <label for="profitRate" class="block text-sm font-medium text-gray-600">Lợi nhuận mong muốn (%)</label>
+            <input type="number" id="profitRate" formControlName="profitRate" class="input-style w-full mt-1">
+          </div>
+          <div>
+            <label for="extraCost" class="block text-sm font-medium text-gray-600">Chi phí tổ chức (VNĐ)</label>
+            <input type="number" id="extraCost" formControlName="extraCost" class="input-style w-full mt-1">
+          </div>
+          <button type="submit" [disabled]="costingForm.invalid" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">
+            Tính toán & Cập nhật giá
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICE FORM MODAL -->
+<app-service-form
+  [isVisible]="isServiceModalOpen"
+  [tourDays]="tourDaysForForm"
+  (save)="handleServiceSave($event)"
+  (close)="closeServiceModal()">
+</app-service-form>
+
+<!-- PAX FORM MODAL -->
+<app-pax-form
+  [isVisible]="isPaxModalOpen"
+  [paxData]="currentPaxToEdit"
+  (save)="handlePaxSave($event)"
+  (close)="closePaxModal()">
+</app-pax-form>
