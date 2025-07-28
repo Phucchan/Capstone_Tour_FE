@@ -1,16 +1,9 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Observable, Subscription, of } from 'rxjs';
+import { Observable, Subscription, of, forkJoin } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-
-// --- Thêm import cho NgSelectModule ---
 import { NgSelectModule } from '@ng-select/ng-select';
 
 import { TourService } from '../../../../core/services/tour.service';
@@ -19,23 +12,18 @@ import {
   CreateTourRequest,
   UpdateTourRequest,
   TourDetail,
+  TourDayManagerDTO,
   TourDetailWithOptions,
 } from '../../../../core/models/tour.model';
 
 @Component({
   selector: 'app-tour-form',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule, // <-- Component này dùng Reactive Forms
-    NgSelectModule, // <-- Thêm NgSelectModule để sử dụng ng-select
-    RouterLink,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, NgSelectModule, RouterLink],
   templateUrl: './tour-form.component.html',
   styleUrls: ['./tour-form.component.css'],
 })
 export class TourFormComponent implements OnInit, OnDestroy {
-  // --- Properties ---
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -46,13 +34,10 @@ export class TourFormComponent implements OnInit, OnDestroy {
   public isEditMode = false;
   public tourId: number | null = null;
   public tourOptions$!: Observable<TourOptionsData>;
-
-  public durationDays = 0;
   private destinationSub!: Subscription;
+  public durationDays = 0;
 
-  // --- Lifecycle Hooks ---
   constructor() {
-    // Xây dựng form ở constructor để đảm bảo form được khởi tạo sớm
     this.buildForm();
   }
 
@@ -97,7 +82,7 @@ export class TourFormComponent implements OnInit, OnDestroy {
   private buildForm(): void {
     this.tourForm = this.fb.group({
       name: ['', Validators.required],
-      code: [{ value: '', disabled: true }], // Luôn disable
+      code: [{ value: '', disabled: true }],
       thumbnailUrl: [''],
       description: [''],
       tourStatus: ['DRAFT'],
@@ -142,8 +127,6 @@ export class TourFormComponent implements OnInit, OnDestroy {
       this.tourService.updateTour(this.tourId, updateData).subscribe({
         next: () => {
           alert('Cập nhật tour thành công!');
-          // Không điều hướng đi đâu cả, để người dùng có thể tiếp tục
-          // this.router.navigate(['/business/tours']);
         },
         error: (err) => {
           console.error('Lỗi khi cập nhật tour:', err);
@@ -151,7 +134,6 @@ export class TourFormComponent implements OnInit, OnDestroy {
         },
       });
     } else {
-      // Logic tạo mới giữ nguyên
       const createData: CreateTourRequest = {
         name: formValue.name,
         thumbnailUrl: formValue.thumbnailUrl,

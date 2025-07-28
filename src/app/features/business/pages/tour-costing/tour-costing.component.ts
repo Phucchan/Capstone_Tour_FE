@@ -1,5 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  WritableSignal,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   FormBuilder,
@@ -7,7 +13,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
+// SỬA LỖI: Thêm 'Observable' vào import
+import { forkJoin, of, Observable } from 'rxjs';
 import { switchMap, tap, finalize, map } from 'rxjs/operators';
 
 import { TourService } from '../../../../core/services/tour.service';
@@ -16,26 +23,15 @@ import {
   ServiceBreakdownDTO,
   TourDetail,
   TourPaxFullDTO,
-  TourPaxCreateRequestDTO,
-  TourPaxUpdateRequestDTO,
-  TourDayManagerDTO,
+  TourPaxRequestDTO,
 } from '../../../../core/models/tour.model';
-import { PaxFormComponent } from '../../components/pax-form/pax-form.component';
-import { ServiceFormComponent } from '../../components/service-form/service-form.component';
+import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
 
 @Component({
   selector: 'app-tour-costing',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink,
-    ReactiveFormsModule,
-    CurrencyPipe,
-    PaxFormComponent,
-    ServiceFormComponent,
-  ],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, CurrencyVndPipe],
   templateUrl: './tour-costing.component.html',
-  styleUrls: ['./tour-costing.component.css'],
 })
 export class TourCostingComponent implements OnInit {
   // --- Injections ---
@@ -44,159 +40,146 @@ export class TourCostingComponent implements OnInit {
   private fb = inject(FormBuilder);
   private tourService = inject(TourService);
   private tourPaxService = inject(TourPaxService);
-  public tourDaysForForm: TourDayManagerDTO[] = [];
 
-  // --- State ---
+  // --- Component State using Signals ---
   public tourId!: number;
   public tourDetail$!: Observable<TourDetail>;
-  public serviceBreakdown$!: Observable<ServiceBreakdownDTO[]>;
-  private paxConfigsSubject = new BehaviorSubject<TourPaxFullDTO[]>([]);
-  public tourPaxConfigs$!: Observable<TourPaxFullDTO[]>;
-  public isLoading = true;
 
-  public costingForm!: FormGroup;
-  public isPaxModalOpen = false;
-  public currentPaxToEdit: TourPaxFullDTO | null = null;
-  public isServiceModalOpen = false;
+  public services: WritableSignal<ServiceBreakdownDTO[]> = signal([]);
+  public paxConfigs: WritableSignal<TourPaxFullDTO[]> = signal([]);
 
-  ngOnInit(): void {
+  public isLoading = signal(true);
+  public isCalculating = signal(false);
+
+  public isPaxModalOpen = signal(false);
+  public currentPax: WritableSignal<TourPaxFullDTO | null> = signal(null);
+
+  // --- Forms ---
+  public costingForm: FormGroup;
+  public paxForm: FormGroup;
+
+  constructor() {
     this.costingForm = this.fb.group({
-      profitRate: [10, [Validators.required, Validators.min(0)]], // Mặc định lợi nhuận 10%
+      profitRate: [10, [Validators.required, Validators.min(0)]],
       extraCost: [0, [Validators.required, Validators.min(0)]],
     });
 
+    this.paxForm = this.fb.group({
+      minQuantity: ['', [Validators.required, Validators.min(1)]],
+      maxQuantity: ['', [Validators.required, Validators.min(1)]],
+    });
+  }
+
+  ngOnInit(): void {
     this.route.paramMap
       .pipe(
         tap((params) => {
-          const idParam = params.get('id');
-          if (!idParam) {
-            this.router.navigate(['/business/tours']);
+          const id = params.get('id');
+          if (!id) {
+            this.router.navigate(['/business/tour-list']);
             return;
           }
-          this.tourId = +idParam;
+          this.tourId = +id;
+          // Giả sử tourService.getTourById trả về một cấu trúc có thuộc tính 'detail'
+          this.tourDetail$ = this.tourService
+            .getTourById(this.tourId)
+            .pipe(map((res: any) => res.detail));
         }),
-        switchMap(() => this.loadAllData())
+        switchMap(() => this.loadData())
       )
       .subscribe();
   }
 
-  loadAllData() {
-    this.isLoading = true;
+  loadData() {
+    this.isLoading.set(true);
     return forkJoin({
-      detail: this.tourService
-        .getTourById(this.tourId)
-        .pipe(map((res) => res.detail)),
       services: this.tourPaxService.getServiceBreakdown(this.tourId),
       paxConfigs: this.tourPaxService.getTourPaxConfigurations(this.tourId),
-      days: this.tourService.getTourDays(this.tourId),
     }).pipe(
-      tap((response) => {
-        this.tourDetail$ = of(response.detail);
-        this.serviceBreakdown$ = of(response.services);
-        this.paxConfigsSubject.next(response.paxConfigs);
-        this.tourDaysForForm = response.days;
+      tap(({ services, paxConfigs }) => {
+        this.services.set(services);
+        this.paxConfigs.set(paxConfigs);
       }),
-      finalize(() => (this.isLoading = false))
+      finalize(() => this.isLoading.set(false))
     );
   }
 
   calculatePrices(): void {
-    if (this.costingForm.invalid) {
-      return;
-    }
-    this.isLoading = true;
+    if (this.costingForm.invalid) return;
+
+    this.isCalculating.set(true);
     this.tourPaxService
       .calculatePrices(this.tourId, this.costingForm.value)
-      .pipe(finalize(() => (this.isLoading = false)))
+      .pipe(finalize(() => this.isCalculating.set(false)))
       .subscribe({
-        next: (updatedPaxConfigs) => {
-          this.paxConfigsSubject.next(updatedPaxConfigs);
+        next: (updatedConfigs) => {
+          this.paxConfigs.set(updatedConfigs);
+          // Simple feedback, can be replaced with a toast notification
           alert('Đã tính toán và cập nhật giá thành công!');
         },
-        error: (err) => console.error('Lỗi khi tính giá:', err),
+        error: (err) => {
+          console.error('Lỗi khi tính giá:', err);
+          alert(`Lỗi: ${err.error?.message || 'Không thể tính giá.'}`);
+        },
       });
-  }
-  // --- Service Modal Logic ---
-  openServiceModal(): void {
-    this.isServiceModalOpen = true;
-  }
-
-  closeServiceModal(): void {
-    this.isServiceModalOpen = false;
   }
 
   // --- Pax Modal Logic ---
-  openPaxModal(pax: TourPaxFullDTO | null = null): void {
-    this.currentPaxToEdit = pax;
-    this.isPaxModalOpen = true;
+  openPaxModal(pax: TourPaxFullDTO | null): void {
+    this.currentPax.set(pax);
+    if (pax) {
+      this.paxForm.patchValue({
+        minQuantity: pax.minQuantity,
+        maxQuantity: pax.maxQuantity,
+      });
+    } else {
+      this.paxForm.reset();
+    }
+    this.isPaxModalOpen.set(true);
   }
 
   closePaxModal(): void {
-    this.isPaxModalOpen = false;
-    this.currentPaxToEdit = null;
+    this.isPaxModalOpen.set(false);
+    this.currentPax.set(null);
   }
 
-  // --- Pax Save Logic ---
-  handlePaxSave(
-    formData: TourPaxCreateRequestDTO | TourPaxUpdateRequestDTO
-  ): void {
-    let saveObservable: Observable<any>;
-    if (this.currentPaxToEdit) {
-      saveObservable = this.tourPaxService.updateTourPax(
-        this.tourId,
-        this.currentPaxToEdit.id,
-        formData
-      );
-    } else {
-      saveObservable = this.tourPaxService.createTourPax(this.tourId, formData);
-    }
+  handlePaxSave(): void {
+    if (this.paxForm.invalid) return;
+
+    const formData: TourPaxRequestDTO = this.paxForm.value;
+    const currentPaxData = this.currentPax();
+
+    const saveObservable = currentPaxData
+      ? this.tourPaxService.updateTourPax(
+          this.tourId,
+          currentPaxData.id,
+          formData
+        )
+      : this.tourPaxService.createTourPax(this.tourId, formData);
+
     saveObservable.subscribe({
       next: () => {
         this.closePaxModal();
-        this.loadAllData().subscribe();
+        this.loadData().subscribe(); // Reload data on success
       },
-      error: (err) => console.error('Lỗi khi lưu khoảng khách:', err),
+      error: (err) => {
+        console.error('Lỗi khi lưu khoảng khách:', err);
+        alert(`Lỗi: ${err.error?.message || 'Không thể lưu.'}`);
+      },
     });
   }
 
-  // --- Pax Delete Logic ---
   handlePaxDelete(paxId: number): void {
     if (confirm('Bạn có chắc chắn muốn xóa khoảng khách này?')) {
       this.tourPaxService.deleteTourPax(this.tourId, paxId).subscribe({
         next: () => {
-          this.loadAllData().subscribe();
+          this.loadData().subscribe();
         },
-        error: (err) => console.error('Lỗi khi xóa khoảng khách:', err),
-      });
-    }
-  }
-  // --- Service Save Logic ---
-  handleServiceSave(event: { dayId: number; serviceId: number }): void {
-    this.tourPaxService
-      .addServiceToTourDay(this.tourId, event.dayId, event.serviceId)
-      .subscribe({
-        next: () => {
-          this.closeServiceModal();
-          this.loadAllData().subscribe(); // Tải lại toàn bộ dữ liệu
+        error: (err) => {
+          console.error('Lỗi khi xóa khoảng khách:', err);
+          alert(`Lỗi: ${err.error?.message || 'Không thể xóa.'}`);
         },
-        error: (err) => alert('Lỗi khi thêm dịch vụ: ' + err.error.message),
       });
-  }
-  // --- Service Delete Logic ---
-  handleServiceDelete(service: ServiceBreakdownDTO): void {
-    if (
-      confirm(
-        `Bạn có chắc muốn xóa dịch vụ "${service.serviceTypeName}" của "${service.partnerName}" khỏi Ngày ${service.dayNumber}?`
-      )
-    ) {
-      this.tourPaxService
-        .removeServiceFromTourDay(this.tourId, service.dayId, service.serviceId)
-        .subscribe({
-          next: () => {
-            this.loadAllData().subscribe();
-          },
-          error: (err) => alert('Lỗi khi xóa dịch vụ: ' + err.error.message),
-        });
     }
   }
 }
