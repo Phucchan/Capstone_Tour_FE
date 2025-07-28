@@ -1,130 +1,153 @@
-<div class="container mx-auto p-4 md:p-6 lg:p-8 bg-gray-50 min-h-screen">
+<div class="container mx-auto p-4 md:p-6 lg:p-8">
   <!-- Header -->
-  <ng-container *ngIf="tourDetail$ | async as tour">
-    <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
-      <div>
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Chiết tính giá tour</h1>
-        <p class="text-lg text-blue-600 font-semibold">{{ tour.name }}</p>
-      </div>
-      <a [routerLink]="['/business/tours']" class="mt-4 sm:mt-0 text-blue-600 hover:text-blue-800 transition-colors">
-        &larr; Quay lại danh sách
-      </a>
-    </header>
-  </ng-container>
-
-  <!-- Loading Spinner -->
-  <div *ngIf="isLoading" class="text-center py-20">
-    <p class="text-gray-500">Đang tải dữ liệu chiết tính...</p>
+  <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
+    <div *ngIf="tourDetail$ | async as tour">
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Chiết tính chi phí cho tour</h1>
+      <p class="text-gray-600 mt-1">{{ tour.name }} ({{ tour.code }})</p>
+    </div>
+    <a routerLink="/business/tour-list" class="mt-4 md:mt-0 inline-flex items-center gap-2 rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+      Quay lại danh sách
+    </a>
   </div>
 
-  <!-- Main Content -->
-  <div *ngIf="!isLoading" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Main Grid Layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column: Service Costs & Calculation -->
+    <div class="lg:col-span-2 space-y-6">
 
-    <!-- Left Column: Service Breakdown -->
-    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold text-gray-700">Bảng Chiết Tính Dịch Vụ</h2>
-         <button (click)="openServiceModal()" class="bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-600">
-          + Thêm Dịch Vụ
-        </button>
+      <!-- Service Costs Breakdown -->
+      <div class="bg-white rounded-lg shadow-md border border-gray-200">
+        <div class="p-4 border-b">
+          <h2 class="text-lg font-semibold text-gray-700">Chi phí dịch vụ cấu thành</h2>
+        </div>
+        <div class="p-4">
+          <div *ngIf="isLoading()" class="text-center py-8">
+            <p class="text-gray-500">Đang tải dữ liệu dịch vụ...</p>
+          </div>
+          <div *ngIf="!isLoading() && services().length === 0" class="text-center py-8 bg-gray-50 rounded-md">
+            <p class="text-gray-500">Chưa có dịch vụ nào được thêm vào tour này.</p>
+            <p class="text-sm text-gray-400 mt-1">Vui lòng vào phần "Chi tiết Tour" để thêm dịch vụ.</p>
+          </div>
+          <div *ngIf="!isLoading() && services().length > 0" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên Dịch Vụ</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại DV</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đối Tác</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Giá NET</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let service of services()">
+                  <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-800">{{ service.serviceTypeName }}</td>
+                  <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ service.partnerName }}</td>
+                  <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ service.partnerAddress }}</td>
+                  <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-800 font-medium text-right">{{ service.nettPrice | currency:'VND':'symbol':'1.0-0' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dịch vụ</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nhà cung cấp</th>
-              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Giá NET</th>
-               <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Hành động</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <ng-container *ngIf="serviceBreakdown$ | async as services">
-              <tr *ngIf="services.length === 0">
-                <td colspan="4" class="px-4 py-10 text-center text-gray-500">Chưa có dịch vụ nào được thêm vào.</td>
-              </tr>
-              <tr *ngFor="let service of services">
-                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">Ngày {{ service.dayNumber }}</td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ service.serviceTypeName }}</td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{{ service.partnerName }}</td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-800 text-right font-semibold">{{ service.nettPrice | currency:'VND':'symbol':'1.0-0' }}</td>
-                <td class="px-4 py-4 whitespace-nowrap text-right text-sm">
-                  <button (click)="handleServiceDelete(service)" class="text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
-                  </button>
-                </td>
-              </tr>
-            </ng-container>
-          </tbody>
-        </table>
-      </div>
     </div>
 
-    <!-- Right Column: Configuration and Results -->
-    <div class="space-y-6">
-      <!-- Pax Configuration -->
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-gray-700">Cấu hình Khách</h2>
-          <button (click)="openPaxModal()" class="text-blue-600 text-sm font-medium hover:underline">Quản lý</button>
+    <!-- Right Column: Pax Pricing -->
+    <div class="lg:col-span-1 space-y-6">
+
+      <!-- Calculation Form -->
+      <div class="bg-white rounded-lg shadow-md border border-gray-200">
+        <div class="p-4 border-b">
+          <h2 class="text-lg font-semibold text-gray-700">Công cụ tính giá</h2>
         </div>
-        <ul class="space-y-2">
-          <ng-container *ngIf="tourPaxConfigs$ | async as paxConfigs">
-            <li *ngIf="paxConfigs.length === 0" class="text-sm text-gray-500">Chưa có khoảng khách nào.</li>
-            <li *ngFor="let pax of paxConfigs" class="flex justify-between items-center text-sm p-2 bg-gray-50 rounded group">
-              <span class="font-medium text-gray-800">Nhóm {{pax.minQuantity}} - {{pax.maxQuantity}} khách</span>
-              <div class="flex items-center">
-                <span class="font-bold text-lg text-green-600 mr-4">
-                  {{ (pax.sellingPrice || 0) | currency:'VND':'symbol':'1.0-0' }}
-                </span>
-                <!-- Edit and Delete buttons -->
-                <button (click)="openPaxModal(pax)" class="text-gray-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
-                </button>
-                <button (click)="handlePaxDelete(pax.id)" class="text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
-                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
-                </button>
-              </div>
-            </li>
-          </ng-container>
-        </ul>
+        <form [formGroup]="costingForm" (ngSubmit)="calculatePrices()" class="p-4 space-y-4">
+          <div>
+            <label for="profitRate" class="block text-sm font-medium text-gray-700">Tỷ suất lợi nhuận (%)</label>
+            <input type="number" id="profitRate" formControlName="profitRate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+          </div>
+          <div>
+            <label for="extraCost" class="block text-sm font-medium text-gray-700">Chi phí phát sinh (VND)</label>
+            <input type="number" id="extraCost" formControlName="extraCost" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+          </div>
+          <button type="submit" [disabled]="costingForm.invalid || isLoading()" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed">
+            <svg *ngIf="isCalculating()" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ isCalculating() ? 'Đang tính toán...' : 'Tính Lại Giá' }}
+          </button>
+        </form>
       </div>
 
-      <!-- Price Calculation -->
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-bold text-gray-700 mb-4">Tính toán Giá bán</h2>
-        <form [formGroup]="costingForm" (ngSubmit)="calculatePrices()" class="space-y-4">
-          <div>
-            <label for="profitRate" class="block text-sm font-medium text-gray-600">Lợi nhuận mong muốn (%)</label>
-            <input type="number" id="profitRate" formControlName="profitRate" class="input-style w-full mt-1">
-          </div>
-          <div>
-            <label for="extraCost" class="block text-sm font-medium text-gray-600">Chi phí tổ chức (VNĐ)</label>
-            <input type="number" id="extraCost" formControlName="extraCost" class="input-style w-full mt-1">
-          </div>
-          <button type="submit" [disabled]="costingForm.invalid" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">
-            Tính toán & Cập nhật giá
+      <!-- Pax Pricing Table -->
+      <div class="bg-white rounded-lg shadow-md border border-gray-200">
+        <div class="p-4 border-b flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-700">Chiết tính theo khách</h2>
+          <button (click)="openPaxModal(null)" class="inline-flex items-center gap-2 rounded-lg bg-indigo-100 px-3 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+            Thêm
           </button>
+        </div>
+        <div class="p-4">
+          <div *ngIf="isLoading()" class="text-center py-8">
+            <p class="text-gray-500">Đang tải dữ liệu...</p>
+          </div>
+           <div *ngIf="!isLoading() && paxConfigs().length === 0" class="text-center py-8 bg-gray-50 rounded-md">
+            <p class="text-gray-500">Chưa có khoảng khách nào.</p>
+            <p class="text-sm text-gray-400 mt-1">Nhấn "Thêm" để tạo mới.</p>
+          </div>
+          <div *ngIf="!isLoading() && paxConfigs().length > 0" class="space-y-3">
+            <div *ngFor="let pax of paxConfigs()" class="p-3 border rounded-md bg-gray-50">
+              <div class="flex items-center justify-between">
+                <p class="font-semibold text-gray-800">
+                  {{ pax.minQuantity }} - {{ pax.maxQuantity }} khách
+                </p>
+                <div class="flex items-center gap-2">
+                  <button (click)="openPaxModal(pax)" class="text-blue-500 hover:text-blue-700">Sửa</button>
+                  <button (click)="handlePaxDelete(pax.id)" class="text-red-500 hover:text-red-700">Xóa</button>
+                </div>
+              </div>
+              <div class="mt-2 text-sm grid grid-cols-2 gap-2">
+                <div>
+                  <p class="text-gray-500">Giá vốn:</p>
+                  <p class="font-medium text-gray-700">{{ pax.fixedPrice | currency:'VND':'symbol':'1.0-0' }}</p>
+                </div>
+                <div>
+                  <p class="text-gray-500">Giá bán:</p>
+                  <p class="font-bold text-green-600">{{ pax.sellingPrice | currency:'VND':'symbol':'1.0-0' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Pax Add/Edit Modal -->
+  <div *ngIf="isPaxModalOpen()" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+    <div class="relative mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+      <div class="mt-3 text-center">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">{{ currentPax() ? 'Chỉnh sửa' : 'Thêm mới' }} khoảng khách</h3>
+        <form [formGroup]="paxForm" (ngSubmit)="handlePaxSave()" class="mt-4 px-7 py-3 text-left space-y-4">
+          <div>
+            <label for="minQuantity" class="text-sm font-medium">Số khách tối thiểu</label>
+            <input type="number" id="minQuantity" formControlName="minQuantity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+          </div>
+          <div>
+            <label for="maxQuantity" class="text-sm font-medium">Số khách tối đa</label>
+            <input type="number" id="maxQuantity" formControlName="maxQuantity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+          </div>
+          <div class="items-center gap-4 px-4 py-3 flex">
+            <button type="button" (click)="closePaxModal()" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Hủy</button>
+            <button type="submit" [disabled]="paxForm.invalid" class="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-indigo-300">Lưu</button>
+          </div>
         </form>
       </div>
     </div>
   </div>
+
 </div>
-
-<!-- SERVICE FORM MODAL -->
-<app-service-form
-  [isVisible]="isServiceModalOpen"
-  [tourDays]="tourDaysForForm"
-  (save)="handleServiceSave($event)"
-  (close)="closeServiceModal()">
-</app-service-form>
-
-<!-- PAX FORM MODAL -->
-<app-pax-form
-  [isVisible]="isPaxModalOpen"
-  [paxData]="currentPaxToEdit"
-  (save)="handlePaxSave($event)"
-  (close)="closePaxModal()">
-</app-pax-form>

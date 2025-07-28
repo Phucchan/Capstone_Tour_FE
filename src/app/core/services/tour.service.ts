@@ -39,45 +39,30 @@ export class TourService {
       .pipe(map((response) => response.data));
   }
 
-  /**
-   * @description Lấy tất cả các lựa chọn cho form tạo tour.
-   */
   getTourOptions(): Observable<TourOptionsData> {
     return this.http
       .get<ApiResponse<TourOptionsData>>(`${this.toursApiUrl}/options`)
       .pipe(map((response) => response.data));
   }
 
-  /**
-   * @description Tạo một tour mới.
-   */
   createTour(tourData: CreateTourRequest): Observable<TourDetail> {
     return this.http
       .post<ApiResponse<TourDetail>>(this.toursApiUrl, tourData)
       .pipe(map((response) => response.data));
   }
 
-  /**
-   * @description Lấy thông tin chi tiết của một tour theo ID.
-   * API này giờ trả về cả detail và options.
-   */
   getTourById(id: number): Observable<TourDetailWithOptions> {
     return this.http
       .get<ApiResponse<TourDetailWithOptions>>(`${this.toursApiUrl}/${id}`)
       .pipe(map((response) => response.data));
   }
 
-  /**
-   * @description Cập nhật một tour.
-   */
   updateTour(id: number, tourData: UpdateTourRequest): Observable<TourDetail> {
     return this.http
       .put<ApiResponse<TourDetail>>(`${this.toursApiUrl}/${id}`, tourData)
       .pipe(map((response) => response.data));
   }
-  /**
-   * Lấy danh sách các ngày trong lịch trình của một tour
-   */
+
   getTourDays(tourId: number): Observable<TourDayManagerDTO[]> {
     return this.http
       .get<ApiResponse<TourDayManagerDTO[]>>(
@@ -86,9 +71,6 @@ export class TourService {
       .pipe(map((res) => res.data));
   }
 
-  /**
-   * Thêm một ngày mới vào lịch trình
-   */
   addTourDay(
     tourId: number,
     data: TourDayManagerCreateRequestDTO
@@ -101,9 +83,6 @@ export class TourService {
       .pipe(map((res) => res.data));
   }
 
-  /**
-   * Cập nhật một ngày trong lịch trình
-   */
   updateTourDay(
     tourId: number,
     dayId: number,
@@ -117,9 +96,6 @@ export class TourService {
       .pipe(map((res) => res.data));
   }
 
-  /**
-   * Xóa một ngày khỏi lịch trình
-   */
   deleteTourDay(tourId: number, dayId: number): Observable<string> {
     return this.http
       .delete<ApiResponse<string>>(
@@ -128,9 +104,6 @@ export class TourService {
       .pipe(map((res) => res.message));
   }
 
-  /**
-   * Lấy danh sách các loại dịch vụ để hiển thị trong form
-   */
   getServiceTypes(): Observable<ServiceTypeShortDTO[]> {
     return this.http
       .get<ApiResponse<ServiceTypeShortDTO[]>>(
@@ -138,15 +111,39 @@ export class TourService {
       )
       .pipe(map((res) => res.data));
   }
+  /**
+   * Thêm một dịch vụ cụ thể vào một ngày trong tour
+   * @param tourId ID của tour
+   * @param dayId ID của ngày
+   * @param serviceId ID của dịch vụ cần thêm
+   * @returns Dữ liệu ngày đã được cập nhật
+   */
+  addServiceToTourDay(
+    tourId: number,
+    dayId: number,
+    serviceId: number
+  ): Observable<TourDayManagerDTO> {
+    const url = `${this.toursApiUrl}/${tourId}/days/${dayId}/services/${serviceId}`;
+    return this.http
+      .post<ApiResponse<TourDayManagerDTO>>(url, {})
+      .pipe(map((res) => res.data));
+  }
 
   /**
-   * Lấy danh sách TẤT CẢ các dịch vụ từ đối tác để hiển thị trong dropdown
+   * Xóa một dịch vụ cụ thể khỏi một ngày trong tour
+   * @param tourId ID của tour
+   * @param dayId ID của ngày
+   * @param serviceId ID của dịch vụ cần xóa
+   * @returns Dữ liệu ngày đã được cập nhật
    */
-  getAllPartnerServices(): Observable<PartnerServiceShortDTO[]> {
+  removeServiceFromTourDay(
+    tourId: number,
+    dayId: number,
+    serviceId: number
+  ): Observable<TourDayManagerDTO> {
+    const url = `${this.toursApiUrl}/${tourId}/days/${dayId}/services/${serviceId}`;
     return this.http
-      .get<ApiResponse<PartnerServiceShortDTO[]>>(
-        `${this.baseApiUrl}/partner-services` // Giả định API endpoint là đây
-      )
+      .delete<ApiResponse<TourDayManagerDTO>>(url)
       .pipe(map((res) => res.data));
   }
 }

@@ -86,29 +86,6 @@ export interface TourDetailWithOptions {
 }
 
 
-
-/**
- * @description Dữ liệu của một ngày trong tour khi hiển thị
- */
-export interface TourDayManagerDTO {
-  id: number; // ID của TourDay
-  dayNumber: number;
-  title: string;
-  description: string | null;
-  location: TourOption | null; // Dùng TourOption vì nó có cấu trúc {id, name}
-  serviceTypes: ServiceTypeShortDTO[];
-}
-
-/**
- * @description Dữ liệu để tạo hoặc cập nhật một ngày trong tour
- */
-export interface TourDayManagerCreateRequestDTO {
-  title: string;
-  locationId: number | null;
-  serviceTypeIds: number[];
-  description?: string;
-}
-
 /**
  * @description Dữ liệu rút gọn của một loại dịch vụ
  */
@@ -119,10 +96,7 @@ export interface ServiceTypeShortDTO {
 }
 
 //CÁC MODEL CHO TRANG CHIẾT TÍNH
-
-/**
- * @description Dữ liệu chi tiết của một dịch vụ trong bảng chiết tính
- */
+// Dữ liệu chi tiết của một dịch vụ trong bảng chiết tính
 export interface ServiceBreakdownDTO {
   dayId: number;
   serviceId: number;
@@ -134,9 +108,7 @@ export interface ServiceBreakdownDTO {
   sellingPrice: number;
 }
 
-/**
- * @description Dữ liệu đầy đủ của một khoảng khách, bao gồm cả giá đã tính
- */
+// Dữ liệu đầy đủ của một khoảng khách, bao gồm cả giá đã tính
 export interface TourPaxFullDTO {
   id: number;
   tourId: number;
@@ -148,13 +120,12 @@ export interface TourPaxFullDTO {
   isDeleted: boolean;
 }
 
-/**
- * @description Dữ liệu gửi lên khi yêu cầu tính giá
- */
+// Dữ liệu gửi lên khi yêu cầu tính giá
 export interface TourPriceCalculateRequestDTO {
   profitRate: number;
   extraCost: number;
 }
+
 
 /**
  * @description Dữ liệu gửi đi khi TẠO một khoảng khách mới
@@ -164,20 +135,44 @@ export interface TourPaxCreateRequestDTO {
   maxQuantity: number;
 }
 
-/**
- * @description Dữ liệu gửi đi khi CẬP NHẬT một khoảng khách
- */
-export interface TourPaxUpdateRequestDTO {
+// Dữ liệu gửi đi khi TẠO hoặc CẬP NHẬT một khoảng khách mới
+export interface TourPaxRequestDTO {
   minQuantity: number;
   maxQuantity: number;
 }
 
-/**
- * @description Dữ liệu rút gọn của một dịch vụ từ đối tác
- */
+
 export interface PartnerServiceShortDTO {
   id: number;
-  name: string; // Ví dụ: "Phòng Deluxe Double"
-  partnerName: string; // Ví dụ: "Khách sạn Grand Saigon"
-  serviceTypeName: string; // Ví dụ: "Khách sạn"
+  name: string;
+  partnerName: string;
+  serviceTypeName: string;
 }
+
+export interface TourDayManagerDTO {
+  id: number;
+  dayNumber: number;
+  title: string;
+  description: string | null;
+  location: TourOption | null;
+  // SỬA LỖI: Thuộc tính này chứa các loại dịch vụ chung
+  serviceTypes: ServiceTypeShortDTO[];
+  // BỔ SUNG: Thuộc tính này chứa các dịch vụ cụ thể đã được thêm vào
+  services?: PartnerServiceShortDTO[];
+}
+
+export interface TourDayManagerCreateRequestDTO {
+  title: string;
+  locationId: number | null;
+  description?: string;
+  // Thuộc tính này không còn dùng để lưu dịch vụ cụ thể nữa
+  serviceTypeIds: number[];
+}
+
+export interface ServiceInfoDTO {
+  id: number;
+  name: string;
+  partnerName: string;
+  serviceTypeName: string;
+}
+

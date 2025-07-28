@@ -1,7 +1,8 @@
 import { Injectable, OnDestroy, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { Menu } from '../../../../core/constants/menu';
+// Xóa import không còn sử dụng
+// import { Menu } from '../../../../core/constants/menu';
 import { MenuItem, SubMenuItem } from '../../../../core/models/menu.model';
 
 @Injectable({
@@ -10,32 +11,13 @@ import { MenuItem, SubMenuItem } from '../../../../core/models/menu.model';
 export class layoutService implements OnDestroy {
   private _showSidebar = signal(true);
   private _showMobileMenu = signal(false);
-  private _pagesMenu = signal<MenuItem[]>([]);
+  // Xóa signal _pagesMenu vì component sẽ tự quản lý menu
+  // private _pagesMenu = signal<MenuItem[]>([]);
   private _subscription = new Subscription();
 
   constructor(private router: Router) {
-    /** Set dynamic menu */
-    this._pagesMenu.set(Menu.pages);
-
-    let sub = this.router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-        /** Expand menu base on active route */
-        this._pagesMenu().forEach((menu) => {
-          let activeGroup = false;
-          menu.items.forEach((subMenu) => {
-            const active = this.isActive(subMenu.route);
-            subMenu.expanded = active;
-            subMenu.active = active;
-            if (active) activeGroup = true;
-            if (subMenu.children) {
-              this.expand(subMenu.children);
-            }
-          });
-          menu.active = activeGroup;
-        });
-      }
-    });
-    this._subscription.add(sub);
+    // Xóa toàn bộ logic cũ liên quan đến việc set và theo dõi _pagesMenu
+    // vì logic này đã được chuyển vào admin-sidebar-menu.component.ts
   }
 
   get showSideBar() {
@@ -44,9 +26,10 @@ export class layoutService implements OnDestroy {
   get showMobileMenu() {
     return this._showMobileMenu();
   }
-  get pagesMenu() {
-    return this._pagesMenu();
-  }
+  // Xóa getter không còn sử dụng
+  // get pagesMenu() {
+  //   return this._pagesMenu();
+  // }
 
   set showSideBar(value: boolean) {
     this._showSidebar.set(value);
@@ -59,7 +42,9 @@ export class layoutService implements OnDestroy {
     this._showSidebar.set(!this._showSidebar());
   }
 
-  public toggleMenu(menu: any) {
+  // Giữ lại các hàm toggle này vì component đang sử dụng chúng
+  // để quản lý trạng thái đóng/mở của từng mục menu.
+  public toggleMenu(menu: SubMenuItem) {
     this.showSideBar = true;
     menu.expanded = !menu.expanded;
   }
@@ -68,21 +53,9 @@ export class layoutService implements OnDestroy {
     submenu.expanded = !submenu.expanded;
   }
 
-  private expand(items: Array<any>) {
-    items.forEach((item) => {
-      item.expanded = this.isActive(item.route);
-      if (item.children) this.expand(item.children);
-    });
-  }
-
-  private isActive(instruction: any): boolean {
-    return this.router.isActive(this.router.createUrlTree([instruction]), {
-      paths: 'subset',
-      queryParams: 'subset',
-      fragment: 'ignored',
-      matrixParams: 'ignored',
-    });
-  }
+  // Các hàm private này không còn cần thiết trong service nữa
+  // private expand(items: Array<any>) { ... }
+  // private isActive(instruction: any): boolean { ... }
 
   ngOnDestroy(): void {
     this._subscription.unsubscribe();
