@@ -18,6 +18,7 @@ import { CurrentUserService } from '../../services/user-storage/current-user.ser
 
 @Component({
   selector: 'app-login',
+  standalone: true,
   imports: [ReactiveFormsModule, FormsModule, CommonModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
@@ -151,32 +152,34 @@ export class LoginComponent implements OnInit {
       });
   }
 
-  navigateAfterLogin(user: any) {
-    this.userStorageService.saveUser(user);
-    this.currentUserService.setCurrentUser(user);
-    // Lấy roles trực tiếp từ đối tượng user vừa nhận được
-    const userRoles = user.roles?.map((roleObj: any) => roleObj.roleName) || [];
+   navigateAfterLogin(user: any) {
+    // AuthService đã lo việc lưu thông tin user, component không cần làm lại.
+    const userRoles = user?.roles?.map((roleObj: any) => roleObj.roleName) || [];
 
-    const roleRouteMap: { [key: string]: string } = {
-      CUSTOMER: 'customer',
-      ADMIN: 'admin',
-      BUSINESS_DEPARTMENT: 'business/tours', // <-- Đảm bảo điều hướng đúng
-      // ... các role khác
-    };
+    let redirectTo = '/'; // Mặc định là trang chủ
 
-    let redirectTo = '/';
+    // Ưu tiên chuyển hướng: ADMIN > BUSINESS > ...
     if (userRoles.includes('ADMIN')) {
-      redirectTo = `/${roleRouteMap['ADMIN']}`;
-    } else if (userRoles.includes('BUSINESS_DEPARTMENT')) {
-      redirectTo = `/${roleRouteMap['BUSINESS_DEPARTMENT']}`;
-    } else if (userRoles.length > 0) {
-      const targetRole =
-        userRoles.find((role: string) => role !== 'CUSTOMER') || userRoles[0];
-      redirectTo = `/${roleRouteMap[targetRole] || 'customer'}`;
+      redirectTo = '/admin';
+    } else if (
+      userRoles.includes('BUSINESS_DEPARTMENT') ||
+      userRoles.includes('SERVICE_COORDINATOR')
+    ) {
+      redirectTo = '/business';
+    } else if (
+      userRoles.includes('SELLER') ||
+      userRoles.includes('MARKETING_MANAGER')
+    ) {
+      // redirectTo = '/sales'; // Sẽ dùng khi bạn tạo khu vực /sales
+    } else if (userRoles.includes('ACCOUNTANT')) {
+      // redirectTo = '/accounting'; // Sẽ dùng khi bạn tạo khu vực /accounting
+    } else if (userRoles.includes('CUSTOMER')) {
+      // redirectTo = '/customer/profile'; // Chuyển đến trang cá nhân của khách
     }
 
     this.router.navigate([redirectTo]);
   }
+
 
   // Hàm postLogin không còn cần thiết cho luồng đăng nhập bằng form nữa,
   // nhưng vẫn giữ lại để xử lý login qua social
