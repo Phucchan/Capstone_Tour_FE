@@ -1,0 +1,111 @@
+/* --- Cài đặt chung cho trang --- */
+.page-header .page-title {
+  font-weight: 600;
+  color: #212529;
+}
+
+/* --- Tùy chỉnh Card --- */
+.card {
+  border-radius: 0.5rem; /* Bo góc mềm mại hơn */
+}
+
+/* --- Thanh công cụ của bảng --- */
+.table-toolbar .form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+.table-toolbar .input-group-text {
+  background-color: #fff;
+  border-right: 0;
+}
+
+.table-toolbar .form-control {
+  border-left: 0;
+}
+
+.table-toolbar .form-control:focus {
+  box-shadow: none;
+  border-color: #dee2e6;
+}
+
+.table-toolbar .btn {
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+}
+
+/* --- Tùy chỉnh Bảng --- */
+.table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* TĂNG KÍCH THƯỚC CHỮ CHO TIÊU ĐỀ BẢNG */
+.table thead th {
+  color: #6c757d;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.85rem; /* Tăng từ 0.8rem */
+  border-bottom-width: 1px;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* TĂNG KHOẢNG CÁCH VÀ KÍCH THƯỚC CHỮ TRONG BẢNG */
+.table td, .table th {
+  padding: 1.25rem 1rem; /* Tăng khoảng cách dọc để các hàng thoáng hơn */
+  font-size: 0.9rem;     /* Tăng kích thước chữ của nội dung */
+}
+
+/* --- Tùy chỉnh Badge --- */
+.badge {
+  padding: 0.5em 0.9em; /* Tăng padding để badge to hơn một chút */
+  font-size: 0.85rem;   /* Tăng kích thước chữ trong badge */
+  font-weight: 500;
+  border-radius: 2rem; /* Badge hình viên thuốc */
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Badge cho trạng thái */
+.bg-success-light { background-color: rgba(25, 135, 84, 0.1); }
+.text-success { color: #198754 !important; }
+
+.bg-danger-light { background-color: rgba(220, 53, 69, 0.1); }
+.text-danger { color: #dc3545 !important; }
+
+/* Badge cho vai trò */
+.badge-role-admin {
+  background-color: rgba(13, 110, 253, 0.1);
+  color: #0d6efd !important;
+}
+
+.badge-role-user {
+  background-color: rgba(108, 117, 125, 0.1);
+  color: #6c757d !important;
+}
+
+/* Badge cho số lượng người dùng */
+.bg-secondary-light { background-color: rgba(108, 117, 125, 0.1); }
+.text-secondary { color: #6c757d !important; }
+
+/* --- Nút hành động trong bảng --- */
+.btn-group .btn {
+  border-color: #dee2e6;
+}
+.btn-group .btn:hover {
+  background-color: #e9ecef;
+  z-index: 1;
+}
+.btn-group .btn-outline-danger:hover {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* --- Giao diện khi không có dữ liệu --- */
+.empty-state {
+  border-top: 1px solid #dee2e6;
+}
