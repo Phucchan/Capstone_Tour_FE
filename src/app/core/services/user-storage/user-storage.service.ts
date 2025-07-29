@@ -120,7 +120,6 @@ export class UserStorageService {
 
   public getUser(): any {
     const userJson = this.getCookie(USER);
-    console.log('DEBUG - user in getUserId:', userJson);
     return userJson ? JSON.parse(userJson) : null;
   }
 

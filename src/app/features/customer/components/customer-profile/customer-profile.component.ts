@@ -32,22 +32,7 @@ export class CustomerProfileComponent {
     private userStorageService: UserStorageService,
     private currentUserService: CurrentUserService
   ) { }
-  
-  // ngOnInit() {
-  //   const userId = this.currentUserService.getCurrentUser().id;
-
-  //   console.log('{ProfileComponent} Current User:', this.currentUser);
-
-  //   console.log('UserId:', userId);
-  //   if (userId !== null) {
-  //     this.customerService.getUserProfile(userId).subscribe((res) => {
-  //       this.currentUser = res.data;
-  //       this.editableUser = { ...res.data };
-  //     });
-  //   } else {
-  //     console.error('Không tìm thấy userId!');
-  //   }
-  // }
+  /** Lấy thông tin người dùng từ service */
   ngOnInit(): void {
     const userId = this.currentUserService.getCurrentUser().id;
     if (userId) {
@@ -70,7 +55,7 @@ export class CustomerProfileComponent {
       this.editableUser = { ...this.currentUser };
     }
   }
-    /** Khi bấm vào icon ✏️ */
+  /** Khi bấm vào icon ✏️ */
   toggleEditMode() {
     this.isEditMode = !this.isEditMode;
     if (!this.isEditMode) {
@@ -78,42 +63,29 @@ export class CustomerProfileComponent {
     }
   }
 
-  // onSave() {
-  //   const updateData = {
-  //     email: this.editableUser.email,
-  //     fullName: this.editableUser.fullName,
-  //     gender: this.editableUser.gender,
-  //     phone: this.editableUser.phone,
-  //     address: this.editableUser.address,
-  //     avatarImg: this.editableUser.avatarImg,
-  //     dateOfBirth: this.editableUser.dateOfBirth
-  //   };
-  //   this.customerService.updateProfile(updateData).subscribe({
-  //     next: () => {
-  //       // Lấy lại profile mới nhất, lưu ý lấy từ res.data
-  //       this.customerService.getUserProfile(this.userStorageService.getUserId()!).subscribe((res) => {
-  //         this.currentUser = res.data;
-  //         this.editableUser = { ...res.data };
-  //         this.isEditMode = false;
-  //         this.editFieldKey = null;
-  //       });
-  //       alert('Cập nhật thành công!');
-  //     },
-  //     error: () => {
-  //       alert('Cập nhật thất bại!');
-  //     }
-  //   });
-  // }
-   onSave() {
+  onSave() {
     if (this.profileForm.invalid) {
       this.profileForm.markAllAsTouched();
       return;
     }
+    const userId = this.userStorageService.getUserId();
+    if (!userId) {
+      alert('Không xác định được người dùng!');
+      return;
+    }
+    const updateData = {
+      fullName: this.profileForm.value.fullName,
+      gender: this.profileForm.value.gender,
+      email: this.profileForm.value.email,
+      phone: this.profileForm.value.phone,
+      address: this.profileForm.value.address,
+      avatarImg: this.currentUser?.avatarImg,         // giữ nguyên từ backend
+      dateOfBirth: this.profileForm.value.dateOfBirth
+    };
 
-    this.customerService.updateProfile(this.profileForm.value).subscribe({
+    this.customerService.updateProfile(userId, updateData).subscribe({
       next: () => {
-        const id = this.userStorageService.getUserId();
-        this.customerService.getUserProfile(id!).subscribe(res => {
+        this.customerService.getUserProfile(userId!).subscribe(res => {
           this.currentUser = res.data;
           this.profileForm.patchValue(res.data);
           this.isEditMode = false;
@@ -126,7 +98,7 @@ export class CustomerProfileComponent {
     });
   }
   /** Khi bấm vào icon ❌ */
-    cancelEdit() {
+  cancelEdit() {
     this.editableUser = { ...this.currentUser! };
     this.isEditMode = false;
     this.editFieldKey = null;
