@@ -1,15 +1,15 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { DashboardService } from '../../services/dashboard.service';
-
 import {
   TourRevenue,
-  MonthlyNewUser,
+  MonthlyRevenue,
+  BookingStats,
 } from '../../../../core/models/dashboard.model';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 
@@ -20,17 +20,17 @@ import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.
     CommonModule,
     ReactiveFormsModule,
     NgxChartsModule,
-    CurrencyPipe,
-    DatePipe,
+    // SỬA LỖI: CurrencyPipe không cần import ở đây vì đã có trong providers
     SpinnerComponent,
   ],
+  providers: [CurrencyPipe],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
   private dashboardService = inject(DashboardService);
   private fb = inject(FormBuilder);
+  private currencyPipe = inject(CurrencyPipe);
 
-  // --- State Management ---
   isLoading = true;
   error: string | null = null;
   filterForm!: FormGroup;
@@ -40,14 +40,23 @@ export class DashboardComponent implements OnInit {
   totalBookings: number = 0;
   totalNewUsers: number = 0;
   topTours: TourRevenue[] = [];
-  monthlyNewUsersData: any[] = [];
+
+  monthlyRevenueData: any[] = [];
+  bookingStatsData: any[] = [];
 
   // --- Chart Configuration ---
   chartColorScheme: Color = {
     name: 'business',
     selectable: true,
     group: ScaleType.Ordinal,
-    domain: ['#10B981', '#3B82F6', '#F97316', '#8B5CF6', '#EF4444'],
+    domain: ['#3B82F6', '#10B981', '#F97316', '#EF4444', '#8B5CF6'],
+  };
+
+  pieChartColorScheme: Color = {
+    name: 'bookingStats',
+    selectable: true,
+    group: ScaleType.Ordinal,
+    domain: ['#10B981', '#F97316', '#EF4444'], // Green for New, Orange for Returning, Red for Cancelled
   };
 
   ngOnInit(): void {
@@ -78,12 +87,19 @@ export class DashboardComponent implements OnInit {
       newUsers: this.dashboardService
         .getTotalNewUsers(startDate, endDate)
         .pipe(catchError(() => of({ data: 0 }))),
-      monthlyUsers: this.dashboardService
-        .getMonthlyNewUsers(startDate, endDate)
-        .pipe(catchError(() => of({ data: [] }))),
       topTours: this.dashboardService
         .getTopToursByRevenue(5, startDate, endDate)
         .pipe(catchError(() => of({ data: [] }))),
+      monthlyRevenue: this.dashboardService
+        .getMonthlyRevenueSummary(startDate, endDate)
+        .pipe(catchError(() => of({ data: [] }))),
+      bookingStats: this.dashboardService
+        .getBookingStats(startDate, endDate)
+        .pipe(
+          catchError(() =>
+            of({ data: { cancelledBookings: 0, returningCustomers: 0 } })
+          )
+        ),
     }).subscribe({
       next: (results) => {
         this.totalRevenue = results.revenue.data ?? 0;
@@ -91,13 +107,28 @@ export class DashboardComponent implements OnInit {
         this.totalNewUsers = results.newUsers.data ?? 0;
         this.topTours = results.topTours.data ?? [];
 
-
-        this.monthlyNewUsersData = (results.monthlyUsers.data ?? []).map(
-          (item: MonthlyNewUser) => ({
+        this.monthlyRevenueData = (results.monthlyRevenue.data ?? []).map(
+          (item: MonthlyRevenue) => ({
             name: `Tháng ${item.month}/${item.year}`,
-            value: item.userCount,
+            value: item.revenue,
           })
         );
+
+        const stats = results.bookingStats.data ?? {
+          cancelledBookings: 0,
+          returningCustomers: 0,
+        };
+        const newCustomerBookings =
+          this.totalBookings - (stats.returningCustomers ?? 0);
+
+        this.bookingStatsData = [
+          {
+            name: 'Khách hàng mới',
+            value: newCustomerBookings > 0 ? newCustomerBookings : 0,
+          },
+          { name: 'Khách quay lại', value: stats.returningCustomers ?? 0 },
+          { name: 'Booking đã hủy', value: stats.cancelledBookings ?? 0 },
+        ];
 
         this.isLoading = false;
       },
@@ -108,6 +139,10 @@ export class DashboardComponent implements OnInit {
       },
     });
   }
+
+  yAxisTickFormat = (val: number): string => {
+    return this.currencyPipe.transform(val, 'VND', '', '1.0-0') || '';
+  };
 
   private formatDate(date: Date): string {
     const d = new Date(date);

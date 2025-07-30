@@ -1,7 +1,7 @@
 <div *ngFor="let menu of menuItems$ | async">
   <div
     *ngIf="menu.separator"
-    class="pointer-events-none mt-6 px-4 pb-2 text-xs font-semibold uppercase text-gray-400"
+    class="pointer-events-none mt-6 px-4 pb-2 text-xs font-semibold uppercase text-gray-500"
   >
     <span>{{ menu.group }}</span>
   </div>
@@ -17,14 +17,14 @@
             [src]="item.icon || ''"
             [svgClass]="'h-5 w-5'"
           ></svg-icon>
-          <span class="font-medium text-gray-300 group-hover:text-white">
+          <span class="font-medium text-gray-500 group-hover:text-white">
             {{ item.label }}
           </span>
         </div>
         <svg-icon
           src="assets/icons/heroicons/solid/chevron-right.svg"
           [ngClass]="{ 'rotate-90': item.expanded }"
-          class="h-5 w-5 text-gray-300 transition-transform duration-300"
+          class="h-5 w-5 text-gray-500 transition-transform duration-300"
         ></svg-icon>
       </div>
       <div [ngClass]="{ hidden: !item.expanded }" class="ms-4 ps-2">
@@ -36,7 +36,7 @@
       <a
         [routerLink]="item.route"
         routerLinkActive="bg-gray-700 text-white"
-        class="group flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+        class="group flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-700 hover:text-white"
       >
         <svg-icon
           [src]="item.icon || ''"

@@ -56,13 +56,13 @@
     </div>
 
     <!-- Charts and Top Tours -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Monthly New Users Chart -->
-      <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-md">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Người Dùng Mới Theo Tháng</h3>
-        <div *ngIf="monthlyNewUsersData.length > 0; else noChartData" class="h-80">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <!-- Monthly Revenue Chart -->
+      <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-md">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Doanh Thu Theo Tháng</h3>
+        <div *ngIf="monthlyRevenueData.length > 0; else noChartData" class="h-96">
           <ngx-charts-bar-vertical
-            [results]="monthlyNewUsersData"
+            [results]="monthlyRevenueData"
             [scheme]="chartColorScheme"
             [xAxis]="true"
             [yAxis]="true"
@@ -70,23 +70,42 @@
             [showXAxisLabel]="true"
             [showYAxisLabel]="true"
             xAxisLabel="Thời gian"
-            yAxisLabel="Số lượng người dùng">
+            yAxisLabel="Doanh thu (VND)"
+            [yAxisTickFormatting]="yAxisTickFormat">
           </ngx-charts-bar-vertical>
         </div>
       </div>
 
-      <!-- Top Tours -->
-      <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-md">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Top 5 Tours Doanh Thu Cao</h3>
-        <div *ngIf="topTours.length > 0; else noTourData" class="space-y-4">
-          <div *ngFor="let tour of topTours; let i = index" class="flex items-center">
-            <div class="text-lg font-bold text-gray-400 mr-4 w-5">{{ i + 1 }}</div>
-            <div class="flex-1">
-              <p class="font-semibold text-gray-700 truncate">{{ tour.name }}</p>
-              <p class="text-sm text-gray-500">{{ tour.tourType }}</p>
-            </div>
-            <div class="text-right">
-              <p class="font-bold text-green-600">{{ tour.totalRevenue | currency:'VND':'symbol':'1.0-0' }}</p>
+      <!-- Booking Stats and Top Tours -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Booking Stats Chart -->
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Thống Kê Đặt Chỗ</h3>
+          <div *ngIf="bookingStatsData.length > 0 && totalBookings > 0; else noPieChartData" class="h-60">
+            <ngx-charts-pie-chart
+              [results]="bookingStatsData"
+              [scheme]="pieChartColorScheme"
+              [legend]="true"
+              [labels]="true"
+              [doughnut]="true"
+              [arcWidth]="0.4">
+            </ngx-charts-pie-chart>
+          </div>
+        </div>
+
+        <!-- Top Tours -->
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Top 5 Tours Doanh Thu Cao</h3>
+          <div *ngIf="topTours.length > 0; else noTourData" class="space-y-4">
+            <div *ngFor="let tour of topTours; let i = index" class="flex items-center">
+              <div class="text-lg font-bold text-gray-400 mr-4 w-5">{{ i + 1 }}</div>
+              <div class="flex-1">
+                <p class="font-semibold text-gray-700 truncate">{{ tour.name }}</p>
+                <p class="text-sm text-gray-500">{{ tour.tourType }}</p>
+              </div>
+              <div class="text-right">
+                <p class="font-bold text-green-600">{{ tour.totalRevenue | currency:'VND':'symbol':'1.0-0' }}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -96,12 +115,17 @@
 
   <!-- No Data Templates -->
   <ng-template #noChartData>
-    <div class="flex items-center justify-center h-80 bg-gray-50 rounded-lg">
+    <div class="flex items-center justify-center h-full bg-gray-50 rounded-lg">
       <p class="text-gray-500">Không có dữ liệu để hiển thị biểu đồ.</p>
     </div>
   </ng-template>
+  <ng-template #noPieChartData>
+    <div class="flex items-center justify-center h-60 bg-gray-50 rounded-lg">
+      <p class="text-gray-500">Không có dữ liệu thống kê đặt chỗ.</p>
+    </div>
+  </ng-template>
   <ng-template #noTourData>
-    <div class="flex items-center justify-center h-80 bg-gray-50 rounded-lg">
+    <div class="flex items-center justify-center h-full bg-gray-50 rounded-lg">
       <p class="text-gray-500">Không có dữ liệu về tour.</p>
     </div>
   </ng-template>

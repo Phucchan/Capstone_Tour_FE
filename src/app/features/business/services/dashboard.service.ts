@@ -6,6 +6,8 @@ import { ApiResponse } from '../../../core/models/api-response.model';
 import {
   MonthlyNewUser,
   TourRevenue,
+  MonthlyRevenue,
+  BookingStats,
 } from '../../../core/models/dashboard.model';
 
 @Injectable({
@@ -25,7 +27,6 @@ export class DashboardService {
     }
     return params;
   }
-
 
   getTotalRevenue(
     startDate?: string,
@@ -58,18 +59,6 @@ export class DashboardService {
     );
   }
 
-  getMonthlyNewUsers(
-    startDate?: string,
-    endDate?: string
-  ): Observable<ApiResponse<MonthlyNewUser[]>> {
-    let params = this.createParams(startDate, endDate);
-    params = params.append('year', new Date().getFullYear());
-    return this.http.get<ApiResponse<MonthlyNewUser[]>>(
-      `${this.apiUrl}/users/monthly`,
-      { params }
-    );
-  }
-
   getTopToursByRevenue(
     limit: number = 5,
     startDate?: string,
@@ -79,6 +68,32 @@ export class DashboardService {
     params = params.append('limit', limit.toString());
     return this.http.get<ApiResponse<TourRevenue[]>>(
       `${this.apiUrl}/top-tours`,
+      { params }
+    );
+  }
+
+  // API lấy tổng doanh thu theo tháng
+  getMonthlyRevenueSummary(
+    startDate?: string,
+    endDate?: string
+  ): Observable<ApiResponse<MonthlyRevenue[]>> {
+    let params = this.createParams(startDate, endDate);
+    // API này không cần 'year' khi đã có khoảng thời gian
+    params = params.append('year', new Date().getFullYear());
+    return this.http.get<ApiResponse<MonthlyRevenue[]>>(
+      `${this.apiUrl}/monthly`,
+      { params }
+    );
+  }
+
+  // API lấy thống kê booking
+  getBookingStats(
+    startDate?: string,
+    endDate?: string
+  ): Observable<ApiResponse<BookingStats>> {
+    const params = this.createParams(startDate, endDate);
+    return this.http.get<ApiResponse<BookingStats>>(
+      `${this.apiUrl}/bookings/stats`,
       { params }
     );
   }
