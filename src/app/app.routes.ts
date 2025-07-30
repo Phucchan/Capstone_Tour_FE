@@ -30,6 +30,11 @@ export const routes: Routes = [
   // --- Gom tất cả các route quản lý vào chung một Layout ---
   {
     path: '',
+    loadChildren: () =>
+      import('./features/public/public.routes').then((m) => m.PUBLIC_ROUTES),
+  },
+  {
+    path: '',
     component: LayoutComponent, // SỬ DỤNG LAYOUT LÀM COMPONENT CHA
     canActivate: [AuthGuard], // AuthGuard bảo vệ tất cả các route con bên dưới
     children: [
@@ -58,6 +63,7 @@ export const routes: Routes = [
       // }
     ],
   },
+   
 
 
   {

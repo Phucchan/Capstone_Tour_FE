@@ -57,7 +57,7 @@ export class TourBookingComponent implements OnInit {
 
   warningMessage: string = '';
 
-  isHelpingInput: boolean = false;
+  isHelpingInput: boolean = true;
 
   constructor(
     private bookingInforService: BookingInfoService,
@@ -161,16 +161,16 @@ export class TourBookingComponent implements OnInit {
     ).length;
   }
 
-  changeHelpingInput() {
-    console.log('{TourBookingComponent} isHelpingInput:', this.isHelpingInput);
-    this.isHelpingInput = !this.isHelpingInput;
+  // changeHelpingInput() {
+  //   console.log('{TourBookingComponent} isHelpingInput:', this.isHelpingInput);
+  //   this.isHelpingInput = !this.isHelpingInput;
 
-    if (this.isHelpingInput) {
-      this.clearAllPassengerGroups();
-    } else {
-      this.addAllPassengerGroupValidators();
-    }
-  }
+  //   if (this.isHelpingInput) {
+  //     this.clearAllPassengerGroups();
+  //   } else {
+  //     this.addAllPassengerGroupValidators();
+  //   }
+  // }
 
   createCustomerGroup(isSingleRoom: boolean, paxType: string): FormGroup {
     return this.fb.group({
@@ -178,7 +178,7 @@ export class TourBookingComponent implements OnInit {
       gender: ['MALE'],
       dateOfBirth: [''],
       singleRoom: isSingleRoom, // Checkbox value (default: false)
-      paxType: [paxType, Validators.required], // Default to ADULT
+      paxType: [paxType], // Default to ADULT
     });
   }
 
@@ -189,11 +189,11 @@ export class TourBookingComponent implements OnInit {
     }
 
     return this.fb.group({
-      fullName: ['', Validators.required],
-      gender: ['MALE', Validators.required],
-      dateOfBirth: ['', Validators.required],
+      fullName: [''],
+      gender: ['MALE'],
+      dateOfBirth: [''],
       singleRoom: this.numberAdults == 1 ? [true] : [false], // Checkbox value (default: false)
-      paxType: ['ADULT', Validators.required],
+      paxType: ['ADULT',],
     });
   }
 
@@ -202,11 +202,11 @@ export class TourBookingComponent implements OnInit {
       return this.createCustomerGroup(false, paxType);
     }
     return this.fb.group({
-      fullName: ['', Validators.required],
-      gender: ['MALE', Validators.required],
-      dateOfBirth: ['', Validators.required],
+      fullName: [''],
+      gender: ['MALE'],
+      dateOfBirth: [''],
       singleRoom: [false],
-      paxType: [paxType, Validators.required], // Default to CHILD
+      paxType: [paxType], // Default to CHILD
     });
   }
 
@@ -230,39 +230,39 @@ export class TourBookingComponent implements OnInit {
     });
   }
 
-  addAllPassengerGroupValidators() {
-    const groups = ['adults', 'children', 'toddlers', 'infants'];
+  // addAllPassengerGroupValidators() {
+  //   const groups = ['adults', 'children', 'toddlers', 'infants'];
 
-    groups.forEach((group) => {
-      const arr = this.bookingForm.get(group) as FormArray;
+  //   groups.forEach((group) => {
+  //     const arr = this.bookingForm.get(group) as FormArray;
 
-      // Thêm validator cho từng field trong mỗi FormGroup
-      arr.controls.forEach((ctrl) => {
-        const fg = ctrl as FormGroup;
+  //     // Thêm validator cho từng field trong mỗi FormGroup
+  //     arr.controls.forEach((ctrl) => {
+  //       const fg = ctrl as FormGroup;
 
-        if (fg.get('fullName')) {
-          fg.get('fullName')?.setValidators([Validators.required]);
-        }
+  //       if (fg.get('fullName')) {
+  //         fg.get('fullName')?.setValidators([Validators.required]);
+  //       }
 
-        if (fg.get('gender')) {
-          fg.get('gender')?.setValidators([Validators.required]);
-        }
+  //       if (fg.get('gender')) {
+  //         fg.get('gender')?.setValidators([Validators.required]);
+  //       }
 
-        if (fg.get('dateOfBirth')) {
-          fg.get('dateOfBirth')?.setValidators([Validators.required]);
-        }
+  //       if (fg.get('dateOfBirth')) {
+  //         fg.get('dateOfBirth')?.setValidators([Validators.required]);
+  //       }
 
-        // Cập nhật lại giá trị và trạng thái
-        Object.values(fg.controls).forEach((control) => {
-          control.updateValueAndValidity();
-        });
-      });
+  //       // Cập nhật lại giá trị và trạng thái
+  //       Object.values(fg.controls).forEach((control) => {
+  //         control.updateValueAndValidity();
+  //       });
+  //     });
 
-      // Thêm validator cho toàn bộ FormArray
-      arr.setValidators([Validators.required, Validators.minLength(1)]);
-      arr.updateValueAndValidity();
-    });
-  }
+  //     // Thêm validator cho toàn bộ FormArray
+  //     arr.setValidators([Validators.required, Validators.minLength(1)]);
+  //     arr.updateValueAndValidity();
+  //   });
+  // }
 
   addAdults(count: number): void {
     const adultsArray = this.adultsFormArray;
@@ -353,7 +353,7 @@ export class TourBookingComponent implements OnInit {
 
   getUserData() {
     this.customerService
-      .getUserProfile(this.currentUserService.getCurrentUser().username)
+      .getUserBasic(this.currentUserService.getCurrentUser().username)
       .subscribe({
         next: (response) => {
           this.userInformation = response.data;

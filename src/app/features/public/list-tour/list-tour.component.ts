@@ -111,17 +111,20 @@ export class ListTourComponent implements OnInit, OnDestroy {
         size: this.size,
         sortField: this.getSortField(),
         sortDirection: this.getSortDirection(),
+
       })
       .subscribe({
         next: (res) => {
           this.tours = res.data.tours.items;
 
           // --- Tìm đúng destination theo id để lấy name và description:
-           this.destinations = res.data.options.destinations;
+          this.destinations = res.data.options.destinations;
           const matched = this.destinations.find((d: any) => Number(d.id) === Number(destId));
           this.locationInfo = matched
             ? { name: matched.name, description: matched.description }
             : null;
+          // console.log('>>> locationInfo:', this.locationInfo);
+          // console.log('>>> description:', this.locationInfo?.description);
 
           this.applySortToTours();
           // Log debug nếu muốn
@@ -131,13 +134,14 @@ export class ListTourComponent implements OnInit, OnDestroy {
           this.total = res.data.tours.total;
           this.departLocations = res.data.options.departures;
           this.destinations = res.data.options.destinations;
-        
+
           this.isLoading = false;
         },
         error: (err) => {
           this.isLoading = false;
           // TODO: Xử lý lỗi nếu cần
         },
+
       });
   }
   applySortToTours(): void {
