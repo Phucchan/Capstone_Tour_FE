@@ -6,6 +6,7 @@ import { TourScheduleComponent } from './pages/tour-schedule/tour-schedule.compo
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { LocationManagementComponent } from './pages/location-management/location-management.component';
 import { TourCostingComponent } from './pages/tour-costing/tour-costing.component';
+import { TourDepartureDateComponent } from './pages/tour-departure-date/tour-departure-date.component';
 
 export const BUSINESS_ROUTES: Routes = [
   {
@@ -61,6 +62,13 @@ export const BUSINESS_ROUTES: Routes = [
         path: 'tours/:id/schedule',
         component: TourScheduleComponent,
         data: { title: 'Xây dựng Lịch trình' },
+      },
+
+      // Route cho trang quản lý lịch khởi hành
+      {
+        path: 'tours/:id/departure-dates',
+        component: TourDepartureDateComponent,
+        data: { title: 'Quản lý Lịch Khởi Hành' },
       },
     ],
   },

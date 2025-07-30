@@ -1,0 +1,87 @@
+<div class="container mx-auto p-4 md:p-6 lg:p-8">
+  <ng-container *ngIf="tourDetail$ | async as tour">
+    <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 border-b pb-4">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Quản lý Lịch Khởi Hành</h1>
+        <p class="text-lg text-blue-600 font-semibold">{{ tour.name }}</p>
+      </div>
+      <button (click)="showCreateModal()" class="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
+        + Thêm Ngày Khởi Hành
+      </button>
+    </header>
+  </ng-container>
+
+  <div *ngIf="isLoading" class="text-center py-20">
+    <app-spinner></app-spinner>
+    <p class="text-gray-500 mt-2">Đang tải dữ liệu...</p>
+  </div>
+
+  <div *ngIf="!isLoading">
+    <ng-container *ngIf="schedules$ | async as schedules">
+      <div *ngIf="schedules.length === 0" class="text-center py-16 bg-gray-50 rounded-lg">
+        <p class="text-gray-500">Chưa có ngày khởi hành nào được mở bán.</p>
+        <p class="text-gray-400 text-sm mt-1">Hãy bắt đầu bằng cách nhấn nút "Thêm Ngày Khởi Hành".</p>
+      </div>
+
+      <div *ngIf="schedules.length > 0" class="bg-white rounded-lg shadow-md overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày Khởi Hành</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Điều Phối Viên</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gói Giá</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Giá Bán</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hành động</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let schedule of schedules" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ schedule.departureDate | date:'dd/MM/yyyy' }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ schedule.coordinator?.fullName || 'N/A' }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ formatPaxOption(schedule.tourPax!) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">{{ schedule.tourPax?.sellingPrice | currencyVnd }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <a href="#" class="text-red-600 hover:text-red-900">Xóa</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </div>
+</div>
+
+<div *ngIf="isModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
+    <h3 class="text-xl font-semibold mb-4">Thêm Ngày Khởi Hành Mới</h3>
+    <form [formGroup]="departureForm" (ngSubmit)="onSave()">
+      <div class="space-y-4">
+        <div>
+          <label for="departureDate" class="form-label">Ngày khởi hành</label>
+          <input type="date" id="departureDate" formControlName="departureDate" class="input-style w-full">
+        </div>
+        <div>
+          <label for="coordinatorId" class="form-label">Điều phối viên</label>
+          <ng-select [items]="options.coordinators" bindLabel="fullName" bindValue="id" formControlName="coordinatorId" placeholder="Chọn điều phối viên"></ng-select>
+        </div>
+        <div>
+          <label for="tourPaxId" class="form-label">Gói giá</label>
+          <ng-select [items]="options.tourPaxes" [bindLabel]="'id'" formControlName="tourPaxId" placeholder="Chọn gói giá">
+             <ng-template ng-label-tmp let-item="item">
+                {{ formatPaxOption(item) }}
+             </ng-template>
+             <ng-template ng-option-tmp let-item="item" let-index="index" let-searchTerm="searchTerm">
+                <div>{{ formatPaxOption(item) }}</div>
+             </ng-template>
+          </ng-select>
+        </div>
+      </div>
+      <div class="flex justify-end gap-4 mt-6">
+        <button type="button" (click)="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Hủy</button>
+        <button type="submit" [disabled]="departureForm.invalid || isSubmitting" class="submit-button">
+          {{ isSubmitting ? 'Đang lưu...' : 'Lưu' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
