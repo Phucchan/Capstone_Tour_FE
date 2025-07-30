@@ -3,6 +3,8 @@ import { LayoutComponent } from './layout/layout.component';
 import { AdminTestComponent } from './admin-test/admin-test.component';
 // 1. Import component danh sách khách hàng
 import { ListCustomerComponent } from './list-customer/list-customer.component';
+// 2. Import component danh sách nhân viên
+import { ListStaffComponent } from './list-staff/list-staff.component';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -18,10 +20,15 @@ export const ADMIN_ROUTES: Routes = [
         path: 'test',
         component: AdminTestComponent,
       },
-      // 2. Thêm route mới cho trang quản lý khách hàng
+      // Route cho trang quản lý khách hàng
       {
         path: 'customers', // URL cuối cùng sẽ là: /admin/customers
         component: ListCustomerComponent,
+      },
+      // 3. Thêm route mới cho trang quản lý nhân viên
+      {
+        path: 'staff', // URL cuối cùng sẽ là: /admin/staff
+        component: ListStaffComponent,
       },
     ],
   },

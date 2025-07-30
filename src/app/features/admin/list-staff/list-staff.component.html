@@ -4,16 +4,16 @@
   <!-- 1. Thanh tiêu đề và nút hành động chính -->
   <div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div class="d-flex align-items-center">
-      <h2 class="page-title mb-0 me-3">Quản lý Khách hàng</h2>
-      <!-- Hiển thị tổng số lượng khách hàng -->
-      <span class="badge bg-secondary-light text-secondary" *ngIf="customers && customers.length > 0">
-        {{ customers.length }} khách hàng
+      <h2 class="page-title mb-0 me-3">Quản lý Nhân viên</h2>
+      <!-- Hiển thị tổng số lượng nhân viên -->
+      <span class="badge bg-secondary-light text-secondary" *ngIf="staff && staff.length > 0">
+        {{ staff.length }} nhân viên
       </span>
     </div>
     <!-- Nút "Thêm nhân viên" nổi bật ở góc trên bên phải -->
     <button class="btn btn-add-employee">
       <i class="bi bi-plus-lg me-1"></i>
-      Thêm khách hàng
+      Thêm nhân viên
     </button>
   </div>
 
@@ -26,37 +26,33 @@
         <!-- Thanh tìm kiếm (tự động chiếm không gian còn lại) -->
         <div class="input-group flex-grow-1">
           <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
-          <input type="text" class="form-control border-start-0" style="flex: 2;" placeholder="Tìm kiếm người dùng...">
-
-          <select class="form-select" style="width: auto;">
-            <option selected>Tất cả giới tính</option>
-            <option value="Nam">Nam</option>
-            <option value="Nữ">Nữ</option>
-            <option value="Khác">Khác</option>
-          </select>
-
-          <!-- Dropdown 2: Lọc theo vai trò -->
-          <select class="form-select" style="width: auto;">
-            <option selected>Tất cả vai trò</option>
-            <option value="Admin">Admin</option>
-            <option value="User">User</option>
-          </select>
-
-          <!-- Dropdown 3: Sắp xếp -->
-          <select class="form-select" style="width: auto;">
-            <option selected>Mới nhất</option>
-            <option value="oldest">Cũ nhất</option>
-          </select>
-
-          <!-- Nút "Lọc" -->
-          <button class="btn btn-filter-custom">Lọc</button>
-        </div>
-          <!-- Dropdown 1: Lọc theo giới tính -->
-
+          <input type="text" class="form-control border-start-0" placeholder="Tìm kiếm nhân viên...">
         </div>
 
+        <!-- Dropdown 1: Lọc theo giới tính -->
+        <select class="form-select" style="width: auto;">
+          <option selected>Tất cả giới tính</option>
+          <option value="Nam">Nam</option>
+          <option value="Nữ">Nữ</option>
+          <option value="Khác">Khác</option>
+        </select>
 
+        <!-- Dropdown 2: Lọc theo vai trò -->
+        <select class="form-select" style="width: auto;">
+          <option selected>Tất cả vai trò</option>
+          <option value="Admin">Admin</option>
+          <option value="User">User</option>
+        </select>
 
+        <!-- Dropdown 3: Sắp xếp -->
+        <select class="form-select" style="width: auto;">
+          <option selected>Mới nhất</option>
+          <option value="oldest">Cũ nhất</option>
+        </select>
+
+        <!-- Nút "Lọc" -->
+        <button class="btn btn-filter-custom">Lọc</button>
+      </div>
 
       <!-- 3. Bảng dữ liệu -->
       <div class="table-responsive">
@@ -74,37 +70,37 @@
           </tr>
           </thead>
           <tbody>
-          <!-- Vòng lặp dữ liệu -->
-          <tr *ngFor="let customer of customers">
-            <td><strong>#{{ customer.id }}</strong></td>
-            <td>{{ customer.fullName }}</td>
-            <td>{{ customer.email }}</td>
-            <td>{{ customer.gender }}</td>
-            <td>{{ customer.phone }}</td>
+          <!-- Vòng lặp dữ liệu cho nhân viên -->
+          <tr *ngFor="let staffMember of staff">
+            <td><strong>#{{ staffMember.id }}</strong></td>
+            <td>{{ staffMember.fullName }}</td>
+            <td>{{ staffMember.email }}</td>
+            <td>{{ staffMember.gender }}</td>
+            <td>{{ staffMember.phone }}</td>
             <td>
               <!-- Badge cho vai trò với màu sắc riêng -->
               <span class="badge" [ngClass]="{
-                  'badge-role-admin': customer.role === 'Admin',
-                  'badge-role-user': customer.role === 'User'
+                  'badge-role-admin': staffMember.role === 'Admin',
+                  'badge-role-user': staffMember.role === 'User'
                 }">
-                  {{ customer.role }}
+                  {{ staffMember.role }}
                 </span>
             </td>
             <td>
               <!-- Badge cho trạng thái -->
               <span class="badge" [ngClass]="{
-                  'bg-success-light text-success': customer.status === 'Hoạt động',
-                  'bg-danger-light text-danger': customer.status !== 'Hoạt động'
+                  'bg-success-light text-success': staffMember.status === 'Hoạt động',
+                  'bg-danger-light text-danger': staffMember.status !== 'Hoạt động'
                 }">
                   <i class="bi bi-circle-fill me-1" style="font-size: 0.6rem;"></i>
-                {{ customer.status }}
+                {{ staffMember.status }}
                 </span>
             </td>
             <td class="text-center">
               <!-- Nhóm các nút hành động -->
               <div class="btn-group" role="group">
                 <!-- Nút "Chi tiết" được làm nổi bật với chữ và màu sắc chính -->
-                <button class="btn btn-sm btn-primary" (click)="viewDetails(customer.id)">
+                <button class="btn btn-sm btn-primary" (click)="viewDetails(staffMember.id)">
                   Chi tiết
                 </button>
                 <!-- Các nút hành động phụ vẫn giữ dạng icon cho gọn gàng -->
@@ -122,15 +118,15 @@
       </div>
 
       <!-- 4. Giao diện khi không có dữ liệu -->
-      <div *ngIf="!customers || customers.length === 0" class="empty-state text-center py-5">
+      <div *ngIf="!staff || staff.length === 0" class="empty-state text-center py-5">
         <i class="bi bi-people-fill display-4 text-muted"></i>
-        <h5 class="mt-3">Không tìm thấy khách hàng nào</h5>
-        <p class="text-muted">Hãy thử thay đổi bộ lọc hoặc thêm khách hàng mới.</p>
+        <h5 class="mt-3">Không tìm thấy nhân viên nào</h5>
+        <p class="text-muted">Hãy thử thay đổi bộ lọc hoặc thêm nhân viên mới.</p>
       </div>
 
       <!-- 5. Phân trang -->
-      <div *ngIf="customers && customers.length > 0" class="d-flex justify-content-between align-items-center mt-3">
-        <span class="text-muted">Hiển thị 1-{{customers.length}} trên tổng số {{customers.length}} mục</span>
+      <div *ngIf="staff && staff.length > 0" class="d-flex justify-content-between align-items-center mt-3">
+        <span class="text-muted">Hiển thị 1-{{staff.length}} trên tổng số {{staff.length}} mục</span>
         <!-- Component phân trang của bạn sẽ đặt ở đây -->
         <!-- <ngb-pagination ... ></ngb-pagination> -->
       </div>
