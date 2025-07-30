@@ -53,22 +53,14 @@ export const MENU_ITEMS: MenuItem[] = [
         children: [
           {
             label: 'Danh sách Tour',
-            route: '/business/tour-list',
-          },
-          {
-            label: 'Tạo Tour mới',
-            route: '/business/tour-form',
-          },
-          {
-            label: 'Quản lý Địa điểm',
-            route: '/business/location-management',
+            route: '/business/tours',
           },
         ],
       },
       {
-        icon: 'assets/icons/heroicons/outline/ticket.svg',
-        label: 'Lịch khởi hành',
-        route: '/business/tour-schedule',
+        icon: 'assets/icons/heroicons/outline/location-pin-svgrepo-com.svg',
+        label: 'Quản lý Địa điểm',
+        route: '/business/locations',
         roles: [ALL_ROLES.BUSINESS_DEPARTMENT, ALL_ROLES.SERVICE_COORDINATOR],
       },
     ],

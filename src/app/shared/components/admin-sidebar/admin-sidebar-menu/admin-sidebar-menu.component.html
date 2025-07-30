@@ -1,6 +1,4 @@
-<!-- Vòng lặp bên ngoài sẽ duyệt qua menuFiltered đã được lọc theo quyền -->
-<div *ngFor="let menu of menuFiltered">
-  <!-- Hiển thị tên nhóm (group) -->
+<div *ngFor="let menu of menuItems$ | async">
   <div
     *ngIf="menu.separator"
     class="pointer-events-none mt-6 px-4 pb-2 text-xs font-semibold uppercase text-gray-400"
@@ -8,10 +6,8 @@
     <span>{{ menu.group }}</span>
   </div>
 
-  <!-- Vòng lặp bên trong để hiển thị các mục con của nhóm -->
   <div *ngFor="let item of menu.items">
-    <!-- Trường hợp mục menu có các mục con (children) -->
-    <div *ngIf="item.children">
+    <div *ngIf="item.children && item.children.length > 0">
       <div
         class="group flex cursor-pointer items-center justify-between rounded-md px-4 py-2 text-sm hover:bg-gray-700"
         (click)="toggleMenu(item)"
@@ -31,14 +27,12 @@
           class="h-5 w-5 text-gray-300 transition-transform duration-300"
         ></svg-icon>
       </div>
-      <!-- Hiển thị các mục con cấp 3 nếu có -->
       <div [ngClass]="{ hidden: !item.expanded }" class="ms-4 ps-2">
         <app-admin-sidebar-sub-menu [submenu]="item"></app-admin-sidebar-sub-menu>
       </div>
     </div>
 
-    <!-- Trường hợp mục menu không có con -->
-    <div *ngIf="!item.children">
+    <div *ngIf="!item.children || item.children.length === 0">
       <a
         [routerLink]="item.route"
         routerLinkActive="bg-gray-700 text-white"

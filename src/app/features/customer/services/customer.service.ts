@@ -16,12 +16,13 @@ export class CustomerService {
       params: new HttpParams().set('userId', userId.toString()),
     });
   }
-  updateProfile(data: any): Observable<UserProfile> {
-    return this.http.put<{ data: UserProfile }>(`${environment.apiUrl}/users/profile`, data)
-      .pipe(
-        map(res => res.data)
-      );
-  }
+  updateProfile(userId: number, data: any): Observable<UserProfile> {
+  return this.http.put<{ data: UserProfile }>(
+    `${environment.apiUrl}/users/profile`,
+    data,
+    { params: { userId } }
+  ).pipe(map(res => res.data));
+}
   getProfile(): Observable<UserProfile> {
     return this.http.get<{ data: UserProfile }>(`${environment.apiUrl}/users/profile`)
       .pipe(map(res => res.data));
