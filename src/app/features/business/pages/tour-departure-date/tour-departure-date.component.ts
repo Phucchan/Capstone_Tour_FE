@@ -21,6 +21,7 @@ import {
   TourScheduleOptions,
   TourPaxOption,
   UserBasic,
+  TourScheduleCreateRequest,
 } from '../../../../core/models/tour-schedule.model';
 
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
@@ -131,10 +132,16 @@ export class TourDepartureDateComponent implements OnInit {
 
     this.isSubmitting = true;
     const formValue = this.departureForm.value;
-    // Chuyển đổi ngày sang định dạng ISO string mà backend yêu cầu
-    const payload = {
+    // Chuyển đổi ngày đã chọn sang định dạng ISO 8601 đầy đủ với thời gian là 00:00:00
+    // Backend sẽ nhận đây là một LocalDateTime hợp lệ.
+    const selectedDate = new Date(formValue.departureDate);
+    // Đặt giờ, phút, giây về 0 để tránh sai lệch múi giờ
+    selectedDate.setHours(0, 0, 0, 0);
+    const isoString = selectedDate.toISOString();
+
+    const payload: TourScheduleCreateRequest = {
       ...formValue,
-      departureDate: new Date(formValue.departureDate).toISOString(),
+      departureDate: isoString,
     };
 
     this.tourDepartureService

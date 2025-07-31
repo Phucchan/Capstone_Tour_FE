@@ -62,7 +62,11 @@
         </div>
         <div>
           <label for="coordinatorId" class="form-label">Điều phối viên</label>
-          <ng-select [items]="options.coordinators" bindLabel="fullName" bindValue="id" formControlName="coordinatorId" placeholder="Chọn điều phối viên"></ng-select>
+         <ng-select [items]="options.coordinators"
+                     bindLabel="username"
+                     bindValue="id"
+                     formControlName="coordinatorId"
+                     placeholder="Chọn điều phối viên"></ng-select>
         </div>
         <div>
           <label for="tourPaxId" class="form-label">Gói giá</label>
