@@ -1,0 +1,149 @@
+<div class="my-6 flex justify-between items-center">
+  <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
+    Quản lý Booking
+  </h2>
+  <!-- NÚT TẠO BOOKING MỚI -->
+  <a routerLink="/seller/create-booking"
+    class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+    <span>Tạo Booking Mới &plus;</span>
+  </a>
+</div>
+
+
+<!-- Tabs -->
+<div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+  <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
+    <li class="mr-2">
+      <button (click)="activeTab = 'available'"
+        [ngClass]="{'border-purple-600 text-purple-600 active dark:text-purple-500 dark:border-purple-500': activeTab === 'available', 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300': activeTab !== 'available'}"
+        class="inline-block p-4 border-b-2 rounded-t-lg">
+        Booking chờ xử lý
+      </button>
+    </li>
+    <li class="mr-2">
+      <button (click)="activeTab = 'edited'"
+        [ngClass]="{'border-purple-600 text-purple-600 active dark:text-purple-500 dark:border-purple-500': activeTab === 'edited', 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300': activeTab !== 'edited'}"
+        class="inline-block p-4 border-b-2 rounded-t-lg">
+        Booking của tôi
+      </button>
+    </li>
+  </ul>
+</div>
+
+<!-- Content -->
+<div>
+  <!-- Available Bookings Table -->
+  <div [hidden]="activeTab !== 'available'">
+    <h4 class="mb-4 text-lg font-semibold text-gray-600 dark:text-gray-300">
+      Danh sách Booking chờ xử lý
+    </h4>
+    <div class="w-full overflow-hidden rounded-lg shadow-xs">
+      <div class="w-full overflow-x-auto">
+        <table class="w-full whitespace-no-wrap">
+          <thead>
+            <tr
+              class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+              <th class="px-4 py-3">Tên Tour</th>
+              <th class="px-4 py-3">Khách hàng</th>
+              <th class="px-4 py-3">Ngày đi</th>
+              <th class="px-4 py-3">Số khách</th>
+              <th class="px-4 py-3">Trạng thái</th>
+              <th class="px-4 py-3">Hành động</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+            <ng-container *ngIf="!isLoadingAvailable">
+              <tr *ngFor="let booking of availableBookings?.items" (click)="navigateToDetail(booking.id)"
+                class="text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                <td class="px-4 py-3">{{ booking.tourName }}</td>
+                <td class="px-4 py-3">{{ booking.customer }}</td>
+                <td class="px-4 py-3">{{ booking.departureDate | formatDate }}</td>
+                <td class="px-4 py-3">{{ booking.seats }}</td>
+                <td class="px-4 py-3">
+                  <span
+                    class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:text-white dark:bg-orange-600">
+                    {{ booking.status }}
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  <button (click)="onClaimBooking(booking.id, $event)"
+                    class="px-3 py-1 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-md active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+                    Nhận
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="!availableBookings?.items?.length">
+                <td colspan="6" class="px-4 py-3 text-center">Không có booking nào.</td>
+              </tr>
+            </ng-container>
+            <tr *ngIf="isLoadingAvailable">
+              <td colspan="6" class="text-center py-4">
+                <app-spinner></app-spinner>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- SỬA LỖI: Truyền các thuộc tính riêng lẻ thay vì cả object [paging] -->
+      <app-pagination *ngIf="availableBookings && availableBookings.total > 0"
+        [currentPage]="availableBookings.page"
+        [totalItems]="availableBookings.total"
+        [pageSize]="availableBookings.size"
+        (pageChange)="onPageChange($event, 'available')"></app-pagination>
+    </div>
+  </div>
+
+  <!-- Edited Bookings Table -->
+  <div [hidden]="activeTab !== 'edited'">
+    <h4 class="mb-4 text-lg font-semibold text-gray-600 dark:text-gray-300">
+      Danh sách Booking của tôi
+    </h4>
+    <div class="w-full overflow-hidden rounded-lg shadow-xs">
+        <div class="w-full overflow-x-auto">
+          <table class="w-full whitespace-no-wrap">
+            <thead>
+              <tr
+                class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                <th class="px-4 py-3">Tên Tour</th>
+                <th class="px-4 py-3">Khách hàng</th>
+                <th class="px-4 py-3">Ngày đi</th>
+                <th class="px-4 py-3">Số khách</th>
+                <th class="px-4 py-3">Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+              <ng-container *ngIf="!isLoadingEdited">
+                <tr *ngFor="let booking of editedBookings?.items" (click)="navigateToDetail(booking.id)"
+                  class="text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                  <td class="px-4 py-3">{{ booking.tourName }}</td>
+                  <td class="px-4 py-3">{{ booking.customer }}</td>
+                  <td class="px-4 py-3">{{ booking.departureDate | formatDate }}</td>
+                  <td class="px-4 py-3">{{ booking.seats }}</td>
+                  <td class="px-4 py-3">
+                    <span
+                      class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
+                      {{ booking.status }}
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="!editedBookings?.items?.length">
+                  <td colspan="5" class="px-4 py-3 text-center">Bạn chưa xử lý booking nào.</td>
+                </tr>
+              </ng-container>
+              <tr *ngIf="isLoadingEdited">
+                <td colspan="5" class="text-center py-4">
+                  <app-spinner></app-spinner>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- SỬA LỖI: Truyền các thuộc tính riêng lẻ thay vì cả object [paging] -->
+        <app-pagination *ngIf="editedBookings && editedBookings.total > 0"
+          [currentPage]="editedBookings.page"
+          [totalItems]="editedBookings.total"
+          [pageSize]="editedBookings.size"
+          (pageChange)="onPageChange($event, 'edited')"></app-pagination>
+      </div>
+  </div>
+</div>
