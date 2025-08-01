@@ -55,15 +55,18 @@ export const routes: Routes = [
         data: { expectedRoles: ['BUSINESS_DEPARTMENT', 'SERVICE_COORDINATOR'] },
       },
       // Thêm các vai trò khác ở đây nếu chúng cũng dùng chung layout
-      // Ví dụ:
-      // {
-      //   path: 'sales',
-      //   loadChildren: () => import('./features/sales/sales.routes').then(m => m.SALES_ROUTES),
-      //   data: { expectedRoles: ['SELLER'] }
-      // }
+      // >>> BẠN CẦN THÊM ĐOẠN NÀY VÀO <<<
+      {
+        path: 'coordinator',
+        loadChildren: () =>
+          import('./features/coordinator/coordinator.routes').then(
+            (m) => m.COORDINATOR_ROUTES
+          ),
+        data: { expectedRoles: ['SERVICE_COORDINATOR'] }, // Đảm bảo vai trò này đúng
+      },
     ],
   },
-   
+
 
 
   {
