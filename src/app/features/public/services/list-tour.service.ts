@@ -28,15 +28,22 @@ export class ListTourService {
       { params: cleanQuery }
     );
   }
+  getDiscountTours(page = 0, size = 12): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/public/tours/discounts`, {
+      params: { page, size }
+    });
+  }
 
 
-  // getDepartLocations(): Observable<any> {
-  //   return this.http.get<any>(`${environment.apiUrl}/public/depart-locations`);
-  // }
 
-  // getDestinations(): Observable<any> {
-  //   return this.http.get<any>(`${environment.apiUrl}/public/destinations`);
-  // }
+
+  getDepartLocations(): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/public/depart-locations`);
+  }
+
+  getDestinations(): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/public/destinations`);
+  }
   private removeUndefined(obj: any): any {
     return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined && v !== null));
   }

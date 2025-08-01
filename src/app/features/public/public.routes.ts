@@ -11,6 +11,7 @@ import { PlanComponent } from './plan/plan.component';
 import { AuthGuard } from '../../core/guards/auth.guard';
 import { PlanPreviewComponent } from './plan/plan-detail/plan-detail.component';
 import { CUSTOMER_ROUTES } from '../customer/customer.routes';
+import { ListTourDiscountComponent } from './list-tour-discount/list-tour-discount.component';
 
 export const PUBLIC_ROUTES: Route[] = [
   {
@@ -25,6 +26,10 @@ export const PUBLIC_ROUTES: Route[] = [
       {
         path: 'homepage',
         component: HomepageComponent,
+      },
+      {
+        path: 'discount-tours',
+        component: ListTourDiscountComponent,
       },
       {
         path: 'tours/location/:destId',
@@ -46,7 +51,7 @@ export const PUBLIC_ROUTES: Route[] = [
         path: 'custom-tour-booking',
         component: CustomTourBookingComponent,
       },
-       {
+      {
         path: 'customer',
         component: CustomerLayoutComponent,
         canActivate: [AuthGuard],
@@ -69,7 +74,7 @@ export const PUBLIC_ROUTES: Route[] = [
         loadChildren: () => import('../blog/blog.routes').then(r => r.BLOG_ROUTES),
         data: { title: 'Tin tức' }
       },
-      
+
     ],
   },
 
