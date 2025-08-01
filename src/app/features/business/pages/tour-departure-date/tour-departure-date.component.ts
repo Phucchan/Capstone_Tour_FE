@@ -21,6 +21,7 @@ import {
   TourScheduleOptions,
   TourPaxOption,
   UserBasic,
+  TourScheduleCreateRequest,
 } from '../../../../core/models/tour-schedule.model';
 
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
@@ -131,11 +132,32 @@ export class TourDepartureDateComponent implements OnInit {
 
     this.isSubmitting = true;
     const formValue = this.departureForm.value;
-    // Chuyển đổi ngày sang định dạng ISO string mà backend yêu cầu
-    const payload = {
-      ...formValue,
-      departureDate: new Date(formValue.departureDate).toISOString(),
+    // 1. Tạo đối tượng Date từ giá trị của form (input type="date" trả về múi giờ địa phương)
+    const localDate = new Date(formValue.departureDate);
+
+    // 2. Lấy các thành phần ngày, tháng, năm, giờ, phút, giây từ đối tượng Date đó.
+    // Các hàm getFullYear(), getMonth(),... sẽ lấy theo múi giờ của trình duyệt.
+    const year = localDate.getFullYear();
+    const month = ('0' + (localDate.getMonth() + 1)).slice(-2); // Thêm '0' nếu cần
+    const day = ('0' + localDate.getDate()).slice(-2);
+
+    // Mặc định giờ bắt đầu là 00:00:00
+    const hours = '00';
+    const minutes = '00';
+    const seconds = '00';
+
+    // 3. Ghép lại thành chuỗi đúng định dạng mà LocalDateTime của Java có thể đọc được
+    // Ví dụ: "2025-08-01T00:00:00"
+    const formattedDateString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+
+    const payload: TourScheduleCreateRequest = {
+      coordinatorId: formValue.coordinatorId,
+      tourPaxId: formValue.tourPaxId,
+      departureDate: formattedDateString, // <-- Sử dụng chuỗi đã định dạng
     };
+
+    // Dòng này để bạn kiểm tra lại dữ liệu gửi đi trong Console của trình duyệt
+    console.log('Dữ liệu gửi lên server:', payload);
 
     this.tourDepartureService
       .createTourSchedule(this.tourId, payload)

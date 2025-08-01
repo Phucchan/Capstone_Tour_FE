@@ -54,34 +54,48 @@
 <div *ngIf="isModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
   <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
     <h3 class="text-xl font-semibold mb-4">Thêm Ngày Khởi Hành Mới</h3>
-    <form [formGroup]="departureForm" (ngSubmit)="onSave()">
-      <div class="space-y-4">
-        <div>
-          <label for="departureDate" class="form-label">Ngày khởi hành</label>
-          <input type="date" id="departureDate" formControlName="departureDate" class="input-style w-full">
+
+    <ng-container *ngIf="options; else modalLoading">
+      <form [formGroup]="departureForm" (ngSubmit)="onSave()">
+        <div class="space-y-4">
+          <div>
+            <label for="departureDate" class="form-label">Ngày khởi hành</label>
+            <input type="date" id="departureDate" formControlName="departureDate" class="input-style w-full">
+          </div>
+          <div>
+            <label for="coordinatorId" class="form-label">Điều phối viên</label>
+            <ng-select [items]="options.coordinators" bindLabel="fullName" bindValue="id" formControlName="coordinatorId" placeholder="Chọn điều phối viên"></ng-select>
+          </div>
+          <div>
+            <label for="tourPaxId" class="form-label">Gói giá</label>
+            <ng-select
+                [items]="options.tourPaxes"
+                bindValue="id"
+                formControlName="tourPaxId"
+                placeholder="Chọn gói giá">
+               <ng-template ng-label-tmp let-item="item">
+                  {{ formatPaxOption(item) }}
+               </ng-template>
+               <ng-template ng-option-tmp let-item="item" let-index="index" let-searchTerm="searchTerm">
+                  <div>{{ formatPaxOption(item) }}</div>
+               </ng-template>
+            </ng-select>
+          </div>
         </div>
-        <div>
-          <label for="coordinatorId" class="form-label">Điều phối viên</label>
-          <ng-select [items]="options.coordinators" bindLabel="fullName" bindValue="id" formControlName="coordinatorId" placeholder="Chọn điều phối viên"></ng-select>
+        <div class="flex justify-end gap-4 mt-6">
+          <button type="button" (click)="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Hủy</button>
+          <button type="submit" [disabled]="departureForm.invalid || isSubmitting" class="submit-button">
+            {{ isSubmitting ? 'Đang lưu...' : 'Lưu' }}
+          </button>
         </div>
-        <div>
-          <label for="tourPaxId" class="form-label">Gói giá</label>
-          <ng-select [items]="options.tourPaxes" [bindLabel]="'id'" formControlName="tourPaxId" placeholder="Chọn gói giá">
-             <ng-template ng-label-tmp let-item="item">
-                {{ formatPaxOption(item) }}
-             </ng-template>
-             <ng-template ng-option-tmp let-item="item" let-index="index" let-searchTerm="searchTerm">
-                <div>{{ formatPaxOption(item) }}</div>
-             </ng-template>
-          </ng-select>
+      </form>
+    </ng-container>
+
+    <ng-template #modalLoading>
+        <div class="text-center p-8">
+            <p class="text-gray-500">Đang tải dữ liệu form...</p>
         </div>
-      </div>
-      <div class="flex justify-end gap-4 mt-6">
-        <button type="button" (click)="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Hủy</button>
-        <button type="submit" [disabled]="departureForm.invalid || isSubmitting" class="submit-button">
-          {{ isSubmitting ? 'Đang lưu...' : 'Lưu' }}
-        </button>
-      </div>
-    </form>
+    </ng-template>
+
   </div>
 </div>

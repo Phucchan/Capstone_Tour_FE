@@ -3,9 +3,10 @@ import {
   OnInit,
   inject,
   signal,
-  WritableSignal,
+  computed,
+  Signal,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   FormBuilder,
@@ -13,7 +14,6 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-// SỬA LỖI: Thêm 'Observable' vào import
 import { forkJoin, of, Observable } from 'rxjs';
 import { switchMap, tap, finalize, map } from 'rxjs/operators';
 
@@ -25,12 +25,24 @@ import {
   TourPaxFullDTO,
   TourPaxRequestDTO,
 } from '../../../../core/models/tour.model';
-import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
+
+// COMMENT: Interface để định nghĩa cấu trúc dữ liệu đã được gom nhóm, giúp hiển thị thông minh hơn.
+interface GroupedService {
+  serviceTypeName: string;
+  services: ServiceBreakdownDTO[];
+  totalNettPrice: number;
+}
 
 @Component({
   selector: 'app-tour-costing',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, CurrencyVndPipe],
+  imports: [
+    CommonModule,
+    RouterLink,
+    ReactiveFormsModule,
+    CurrencyPipe,
+    // COMMENT: Không cần import PaxFormComponent nữa vì đã hợp nhất logic vào đây.
+  ],
   templateUrl: './tour-costing.component.html',
 })
 export class TourCostingComponent implements OnInit {
@@ -41,22 +53,57 @@ export class TourCostingComponent implements OnInit {
   private tourService = inject(TourService);
   private tourPaxService = inject(TourPaxService);
 
-  // --- Component State using Signals ---
+  // --- Component State ---
   public tourId!: number;
   public tourDetail$!: Observable<TourDetail>;
 
-  public services: WritableSignal<ServiceBreakdownDTO[]> = signal([]);
-  public paxConfigs: WritableSignal<TourPaxFullDTO[]> = signal([]);
-
+  public services = signal<ServiceBreakdownDTO[]>([]);
+  public paxConfigs = signal<TourPaxFullDTO[]>([]);
   public isLoading = signal(true);
   public isCalculating = signal(false);
 
+  // --- Modal State (trước đây nằm trong pax-form.component) ---
   public isPaxModalOpen = signal(false);
-  public currentPax: WritableSignal<TourPaxFullDTO | null> = signal(null);
+  public currentPax = signal<TourPaxFullDTO | null>(null);
+
+  // COMMENT: Signal được tính toán (computed signal) để tự động gom nhóm dịch vụ mỗi khi danh sách dịch vụ thay đổi.
+  public groupedServices: Signal<GroupedService[]> = computed(() => {
+    const services = this.services();
+    if (!services.length) return [];
+
+    const groups = new Map<
+      string,
+      { services: ServiceBreakdownDTO[]; totalNettPrice: number }
+    >();
+
+    for (const service of services) {
+      if (!groups.has(service.serviceTypeName)) {
+        groups.set(service.serviceTypeName, {
+          services: [],
+          totalNettPrice: 0,
+        });
+      }
+      const group = groups.get(service.serviceTypeName)!;
+      group.services.push(service);
+      group.totalNettPrice += service.nettPrice;
+    }
+
+    return Array.from(groups.entries()).map(([serviceTypeName, data]) => ({
+      serviceTypeName,
+      ...data,
+    }));
+  });
+
+  public totalServiceCost = computed(() =>
+    this.groupedServices().reduce(
+      (total, group) => total + group.totalNettPrice,
+      0
+    )
+  );
 
   // --- Forms ---
   public costingForm: FormGroup;
-  public paxForm: FormGroup;
+  public paxForm: FormGroup; // Form này trước đây nằm trong pax-form.component
 
   constructor() {
     this.costingForm = this.fb.group({
@@ -64,9 +111,12 @@ export class TourCostingComponent implements OnInit {
       extraCost: [0, [Validators.required, Validators.min(0)]],
     });
 
+    // NÂNG CẤP: Thêm các trường giá vào form để cho phép chỉnh sửa thủ công.
     this.paxForm = this.fb.group({
-      minQuantity: ['', [Validators.required, Validators.min(1)]],
-      maxQuantity: ['', [Validators.required, Validators.min(1)]],
+      minQuantity: [1, [Validators.required, Validators.min(1)]],
+      maxQuantity: [1, [Validators.required, Validators.min(1)]],
+      fixedPrice: [null],
+      sellingPrice: [null],
     });
   }
 
@@ -80,7 +130,6 @@ export class TourCostingComponent implements OnInit {
             return;
           }
           this.tourId = +id;
-          // Giả sử tourService.getTourById trả về một cấu trúc có thuộc tính 'detail'
           this.tourDetail$ = this.tourService
             .getTourById(this.tourId)
             .pipe(map((res: any) => res.detail));
@@ -114,26 +163,26 @@ export class TourCostingComponent implements OnInit {
       .subscribe({
         next: (updatedConfigs) => {
           this.paxConfigs.set(updatedConfigs);
-          // Simple feedback, can be replaced with a toast notification
           alert('Đã tính toán và cập nhật giá thành công!');
         },
-        error: (err) => {
-          console.error('Lỗi khi tính giá:', err);
-          alert(`Lỗi: ${err.error?.message || 'Không thể tính giá.'}`);
-        },
+        error: (err) =>
+          alert(`Lỗi: ${err.error?.message || 'Không thể tính giá.'}`),
       });
   }
 
-  // --- Pax Modal Logic ---
+  // --- Pax Modal Logic (trước đây nằm trong pax-form.component) ---
   openPaxModal(pax: TourPaxFullDTO | null): void {
     this.currentPax.set(pax);
     if (pax) {
+      // NÂNG CẤP: Cập nhật giá trị cho các trường giá khi mở modal sửa.
       this.paxForm.patchValue({
         minQuantity: pax.minQuantity,
         maxQuantity: pax.maxQuantity,
+        fixedPrice: pax.fixedPrice,
+        sellingPrice: pax.sellingPrice,
       });
     } else {
-      this.paxForm.reset();
+      this.paxForm.reset({ minQuantity: 1, maxQuantity: 1 });
     }
     this.isPaxModalOpen.set(true);
   }
@@ -144,7 +193,14 @@ export class TourCostingComponent implements OnInit {
   }
 
   handlePaxSave(): void {
-    if (this.paxForm.invalid) return;
+    if (this.paxForm.invalid) {
+      this.paxForm.markAllAsTouched();
+      return;
+    }
+    if (this.paxForm.value.minQuantity > this.paxForm.value.maxQuantity) {
+      alert('Số khách tối thiểu không được lớn hơn số khách tối đa.');
+      return;
+    }
 
     const formData: TourPaxRequestDTO = this.paxForm.value;
     const currentPaxData = this.currentPax();
@@ -160,12 +216,9 @@ export class TourCostingComponent implements OnInit {
     saveObservable.subscribe({
       next: () => {
         this.closePaxModal();
-        this.loadData().subscribe(); // Reload data on success
+        this.loadData().subscribe();
       },
-      error: (err) => {
-        console.error('Lỗi khi lưu khoảng khách:', err);
-        alert(`Lỗi: ${err.error?.message || 'Không thể lưu.'}`);
-      },
+      error: (err) => alert(`Lỗi: ${err.error?.message || 'Không thể lưu.'}`),
     });
   }
 
@@ -175,10 +228,7 @@ export class TourCostingComponent implements OnInit {
         next: () => {
           this.loadData().subscribe();
         },
-        error: (err) => {
-          console.error('Lỗi khi xóa khoảng khách:', err);
-          alert(`Lỗi: ${err.error?.message || 'Không thể xóa.'}`);
-        },
+        error: (err) => alert(`Lỗi: ${err.error?.message || 'Không thể xóa.'}`),
       });
     }
   }

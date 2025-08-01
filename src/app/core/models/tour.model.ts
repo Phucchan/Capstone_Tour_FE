@@ -139,6 +139,8 @@ export interface TourPaxCreateRequestDTO {
 export interface TourPaxRequestDTO {
   minQuantity: number;
   maxQuantity: number;
+  fixedPrice?: number | null;
+  sellingPrice?: number | null;
 }
 
 
