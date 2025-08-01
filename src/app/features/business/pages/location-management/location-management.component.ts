@@ -3,10 +3,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LocationService } from '../../services/location.service';
-import { LocationDTO, PagingDTO } from '../../../../core/models/location.model';
+import { LocationDTO } from '../../../../core/models/location.model';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { LocationFormComponent } from '../../components/location-form/location-form.component';
+import { PagingDTO } from '../../../../core/models/paging.model';
+
 
 @Component({
   selector: 'app-location-management',

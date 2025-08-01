@@ -7,7 +7,9 @@ import { layoutService } from '../../../../features/admin/layout/services/layout
 import { MenuItem, SubMenuItem } from '../../../../core/models/menu.model';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators'; // <-- Thêm import 'map'
 import { MenuService } from '../../../../core/services/menu.service';
+import { UserStorageService } from '../../../../core/services/user-storage/user-storage.service'; // <-- Thêm import UserStorageService
 
 @Component({
   selector: 'app-admin-sidebar-menu',
@@ -22,21 +24,47 @@ import { MenuService } from '../../../../core/services/menu.service';
   templateUrl: './admin-sidebar-menu.component.html',
 })
 export class AdminSidebarMenuComponent implements OnInit {
-  // Component giờ chỉ cần một Observable để nhận menu
   public menuItems$!: Observable<MenuItem[]>;
 
-  // Inject MenuService thay vì CurrentUserService
   constructor(
     public layoutService: layoutService,
-    private menuService: MenuService
+    private menuService: MenuService,
+    private userStorageService: UserStorageService // <-- Inject service vào đây
   ) {}
 
   ngOnInit(): void {
-    // Lấy menu từ service
-    this.menuItems$ = this.menuService.menuItems$;
+    const userRoles = this.userStorageService.getUserRoles() || [];
+
+    this.menuItems$ = this.menuService.menuItems$.pipe(
+      map((menuItems) => {
+        // 1. Lọc các nhóm menu (group) mà user có quyền thấy
+        const filteredGroups = menuItems.filter(
+          (group) =>
+            !group.roles ||
+            group.roles.length === 0 ||
+            group.roles.some((role) => userRoles.includes(role))
+        );
+
+        // 2. Với mỗi nhóm, tiếp tục lọc các mục con (item) bên trong
+        return (
+          filteredGroups
+            .map((group) => {
+              const filteredItems = group.items.filter(
+                (item) =>
+                  !item.roles ||
+                  item.roles.length === 0 ||
+                  item.roles.some((role) => userRoles.includes(role))
+              );
+              // Trả về một object nhóm mới với các item đã được lọc
+              return { ...group, items: filteredItems };
+            })
+            // 3. Cuối cùng, chỉ giữ lại những nhóm có ít nhất 1 mục con
+            .filter((group) => group.items.length > 0)
+        );
+      })
+    );
   }
 
-  // Hàm này vẫn giữ nguyên để xử lý việc đóng/mở menu
   public toggleMenu(subMenu: SubMenuItem) {
     this.layoutService.toggleMenu(subMenu);
   }

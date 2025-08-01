@@ -29,9 +29,11 @@ export interface TourSchedule {
   tourPaxId: number;
   departureDate: string; // Dữ liệu từ backend là LocalDateTime, nhận về dạng string ISO
   endDate: string;
-  // Các trường bổ sung để hiển thị trên bảng cho thân thiện
   coordinator?: UserBasic;
   tourPax?: TourPaxOption;
+  price?: number;
+  extraHotelCost?: number;
+  availableSeats?: number;
 }
 
 export interface TourScheduleCreateRequest {

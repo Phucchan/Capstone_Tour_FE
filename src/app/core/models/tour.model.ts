@@ -16,13 +16,6 @@ export interface TourListItem {
   durationDays: number;
 }
 
-// Dùng cho phân trang
-export interface PagingDTO<T> {
-  items: T[];
-  total: number;
-  page: number;
-  size: number;
-}
 
 /**
  * @description Dữ liệu chi tiết tour trả về từ API.

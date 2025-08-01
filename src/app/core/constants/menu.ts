@@ -75,20 +75,8 @@ export const MENU_ITEMS: MenuItem[] = [
       {
         icon: 'assets/icons/heroicons/outline/cart.svg',
         label: 'Quản lý Booking',
-        route: '/sales/bookings',
+        route: '/seller/dashboard', // <-- SỬA ĐƯỜNG DẪN TẠI ĐÂY
         roles: [ALL_ROLES.SELLER],
-      },
-      {
-        icon: 'assets/icons/heroicons/outline/marketing-svgrepo-com.svg',
-        label: 'Quản lý Blog',
-        route: '/marketing/blogs',
-        roles: [ALL_ROLES.MARKETING_MANAGER],
-      },
-      {
-        icon: 'assets/icons/heroicons/outline/dollar-svgrepo-com.svg',
-        label: 'Quản lý Khuyến mãi',
-        route: '/marketing/promotions',
-        roles: [ALL_ROLES.MARKETING_MANAGER],
       },
     ],
   },

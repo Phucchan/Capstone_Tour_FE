@@ -20,15 +20,6 @@ export interface LocationRequestDTO {
   image: string;
 }
 
-/**
- * Interface chung cho dữ liệu phân trang từ API.
- */
-export interface PagingDTO<T> {
-  page: number;
-  size: number;
-  total: number;
-  items: T[];
-}
 
 /**
  * Interface chung cho mọi response từ API.

@@ -12,7 +12,8 @@ import {
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 
 import { TourService } from '../../../../core/services/tour.service';
-import { TourListItem, PagingDTO } from '../../../../core/models/tour.model';
+import { TourListItem } from '../../../../core/models/tour.model';
+import { PagingDTO } from '../../../../core/models/paging.model';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 
 @Component({

@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import packageJson from '../../../../../package.json';
 import { layoutService } from '../../../features/admin/layout/services/layout.service';
 import { AdminSidebarMenuComponent } from './admin-sidebar-menu/admin-sidebar-menu.component';
+
 
 @Component({
   selector: 'app-admin-sidebar',
