@@ -141,14 +141,14 @@
                 <!-- Passenger Information -->
                 <h2 class="text-2xl font-semibold mt-12">Thông tin đoàn</h2>
 
-                <!-- <div class="flex items-center gap-2 p-4 bg-blue-100 rounded-lg mt-4 mb-6 ">
+                <div class="flex items-center gap-2 p-4 bg-blue-100 rounded-lg mt-4 mb-6 ">
                     <input type="checkbox" id="needSupport"
                         class="!p-3 border-gray-300 text-blue-600 focus:ring-blue-500"
                         (change)="changeHelpingInput()" />
                     <label for="needSupport" class=" text-gray-900">
                         Tôi cần được nhân viên tư vấn Đi Đâu trợ giúp nhập thông tin đăng ký dịch vụ
                     </label>
-                </div> -->
+                </div>
 
                 <div *ngIf="isHelpingInput" class="flex items-start gap-3 p-4 bg-orange-50 rounded-lg text-sm text-orange-700">
                     <!-- Icon chuông -->
@@ -169,7 +169,7 @@
 
 
 
-                <!-- <div formArrayName="adults" *ngIf="!isHelpingInput">
+                <div formArrayName="adults" *ngIf="!isHelpingInput">
                     @for (num of range(numberAdults); track num; let first = $first) {
                     @if(first) {
                     <p class="font-semibold mb-6 border-t pt-6 border-[#71a3f3]">👨‍👩‍👧 Người lớn (12 tuổi trở lên)
@@ -226,13 +226,13 @@
                         </div>
                     </div>
                     }
-                </div> -->
+                </div>
 
 
 
 
 
-                <!-- <div formArrayName="children" *ngIf="!isHelpingInput">
+                <div formArrayName="children" *ngIf="!isHelpingInput">
                     @for (num of range(numberChildren); track num; let first = $first) {
                     @if(first) {
                     <p class="font-semibold mt-12 mb-6">👨‍👩‍👧 Trẻ em (Từ 5 - 12 tuổi)</p>
@@ -270,9 +270,9 @@
 
                     </div>
                     }
-                </div> -->
+                </div>
 
-                <!-- <div formArrayName="infants" *ngIf="!isHelpingInput">
+                <div formArrayName="infants" *ngIf="!isHelpingInput">
                     @for (num of range(numberInfants); track num; let first = $first) {
                     @if(first) {
                     <p class="font-semibold mt-12 mb-6">👶 Trẻ nhỏ (Từ 2 - 4 tuổi)</p>
@@ -310,9 +310,9 @@
 
                     </div>
                     }
-                </div> -->
+                </div>
 
-                <!-- <div formArrayName="toddlers" *ngIf="!isHelpingInput">
+                <div formArrayName="toddlers" *ngIf="!isHelpingInput">
                     @for (num of range(numberToddlers); track num; let first = $first) {
                     @if(first) {
                     <p class="font-semibold mt-12 mb-6">👶 Em bé (Dưới 2 tuổi)</p>
@@ -350,7 +350,7 @@
 
                     </div>
                     }
-                </div> -->
+                </div>
 
                 <!-- Note Section -->
                 <h2 class="text-lg font-semibold mb-2 mt-12">Ghi chú</h2>

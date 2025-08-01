@@ -1,50 +1,51 @@
 <div *ngIf="isLoading" class="fixed inset-0 bg-white z-20 flex items-center justify-center">
   <div class="w-[80%] mx-auto">
     <!-- Header -->
-    <div *ngIf="showHeader" class="h-8 w-3/4 bg-gray-300 animate-pulse rounded mb-6"></div>
+    <!-- //animate-pulse  -->
+    <div *ngIf="showHeader" class="h-8 w-3/4 bg-gray-300 rounded mb-6"></div>
 
     <!-- Image Section -->
     <div *ngIf="showImageSection" class="grid grid-cols-4 gap-4">
       <div class="space-y-2">
-        <div class="h-20 bg-gray-300 animate-pulse rounded"></div>
-        <div class="h-20 bg-gray-300 animate-pulse rounded"></div>
-        <div class="h-20 bg-gray-300 animate-pulse rounded"></div>
+        <div class="h-20 bg-gray-300 rounded"></div>
+        <div class="h-20 bg-gray-300 rounded"></div>
+        <div class="h-20 bg-gray-300 rounded"></div>
       </div>
-      <div class="col-span-3 h-64 bg-gray-300 animate-pulse rounded"></div>
+      <div class="col-span-3 h-64 bg-gray-300 rounded"></div>
     </div>
 
     <!-- Price Box -->
-    <div *ngIf="showPriceBox" class="mt-4 p-4 w-64 h-16 bg-gray-300 animate-pulse rounded"></div>
+    <div *ngIf="showPriceBox" class="mt-4 p-4 w-64 h-16 bg-gray-300 rounded"></div>
 
     <!-- Departure Calendar -->
     <div *ngIf="showCalendar" class="mt-6">
-      <div class="h-8 w-40 bg-gray-300 animate-pulse rounded mb-3"></div>
+      <div class="h-8 w-40 bg-gray-300 rounded mb-3"></div>
       <div class="grid grid-cols-7 gap-2">
-        <div *ngFor="let i of [1,2,3,4,5,6,7]" class="h-10 w-10 bg-gray-300 animate-pulse rounded"></div>
+        <div *ngFor="let i of [1,2,3,4,5,6,7]" class="h-10 w-10 bg-gray-300 rounded"></div>
       </div>
     </div>
 
     <!-- Schedule -->
     <div *ngIf="showSchedule" class="mt-6 space-y-4">
-      <div class="h-16 bg-gray-300 animate-pulse rounded"></div>
-      <div class="h-16 bg-gray-300 animate-pulse rounded"></div>
-      <div class="h-16 bg-gray-300 animate-pulse rounded"></div>
+      <div class="h-16 bg-gray-300 rounded"></div>
+      <div class="h-16 bg-gray-300 rounded"></div>
+      <div class="h-16 bg-gray-300 rounded"></div>
     </div>
 
     <!-- Important Information -->
     <div *ngIf="showImportantInfo" class="mt-6 space-y-2">
-      <div class="h-12 bg-gray-300 animate-pulse rounded"></div>
-      <div class="h-12 bg-gray-300 animate-pulse rounded"></div>
-      <div class="h-12 bg-gray-300 animate-pulse rounded"></div>
-      <div class="h-12 bg-gray-300 animate-pulse rounded"></div>
-      <div class="h-12 bg-gray-300 animate-pulse rounded"></div>
+      <div class="h-12 bg-gray-300 rounded"></div>
+      <div class="h-12 bg-gray-300 rounded"></div>
+      <div class="h-12 bg-gray-300 rounded"></div>
+      <div class="h-12 bg-gray-300 rounded"></div>
+      <div class="h-12 bg-gray-300 rounded"></div>
     </div>
 
     <!-- Other Tours -->
     <div *ngIf="showOtherTours" class="mt-6 grid grid-cols-3 gap-4">
-      <div class="h-40 bg-gray-300 animate-pulse rounded"></div>
-      <div class="h-40 bg-gray-300 animate-pulse rounded"></div>
-      <div class="h-40 bg-gray-300 animate-pulse rounded"></div>
+      <div class="h-40 bg-gray-300 rounded"></div>
+      <div class="h-40 bg-gray-300 rounded"></div>
+      <div class="h-40 bg-gray-300 rounded"></div>
     </div>
   </div>
 </div>

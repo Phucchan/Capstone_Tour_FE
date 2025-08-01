@@ -106,6 +106,10 @@ export class HomepageComponent implements OnInit {
     // hoặc '/list-tour', destId nếu bạn đặt route là vậy
   }
 
+  goToTourDiscountBooking(tourId: number, scheduleId: number): void {
+    this.router.navigate(['/tour-booking', tourId, scheduleId]);
+  }
+
 }
 
 
@@ -118,7 +122,8 @@ interface Blog {
 }
 
 interface SaleTour {
-  id: number;
+  tourId: number;
+  scheduleId: number;
   name: string;
   thumbnailUrl: string;
   averageRating: number;

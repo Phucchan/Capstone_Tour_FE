@@ -28,11 +28,31 @@ export class ListTourService {
       { params: cleanQuery }
     );
   }
-  getDiscountTours(page = 0, size = 12): Observable<any> {
-    return this.http.get<any>(`${environment.apiUrl}/public/tours/discounts`, {
-      params: { page, size }
-    });
+  // getDiscountTours(page = 0, size = 12): Observable<any> {
+  //   return this.http.get<any>(`${environment.apiUrl}/public/tours/discounts`, {
+  //     params: { page, size }
+  //   });
+  // }
+
+  getDiscountTours(page = 0, size = 12, sort?: string): Observable<any> {
+  const params: any = {
+    page,
+    size,
+  };
+
+  // Thêm sort nếu có
+  if (sort) {
+    if (sort === 'price_asc' || sort === 'price_desc') {
+      params.sortField = 'startingPrice';
+      params.sortDirection = sort === 'price_asc' ? 'asc' : 'desc';
+    } else if (sort === 'latest') {
+      params.sortField = 'createdAt';
+      params.sortDirection = 'desc';
+    }
   }
+
+  return this.http.get<any>(`${environment.apiUrl}/public/tours/discounts`, { params });
+}
 
 
 

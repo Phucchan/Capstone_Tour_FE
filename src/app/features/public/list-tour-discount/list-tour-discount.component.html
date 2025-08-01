@@ -1,62 +1,79 @@
-<h1 class="text-3xl font-bold text-center text-blue-800 mb-6 mt-8">TOUR ƯU ĐÃI</h1>
-<p class="text-center text-xl text-black max-w-3xl mx-auto mb-10">
-    Tour du lịch ƯU ĐÃI của chúng tôi mang đến giá ưu đãi bất ngờ. Những tour sắp khởi hành, chất lượng cao, giá cực
-    tốt.
-</p>
+ <app-skeleton *ngIf="isLoading" [isLoading]="true" [showHeader]="true" [showImageSection]="true"
+        [showOtherTours]="true">
+    </app-skeleton>
 
-<div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-5 gap-y-5 mx-18">
-    <div *ngFor="let tour of tours"
-        class="bg-white rounded-lg shadow  hover:shadow-2xl transition-shadow duration-300 relative group overflow-hidden ">
-
-        <!-- Countdown -->
-        <div *ngIf="tour.discountPercent > 0"
-            class="absolute left-2 top-2 bg-red-500 text-white px-2 py-1 rounded-full z-10 text-xs font-bold">
-            Giảm {{ tour.discountPercent }}%
+<ng-container *ngIf="!isLoading">
+    <h1 class="text-3xl font-bold text-center text-blue-800 mb-6 mt-8">TOUR ƯU ĐÃI</h1>
+    <p class="text-center text-xl text-black max-w-3xl mx-auto mb-10">
+        Tour du lịch ƯU ĐÃI của chúng tôi mang đến giá ưu đãi bất ngờ. Những tour sắp khởi hành, chất lượng cao, giá cực
+        tốt.
+    </p>
+<div class="flex-1">
+      <!-- Header & Sort -->
+      <div class="flex justify-between items-center mb-8 mx-20">
+        <p>Chúng tôi tìm thấy <strong>{{ total }}</strong> chương trình tour cho quý khách</p>
+        <div class="flex items-center gap-2">
+          <label for="sort" class="text text-black-500">Sắp xếp theo: </label>
+          <select id="sort" [(ngModel)]="sort" (ngModelChange)="onSortChange($event) "
+            class="border rounded px-2 py-1 text-sm w-56">
+            <option value="">Tất cả</option>
+            <option value="price_desc">Giá từ cao đến thấp </option>
+            <option value="price_asc">Giá từ thấp đến cao </option>
+            <option value="latest">Ngày khởi hành gần nhất </option>
+          </select>
         </div>
+      </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-5 gap-y-5 mx-18">
+        <div *ngFor="let tour of tours"
+            class="bg-white rounded-lg shadow  hover:shadow-2xl transition-shadow duration-300 relative group overflow-hidden ">
 
-        <!-- Ảnh -->
-        <img [src]="tour.thumbnailUrl" alt="Tour Image"
-            class="w-full h-58 object-cover group-hover:scale-105 transition-transform duration-300" />
-
-        <!-- Nội dung -->
-        <div class="p-4 space-y-2">
-
-            <h3 class="font-bold text-base text-gray-800 line-clamp-2">{{ tour.name }}</h3>
-            <div class="grid grid-cols-2 gap-y-2 gap-5 text text-gray-800">
-                <p>🆔 Mã tour: {{ tour.code }}</p>
-                <p>📍 Khởi hành: {{ tour.locationName }}</p>
-                <p> {{ tour.tourTransport | iconTransport }}</p>
-                <p>📅 Ngày đi: {{ tour.departureDates[0] | date: 'dd/MM/yyyy' }}</p>
-                <p>⏳ Thời gian: {{ tour.durationDays }}N{{ tour.durationDays - 1 }}Đ</p>
-                <p>🛏️ Còn: {{ tour.availableSeats || '...' }}</p>
+            <!-- Countdown -->
+            <div *ngIf="tour.discountPercent > 0"
+                class="absolute left-2 top-2 bg-red-500 text-white px-2 py-1 rounded-full z-10 text-xs font-bold">
+                Giảm {{ tour.discountPercent }}%
             </div>
 
-            <!-- Giá -->
-            <div class="mt-2">
-                <p class="text text-black font-semibold">
-                    Giá từ:
-                    <span class="line-through text-gray-500 font-normal ml-1">
-                        {{ tour.startingPrice | currencyVnd }}
-                    </span>
-                </p>
-                <p class="text-2xl font-bold text-red-600 leading-tight">
-                    {{ getDiscountedPrice(tour.startingPrice, tour.discountPercent) | currencyVnd }}
-                </p>
+            <!-- Ảnh -->
+            <img [src]="tour.thumbnailUrl" alt="Tour Image"
+                class="w-full h-60 object-cover group-hover:scale-105 transition-transform duration-300" />
+
+            <!-- Nội dung -->
+            <div class="p-4 space-y-2">
+
+                <h3 class="font-bold text-base text-gray-800 line-clamp-2">{{ tour.name }}</h3>
+                <div class="grid grid-cols-2 gap-y-2 gap-5 text text-gray-800">
+                    <p>🆔 Mã tour: {{ tour.code }}</p>
+                    <p>📍 Khởi hành: {{ tour.locationName }}</p>
+                    <p> {{ tour.tourTransport | iconTransport }}</p>
+                    <p>📅 Ngày đi: {{ tour.departureDates[0] | date: 'dd/MM/yyyy' }}</p>
+                    <p>⏳ Thời gian: {{ tour.durationDays }}N{{ tour.durationDays - 1 }}Đ</p>
+                    <p>🛏️ Còn: {{ tour.availableSeats || '...' }}</p>
+                </div>
+
+                <!-- Giá -->
+                <div class="mt-2">
+                    <p class="text text-black font-semibold">
+                        Giá từ:
+                        <span class="line-through text-gray-500 font-normal ml-1">
+                            {{ tour.startingPrice | currencyVnd }}
+                        </span>
+                    </p>
+                    <p class="text-2xl font-bold text-red-600 leading-tight">
+                        {{ getDiscountedPrice(tour.startingPrice, tour.discountPercent) | currencyVnd }}
+                    </p>
+                </div>
+
+
+                <!-- Nút đặt -->
+                <a [routerLink]="['/tour-booking', tour.tourId, tour.scheduleId]"
+                    class="block mt-3 text-center bg-white text-red-500 border border-red-500 py-2 rounded hover:bg-red-500 hover:text-white transition font-semibold">
+                    Đặt ngay
+                </a>
             </div>
-
-
-            <!-- Nút đặt -->
-            <a [routerLink]="['/tour-booking', tour.id, tour.scheduleId]"
-                class="block mt-3 text-center bg-white text-red-500 border border-red-500 py-2 rounded hover:bg-red-500 hover:text-white transition font-semibold">
-                Đặt ngay
-            </a>
         </div>
+
     </div>
-    
+    <app-pagination [currentPage]="page" [totalItems]="total" [pageSize]="size" (pageChange)="onPageChange($event)">
+    </app-pagination>
 </div>
-<app-pagination
-  [currentPage]="page"
-  [totalItems]="total"
-  [pageSize]="size"
-  (pageChange)="onPageChange($event)">
-</app-pagination>
+</ng-container>
