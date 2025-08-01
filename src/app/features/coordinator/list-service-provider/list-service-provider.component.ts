@@ -69,6 +69,20 @@ export class ListServiceProviderComponent implements OnInit {
     ];
   }
 
+  /**
+   * === THÊM PHƯƠNG THỨC MỚI TẠI ĐÂY ===
+   * Hàm để thay đổi trạng thái của nhà cung cấp khi click.
+   * @param provider Nhà cung cấp được chọn.
+   */
+  toggleStatus(provider: ServiceProvider): void {
+    // Thay đổi trạng thái của nhà cung cấp
+    provider.status = provider.status === 'Hoạt động' ? 'Ngưng hoạt động' : 'Hoạt động';
+
+    // Trong một ứng dụng thực tế, bạn sẽ gọi API để cập nhật trạng thái trên server ở đây.
+    // Ví dụ: this.serviceProviderService.updateStatus(provider.id, provider.status).subscribe();
+    console.log(`Đã cập nhật trạng thái cho nhà cung cấp '${provider.name}' thành '${provider.status}'`);
+  }
+
   viewDetails(providerId: number): void {
     console.log('Xem chi tiết cho nhà cung cấp ID:', providerId);
     // Ví dụ: this.router.navigate(['/coordinator/service-providers', providerId]);
