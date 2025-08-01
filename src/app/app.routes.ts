@@ -26,7 +26,6 @@ export const routes: Routes = [
   //   data: { expectedRoles: ['CUSTOMER'] },
   // },
 
-
   // --- Gom tất cả các route quản lý vào chung một Layout ---
   {
     path: '',
@@ -54,6 +53,14 @@ export const routes: Routes = [
         // AuthGuard ở route cha sẽ dùng data này để kiểm tra quyền
         data: { expectedRoles: ['BUSINESS_DEPARTMENT', 'SERVICE_COORDINATOR'] },
       },
+      {
+        path: 'seller',
+        loadChildren: () =>
+          import('./features/seller/seller.routes').then(
+            (m) => m.SELLER_ROUTES
+          ),
+        data: { expectedRoles: ['SELLER'] }, // AuthGuard sẽ dùng mảng này để kiểm tra quyền
+      },
       // Thêm các vai trò khác ở đây nếu chúng cũng dùng chung layout
       // >>> BẠN CẦN THÊM ĐOẠN NÀY VÀO <<<
       {
@@ -66,8 +73,6 @@ export const routes: Routes = [
       },
     ],
   },
-
-
 
   {
     path: 'chat',
