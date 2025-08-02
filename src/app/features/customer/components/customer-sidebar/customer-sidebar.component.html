@@ -11,40 +11,58 @@
   <hr class="my-4 w-full border-gray-200" />
   <div class="w-full space-y-4">
     <!-- Tài khoản -->
-    <div>
-      <div class="flex items-center font-bold">
-        <span class="mr-3 text-xl"><i class="fa fa-user"></i></span>
-        Tài Khoản
-      </div>
-      <div class="ml-8 mt-1 text-gray-500 space-y-1 text-sm">
-        <a [routerLink]="['/customer/profile-info']" routerLinkActive="active"
-          class="block text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Thông tin cá nhân</a>
-          <a [routerLink]="['/customer/change-password']" routerLinkActive="active"
-          class="block text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Đổi Mật Khẩu</a>
-        <a (click)="onLogout()"
-          class="block text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white cursor-pointer">Đăng
-          xuất</a>
-      </div>
+   <!-- Bọc toàn bộ sidebar -->
+<nav class="pl-4 space-y-4 text-sm text-gray-700">
+
+  <!-- Nhóm: Tài Khoản -->
+  <div>
+    <div class="flex items-center font-bold text-base mb-1">
+      <i class="fa fa-user mr-2"></i> Tài Khoản
     </div>
-    <!-- Đơn đặt tour -->
-    <div class="flex items-center">
-      <span class="mr-3 text-xl"><i class="fa fa-file-invoice"></i></span>
-      Đơn Đặt Tour
-    </div>
-    <!-- Đánh giá của bạn -->
-    <div class="flex items-center">
-      <span class="mr-3 text-xl"><i class="fa fa-comment-alt"></i></span>
-      Đánh Giá Của Bạn
-    </div>
-    <!-- Yêu thích đã lưu -->
-    <div class="flex items-center">
-      <span class="mr-3 text-xl"><i class="fa fa-heart"></i></span>
-      Yêu Thích Đã Lưu
-    </div>
-    <!-- Thư viện ảnh -->
-    <div class="flex items-center">
-      <span class="mr-3 text-xl"><i class="fa fa-image"></i></span>
-      Thư Viện Ảnh
+    <div class="space-y-1">
+      <a [routerLink]="['/customer/profile-info']"
+         routerLinkActive="bg-red-100 text-red-600 font-semibold"
+         class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 hover:text-red-500 transition">
+        <i class="fa fa-id-card"></i> Thông tin cá nhân
+      </a>
+
+      <a [routerLink]="['/customer/change-password']"
+         routerLinkActive="bg-red-100 text-red-600 font-semibold"
+         class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 hover:text-red-500 transition">
+        <i class="fa fa-key"></i> Đổi mật khẩu
+      </a>
+
+      <a (click)="onLogout()"
+         class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 hover:text-red-500 transition cursor-pointer">
+        <i class="fa fa-sign-out-alt"></i> Đăng xuất
+      </a>
     </div>
   </div>
-</div>
+
+  <!-- Nhóm: Chức năng khác -->
+  <div class="space-y-1 font-bold"> 
+    <a [routerLink]="['/customer/bookings']"
+       routerLinkActive="bg-red-100 text-red-600 font-semibold"
+       class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 hover:text-red-500 transition">
+      <i class="fa fa-file-invoice text-xl"></i> Đơn Đặt Tour
+    </a>
+
+    <a [routerLink]="['/customer/reviews']"
+       routerLinkActive="bg-red-100 text-red-600 font-semibold"
+       class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 hover:text-red-500 transition">
+      <i class="fa fa-comment-alt text-xl"></i> Đánh Giá Của Bạn
+    </a>
+
+    <a [routerLink]="['/customer/wishlist']"
+       routerLinkActive="bg-red-100 text-red-600 font-semibold"
+       class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 hover:text-red-500 transition">
+      <i class="fa fa-heart text-xl"></i> Yêu Thích Đã Lưu
+    </a>
+
+    <a [routerLink]="['/customer/gallery']"
+       routerLinkActive="bg-red-100 text-red-600 font-semibold"
+       class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 hover:text-red-500 transition">
+      <i class="fa fa-image text-xl"></i> Thư Viện Ảnh
+    </a>
+  </div>
+</nav>

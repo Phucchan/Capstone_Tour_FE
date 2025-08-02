@@ -2,6 +2,7 @@ import { Route } from "@angular/router";
 import { ChangePasswordComponent } from "./components/change-password/change-password.component";
 import { CustomerProfileComponent } from "./components/customer-profile/customer-profile.component";
 import { CustomerLayoutComponent } from "./components/Customer-layout/Customer-layout.component";
+import { WishlistComponent } from "./components/wishlist/wishlist.component";
 
 
 export const CUSTOMER_ROUTES: Route[] = [
@@ -18,6 +19,10 @@ export const CUSTOMER_ROUTES: Route[] = [
   {
     path: 'change-password',
     component: ChangePasswordComponent
+  },
+  {
+    path: 'wishlist',
+    component: WishlistComponent
   },
 
 

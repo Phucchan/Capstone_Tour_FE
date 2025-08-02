@@ -4,14 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 @Component({
-  selector: 'app-custom-tour-booking',
+  selector: 'app-custom-order-tour',
   standalone: true,
-  imports: [CommonModule, 
+  imports: [
+    CommonModule, 
     RouterModule, 
     FormsModule],
-  templateUrl: './custom-tour-booking.component.html'
+  templateUrl: './custom-order-tour.component.html'
 })
-export class CustomTourBookingComponent {
+export class CustomOrderTourComponent {
   booking = {
     hasDestination: false,
     destinationDetail: '',

@@ -13,6 +13,10 @@ import { IconTransportPipe } from "../../../shared/pipes/icon-transport.pipe";
 import { SkeletonComponent } from "../../../shared/components/skeleton/skeleton.component";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
+import { WishlistService } from "../../customer/services/wishlist.service";
+import { CurrentUserService } from "../../../core/services/user-storage/current-user.service";
+
+
 
 @Component({
   standalone: true,
@@ -69,6 +73,8 @@ export class ListTourComponent implements OnInit, OnDestroy {
     private tourService: ListTourService,
     private route: ActivatedRoute,
     private router: Router,
+    private wishlistService: WishlistService,
+    private currentUserService: CurrentUserService
   ) { }
 
   ngOnInit(): void {
@@ -262,12 +268,21 @@ export class ListTourComponent implements OnInit, OnDestroy {
 
   // Thêm vào wishlist
   addToWishlist(tourId: number): void {
-    // Mở lại nếu muốn dùng localStorage
-    // const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-    // if (!wishlist.includes(tourId)) {
-    //   wishlist.push(tourId);
-    //   localStorage.setItem('wishlist', JSON.stringify(wishlist));
-    //   alert('Đã thêm vào danh sách yêu thích!');
-    // }
+    const user = this.currentUserService.getCurrentUser(); // hoặc từ localStorage
+    const userId = user?.id;
+
+    if (!userId) {
+      alert('Vui lòng đăng nhập để sử dụng tính năng yêu thích.');
+      return;
+    }
+
+    this.wishlistService.addToWishlist(userId, tourId).subscribe({
+      next: () => {
+        alert('✅ Đã thêm vào danh sách yêu thích!');
+      },
+      error: () => {
+        alert('❌ Có lỗi khi thêm vào wishlist!');
+      }
+    });
   }
 }

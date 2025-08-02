@@ -5,7 +5,7 @@ import { ListTourComponent } from './list-tour/list-tour.component';
 import { TourDetailComponent } from './tour-tourdetail/tour-detail.component';
 import { TourBookingComponent } from '../customer/components/tour-booking/tour-booking.component';
 import { CustomerLayoutComponent } from '../customer/components/Customer-layout/Customer-layout.component';
-import { CustomTourBookingComponent } from '../customer/components/custom-tour-booking/custom-tour-booking.component';
+import { CustomOrderTourComponent } from '../customer/components/custom-order-tour/custom-order-tour.component';
 import { TourBookingConfirmComponent } from '../customer/components/tour-booking/tour-booking-confirm/tour-booking-confirm.component';
 import { PlanComponent } from './plan/plan.component';
 import { AuthGuard } from '../../core/guards/auth.guard';
@@ -48,8 +48,8 @@ export const PUBLIC_ROUTES: Route[] = [
         component: TourBookingConfirmComponent,
       },
       {
-        path: 'custom-tour-booking',
-        component: CustomTourBookingComponent,
+        path: 'custom-order-tour',
+        component: CustomOrderTourComponent,
       },
       {
         path: 'customer',
