@@ -32,7 +32,7 @@ import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
+    // RouterLink,
     ReactiveFormsModule,
     NgSelectModule,
     SpinnerComponent,

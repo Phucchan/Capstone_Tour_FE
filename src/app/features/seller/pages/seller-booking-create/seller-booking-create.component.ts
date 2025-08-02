@@ -93,18 +93,20 @@ export class SellerBookingCreateComponent implements OnInit {
             return of(null);
           }
           this.isSearchingTours = true;
-           const params = { page: 0, size: 10, name: term };
-           return this.tourService.getTours(params).pipe(
-             catchError(() => {
-               this.isSearchingTours = false;
-               return of(null);
-             })
-           );
+          const params = { page: 0, size: 10, name: term };
+          return this.tourService.getTours(params).pipe(
+            catchError(() => {
+              this.isSearchingTours = false;
+              return of(null);
+            })
+          );
         })
       )
-      .subscribe((response: ApiResponse<PagingDTO<TourListItem>> | null) => {
+      .subscribe((response: PagingDTO<TourListItem> | null) => {
+        //Nhận về PagingDTO thay vì ApiResponse
         this.isSearchingTours = false;
-        this.tourSearchResults = response?.data.items || [];
+        //Truy cập trực tiếp vào items
+        this.tourSearchResults = response?.items || [];
       });
   }
 

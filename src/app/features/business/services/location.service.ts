@@ -6,8 +6,8 @@ import {
   GeneralResponse,
   LocationDTO,
   LocationRequestDTO,
-  PagingDTO,
 } from '../../../core/models/location.model';
+import { PagingDTO } from '../../../core/models/paging.model';
 
 @Injectable({
   providedIn: 'root',

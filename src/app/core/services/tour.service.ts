@@ -3,7 +3,6 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import {
   TourListItem,
-  PagingDTO,
   TourDetail,
   TourOptionsData,
   CreateTourRequest,
@@ -14,6 +13,7 @@ import {
   ServiceTypeShortDTO,
   PartnerServiceShortDTO,
 } from '../models/tour.model';
+import { PagingDTO } from '../../core/models/paging.model';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 
