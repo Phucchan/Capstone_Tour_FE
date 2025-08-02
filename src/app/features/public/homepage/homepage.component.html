@@ -4,10 +4,6 @@
 
 <div *ngIf="!isLoading">
   <app-hero-section></app-hero-section>
-  <div *ngIf="isLoading" class="text-center py-10 text-gray-500">
-    Đang tải dữ liệu...
-  </div>
-
   <div *ngIf="errorMessage" class="text-center py-10 text-red-500">
     {{ errorMessage }}
   </div>
@@ -27,8 +23,8 @@
       <div class="relative rounded-lg overflow-hidden shadow-md group">
         <img src="assets/images/logo/Hoa-Phuong.jpg" alt="" loading="lazy"
           class="w-full aspect-[3/4] object-cover group-hover:scale-105 transition" />
-        <div class="absolute top-4 left-4 bg-orange-400 text-white px-4 py-1 rounded-full text-sm font-semibold">
-          Chuyến đi của riêng bạn
+        <div class="absolute top-4 left-4 bg-orange-400 text-white px-4 py-1 rounded-full text font-semibold">
+          Thiết kế chuyến đi của riêng bạn
         </div>
         <div class="absolute bottom-20 left-0 right-0 text-center px-4">
           <div class="bg-white/70 px-3 py-2 text-gray-700 font-semibold rounded">
@@ -37,17 +33,17 @@
           </div>
         </div>
         <div class="absolute bottom-4 left-0 right-0 text-center">
-          <button
+          <a routerLink="/plan-generation"
             class="bg-gradient-to-r from-orange-400 to-purple-500 text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 transition">
             XEM THÊM
-          </button>
+          </a>
         </div>
       </div>
 
       <div class="relative rounded-lg overflow-hidden shadow-md group">
         <img src="assets/images/logo/ruongbacthang.jpg" alt="" loading="lazy"
           class="w-full aspect-[3/4] object-cover group-hover:scale-105 transition" />
-        <div class="absolute top-4 left-4 bg-orange-400 text-white px-4 py-1 rounded-full text-sm font-semibold">
+        <div class="absolute top-4 left-4 bg-orange-400 text-white px-4 py-1 rounded-full text font-semibold">
           Chúng tôi có chuyến đi bạn tìm
         </div>
         <div class="absolute bottom-20 left-0 right-0 text-center px-4">
@@ -57,17 +53,17 @@
           </div>
         </div>
         <div class="absolute bottom-4 left-0 right-0 text-center">
-          <button
+          <a routerLink="/custom-order-tour"
             class="bg-gradient-to-r from-orange-400 to-purple-500 text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 transition">
             XEM THÊM
-          </button>
+          </a>  
         </div>
       </div>
 
       <div class="relative rounded-lg overflow-hidden shadow-md group">
         <img src="assets/images/logo/tasua.webp" alt="" loading="lazy"
           class="w-full aspect-[3/4] object-cover group-hover:scale-105 transition" />
-        <div class="absolute top-4 left-4 bg-orange-400 text-white px-4 py-1 rounded-full text-sm font-semibold">
+        <div class="absolute top-4 left-4 bg-orange-400 text-white px-4 py-1 rounded-full text font-semibold">
           Lưu dấu hành trình
         </div>
         <div class="absolute bottom-20 left-0 right-0 text-center px-4">
@@ -77,10 +73,10 @@
           </div>
         </div>
         <div class="absolute bottom-4 left-0 right-0 text-center">
-          <button
+          <a [routerLink]="['/customer/wishlist']"
             class="bg-gradient-to-r from-orange-400 to-purple-500 text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 transition">
             XEM THÊM
-          </button>
+          </a>
         </div>
       </div>
     </div>

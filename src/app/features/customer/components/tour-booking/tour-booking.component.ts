@@ -348,7 +348,7 @@ export class TourBookingComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Failed to load tour details:', error);
+        console.error('Lỗi khi tải chi tiết tour:', error);
         this.isLoading = false;
       },
     });
@@ -369,7 +369,7 @@ export class TourBookingComponent implements OnInit {
           });
         },
         error: (error) => {
-          console.error('Failed to load user data:', error);
+          console.error('Lỗi khi tải thông tin người dùng:', error);
           this.isLoading = false;
         },
       });
@@ -389,13 +389,13 @@ export class TourBookingComponent implements OnInit {
         },
         error: (error) => {
           console.error('Booking Failed:', error);
-          this.warningMessage = 'Failed to create booking. Please try again.';
+          this.warningMessage = 'Lỗi khi đặt tour. Vui lòng thử lại sau.';
           this.triggerWarning();
         },
       });
     } else {
       console.log('Form Submitted:', this.bookingForm.value);
-      this.warningMessage = 'Please fill in all required fields';
+      this.warningMessage = 'Vui lòng điền đầy đủ thông tin';
       this.triggerWarning();
       this.bookingForm.markAllAsTouched();
     }
@@ -440,9 +440,9 @@ export class TourBookingComponent implements OnInit {
       this.calculateTotal();
     } else {
       this.warningMessage =
-        'Sorry, the current tour has only ' +
+        'Xin lỗi, tour hiện tại chỉ còn ' +
         this.tourSchedule?.availableSeats +
-        ' seats left.';
+        ' chỗ.';
       this.triggerWarning();
     }
   }
@@ -476,9 +476,9 @@ export class TourBookingComponent implements OnInit {
       this.calculateTotal();
     } else {
       this.warningMessage =
-        'Sorry, the current tour has only ' +
+        'Xin lỗi, tour hiện tại chỉ còn ' +
         this.tourSchedule?.availableSeats +
-        ' seats left.';
+        ' chỗ.';
       this.triggerWarning();
     }
   }
@@ -504,9 +504,9 @@ export class TourBookingComponent implements OnInit {
       this.calculateTotal();
     } else {
       this.warningMessage =
-        'Sorry, the current tour has only ' +
+        'Xin lỗi, tour hiện tại chỉ còn ' +
         this.tourSchedule?.availableSeats +
-        ' seats left.';
+        ' chỗ.';
       this.triggerWarning();
     }
   }
@@ -532,9 +532,9 @@ export class TourBookingComponent implements OnInit {
       this.calculateTotal();
     } else {
       this.warningMessage =
-        'Sorry, the current tour has only ' +
+        'Xin lỗi, tour hiện tại chỉ còn ' +
         this.tourSchedule?.availableSeats +
-        ' seats left.';
+        ' chỗ.';
       this.triggerWarning();
     }
   }

@@ -17,7 +17,7 @@ export class WishlistService {
   return this.http.get(`${environment.apiUrl}/public/users/${userId}/wishlists`);
 }
 
-removeFromWishlist(userId: number, tourId: number): Observable<any> {
-  return this.http.delete(`${environment.apiUrl}/public/users/${userId}/wishlists/${tourId}`);
+removeFromWishlist(userId: number, wishlistId: number): Observable<any> {
+  return this.http.delete(`${environment.apiUrl}/public/users/${userId}/wishlists/${wishlistId}`);
 }
 }

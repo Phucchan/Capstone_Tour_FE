@@ -43,11 +43,12 @@ export class WishlistComponent implements OnInit {
   }
 
   remove(wishlistId: number): void {
-    if (!confirm('Bạn có chắc muốn xoá tour này khỏi yêu thích?')) return;
+    const confirmed = confirm('Bạn có chắc muốn xoá tour này khỏi danh sách yêu thích không?');
+    if (!confirmed) return;
     console.log('→ Gửi xoá wishlist:', this.userId, wishlistId);
     this.wishlistService.removeFromWishlist(this.userId, wishlistId).subscribe({
       next: () => {
-        this.tours = this.tours.filter(t => t.id !== wishlistId);
+        this.fetchWishlist();
       },
       error: () => alert('Xoá thất bại!')
     });
