@@ -12,3 +12,4 @@ export interface BookingRequestCustomer {
   pickUpAddress?: string;
   note?: string;
 }
+
