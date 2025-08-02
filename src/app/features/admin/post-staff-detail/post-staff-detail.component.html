@@ -1,0 +1,86 @@
+<!-- Container chính của trang, với nền xám nhạt và padding -->
+<div class="p-4 sm:p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
+  <!-- Card chứa form. Đã loại bỏ class max-w-* để form chiếm toàn bộ chiều rộng -->
+  <div class="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+
+    <!-- 1. Tiêu đề chính -->
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Tạo người dùng</h1>
+
+    <form>
+      <!-- 2. Ảnh đại diện -->
+      <div class="mb-6">
+        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="avatar">Ảnh đại diện</label>
+        <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" id="avatar" type="file">
+      </div>
+
+      <!-- 3. Lưới 2 cột cho các trường nhập liệu -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4"> <!-- Tăng khoảng cách giữa các cột với gap-x-8 -->
+
+        <!-- Cột Trái -->
+        <div>
+          <!-- Tên người dùng -->
+          <div class="mb-4">
+            <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tên người dùng</label>
+            <input type="text" id="username" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập tên người dùng" required>
+          </div>
+          <!-- Mật khẩu -->
+          <div class="mb-4">
+            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Mật khẩu</label>
+            <input type="password" id="password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập mật khẩu mới" required>
+          </div>
+          <!-- Email -->
+          <div class="mb-4">
+            <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
+            <input type="email" id="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập Email" required>
+          </div>
+          <!-- Điện thoại -->
+          <div class="mb-4">
+            <label for="phone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Điện thoại</label>
+            <input type="tel" id="phone" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập điện thoại">
+          </div>
+        </div>
+
+        <!-- Cột Phải -->
+        <div>
+          <!-- Họ và tên -->
+          <div class="mb-4">
+            <label for="fullName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Họ và tên</label>
+            <input type="text" id="fullName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập họ và tên" required>
+          </div>
+          <!-- Giới tính -->
+          <div class="mb-4">
+            <label for="gender" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Giới tính</label>
+            <select id="gender" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+              <option selected>Nam</option>
+              <option>Nữ</option>
+              <option>Khác</option>
+            </select>
+          </div>
+          <!-- Địa chỉ -->
+          <div class="mb-4">
+            <label for="address" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Địa chỉ</label>
+            <input type="text" id="address" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập địa chỉ">
+          </div>
+          <!-- Trạng thái -->
+          <div class="mb-4">
+            <label for="status" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Trạng thái</label>
+            <select id="status" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+              <option selected>Đang hoạt động</option>
+              <option>Ngưng hoạt động</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Các nút chức năng -->
+      <div class="flex items-center justify-end gap-4 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <button type="button" class="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+          Hủy
+        </button>
+        <button type="submit" class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 focus:outline-none dark:focus:ring-green-800">
+          Lưu
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
