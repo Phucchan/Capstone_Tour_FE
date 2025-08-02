@@ -87,6 +87,7 @@ export class TourBookingComponent implements OnInit {
       extraHotelCost: [0, Validators.required],
       numberSingleRooms: [1, Validators.required],
       tourName: ['', Validators.required],
+      needHelp: [true], // Checkbox for help input
     });
 
     // Dynamically add adult form groups based on numberAdults
