@@ -5,16 +5,20 @@ import { SellerBookingService } from '../../services/seller-booking.service';
 import { SellerBookingDetail } from '../../models/seller-booking-detail.model';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
+import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
 import {
-  FormsModule,
   FormArray,
   FormBuilder,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 import { TourSchedule } from '../../../../core/models/tour-schedule.model';
 import { BookingRequestCustomer } from '../../models/booking-request-customer.model';
+import { SellerBookingUpdateRequest } from '../../models/seller-booking-update-request.model';
+import { SellerBookingCustomer } from '../../models/seller-booking-customer.model';
+import { SellerMailRequest } from '../../models/seller-mail-request.model';
 
 @Component({
   selector: 'app-seller-booking-detail',
@@ -26,6 +30,7 @@ import { BookingRequestCustomer } from '../../models/booking-request-customer.mo
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
+    CurrencyVndPipe,
   ],
   templateUrl: './seller-booking-detail.component.html',
 })
@@ -33,44 +38,115 @@ export class SellerBookingDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private sellerService = inject(SellerBookingService);
-  private fb = inject(FormBuilder); // Inject FormBuilder
+  private fb = inject(FormBuilder);
 
   booking: SellerBookingDetail | null = null;
   isLoading = true;
   bookingId!: number;
-  selectedScheduleId: number | null = null;
 
-  // --- Logic cho modal Thêm khách hàng ---
+  bookerForm!: FormGroup;
+
+  // Modal thêm khách hàng
   isAddCustomerModalOpen = false;
-  customerForm!: FormGroup;
+  addCustomerForm!: FormGroup;
+
+  // các thuộc tính cho modal Sửa khách hàng
+  isEditCustomerModalOpen = false;
+  editCustomerForm!: FormGroup;
+  editingCustomer: SellerBookingCustomer | null = null;
+
   isSubmitting = false;
 
+  // Thuộc tính cho modal Gửi Mail
+  isMailModalOpen = false;
+  isSendingMail = false;
+  mailForm!: FormGroup;
+
+  constructor() {
+    this.bookerForm = this.fb.group({
+      fullName: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      phone: ['', Validators.required],
+      address: ['', Validators.required],
+      paymentDeadline: [''],
+    });
+    // Khởi tạo mailForm
+    this.mailForm = this.fb.group({
+      email: [{ value: '', disabled: true }, Validators.required],
+      subject: ['', Validators.required],
+      content: ['', Validators.required],
+    });
+  }
+
   ngOnInit(): void {
-    // Lấy ID từ URL
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
       this.bookingId = +idParam;
       this.loadBookingDetail();
-      this.initCustomerForm();
+      this.initForms(); // Khởi tạo tất cả các form
     } else {
-      // Xử lý trường hợp không có ID, ví dụ: quay về dashboard
       this.router.navigate(['/seller/dashboard']);
     }
   }
 
-  // Khởi tạo form thêm khách hàng
-  initCustomerForm(): void {
-    this.customerForm = this.fb.group({
-      customers: this.fb.array([]),
+  initForms(): void {
+    // Form thêm khách hàng
+    this.addCustomerForm = this.fb.group({ customers: this.fb.array([]) });
+    // Form sửa khách hàng
+    this.editCustomerForm = this.createCustomerFormGroup();
+  }
+
+  loadBookingDetail(): void {
+    this.isLoading = true;
+    this.sellerService.getBookingDetail(this.bookingId).subscribe({
+      next: (res) => {
+        this.booking = res.data;
+        this.bookerForm.patchValue({
+          fullName: this.booking.customerName,
+          email: this.booking.email,
+          phone: this.booking.phoneNumber,
+          address: this.booking.address,
+          paymentDeadline: this.booking.paymentDeadline
+            ? new Date(this.booking.paymentDeadline).toISOString().slice(0, 16)
+            : '',
+        });
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.isLoading = false;
+        alert('Không thể tải thông tin booking.');
+        this.router.navigate(['/seller/dashboard']);
+      },
     });
   }
 
-  // Getter để dễ dàng truy cập vào FormArray
-  get customers(): FormArray {
-    return this.customerForm.get('customers') as FormArray;
+  onSaveChanges(): void {
+    if (this.bookerForm.invalid) return;
+    const formData = this.bookerForm.value;
+    const requestData: SellerBookingUpdateRequest = {
+      fullName: formData.fullName,
+      email: formData.email,
+      phone: formData.phone,
+      address: formData.address,
+      paymentDeadline: new Date(formData.paymentDeadline).toISOString(),
+    };
+    this.sellerService
+      .updateBookedPerson(this.bookingId, requestData)
+      .subscribe({
+        next: (res) => {
+          alert('Cập nhật thông tin thành công!');
+          this.booking = res.data;
+          this.bookerForm.markAsPristine(); // Đánh dấu form là chưa thay đổi
+        },
+        error: (err) =>
+          alert(`Lỗi: ${err.error.message || 'Không thể cập nhật.'}`),
+      });
   }
 
-  // Tạo một FormGroup cho một khách hàng
+  // --- LOGIC QUẢN LÝ KHÁCH HÀNG ---
+  get customersArray(): FormArray {
+    return this.addCustomerForm.get('customers') as FormArray;
+  }
   createCustomerFormGroup(): FormGroup {
     return this.fb.group({
       fullName: ['', Validators.required],
@@ -78,48 +154,37 @@ export class SellerBookingDetailComponent implements OnInit {
       dateOfBirth: ['', Validators.required],
       paxType: ['ADULT', Validators.required],
       singleRoom: [false],
+      note: [''],
+      pickUpAddress: [''],
     });
   }
 
-  // Thêm một form group khách hàng mới vào FormArray
-  addCustomer(): void {
-    this.customers.push(this.createCustomerFormGroup());
-  }
-
-  // Xóa một khách hàng khỏi FormArray
-  removeCustomer(index: number): void {
-    this.customers.removeAt(index);
-  }
-
-  // Mở modal và thêm sẵn 1 khách hàng vào form
+  // Thêm khách hàng
   openAddCustomerModal(): void {
-    this.customers.clear(); // Xóa hết các khách hàng cũ
-    this.addCustomer(); // Thêm một khách hàng mới mặc định
+    this.customersArray.clear();
+    this.customersArray.push(this.createCustomerFormGroup());
     this.isAddCustomerModalOpen = true;
   }
-
-  // Đóng modal
   closeAddCustomerModal(): void {
     this.isAddCustomerModalOpen = false;
   }
-
-  // Xử lý submit form
+  addMoreCustomer(): void {
+    this.customersArray.push(this.createCustomerFormGroup());
+  }
+  removeCustomerFromAddForm(index: number): void {
+    this.customersArray.removeAt(index);
+  }
   onSubmitAddCustomer(): void {
-    if (this.customerForm.invalid) {
-      alert('Vui lòng điền đầy đủ thông tin khách hàng.');
-      return;
-    }
-    if (!this.booking || !this.booking.schedules) return;
+    if (this.addCustomerForm.invalid || !this.booking) return;
 
     this.isSubmitting = true;
     const newCustomers: BookingRequestCustomer[] =
-      this.customerForm.value.customers;
+      this.addCustomerForm.value.customers;
     const currentScheduleId = this.booking.schedules.find(
       (s) => s.departureDate === this.booking?.departureDate
     )?.id;
-
     if (!currentScheduleId) {
-      alert('Không tìm thấy lịch trình hiện tại của booking.');
+      alert('Lỗi: Không tìm thấy lịch trình hiện tại.');
       this.isSubmitting = false;
       return;
     }
@@ -131,7 +196,7 @@ export class SellerBookingDetailComponent implements OnInit {
           alert('Thêm khách hàng thành công!');
           this.isSubmitting = false;
           this.closeAddCustomerModal();
-          this.loadBookingDetail(); // Tải lại thông tin để cập nhật số chỗ
+          this.loadBookingDetail();
         },
         error: (err) => {
           this.isSubmitting = false;
@@ -140,62 +205,119 @@ export class SellerBookingDetailComponent implements OnInit {
       });
   }
 
-  loadBookingDetail(): void {
-    this.isLoading = true;
-    this.sellerService.getBookingDetail(this.bookingId).subscribe({
-      next: (res) => {
-        this.booking = res.data;
-        // Gán giá trị ban đầu cho dropdown
-        this.selectedScheduleId =
-          this.booking.schedules.find(
-            (s) => s.departureDate === this.booking?.departureDate
-          )?.id || null;
-        this.isLoading = false;
+  // các hàm cho việc Sửa khách hàng
+  openEditCustomerModal(customer: SellerBookingCustomer): void {
+    this.editingCustomer = customer;
+    this.editCustomerForm.patchValue({
+      ...customer,
+      dateOfBirth: new Date(customer.dateOfBirth).toISOString().split('T')[0], // Format for input[type=date]
+    });
+    this.isEditCustomerModalOpen = true;
+  }
+  closeEditCustomerModal(): void {
+    this.isEditCustomerModalOpen = false;
+    this.editingCustomer = null;
+  }
+  onSubmitEditCustomer(): void {
+    if (this.editCustomerForm.invalid || !this.editingCustomer) return;
+    this.isSubmitting = true;
+    const customerData = this.editCustomerForm.value;
+    this.sellerService
+      .updateCustomer(this.editingCustomer.id, customerData)
+      .subscribe({
+        next: (res) => {
+          alert('Cập nhật khách hàng thành công!');
+          this.booking = res.data;
+          this.isSubmitting = false;
+          this.closeEditCustomerModal();
+        },
+        error: (err) => {
+          this.isSubmitting = false;
+          alert(
+            `Lỗi: ${err.error.message || 'Không thể cập nhật khách hàng.'}`
+          );
+        },
+      });
+  }
+
+  //hàm Xóa khách hàng
+  onDeleteCustomer(customerId: number): void {
+    if (confirm('Bạn có chắc chắn muốn xóa khách hàng này khỏi đoàn?')) {
+      this.sellerService.deleteCustomer(customerId).subscribe({
+        next: (res) => {
+          alert('Xóa khách hàng thành công!');
+          this.booking = res.data;
+        },
+        error: (err) =>
+          alert(`Lỗi: ${err.error.message || 'Không thể xóa khách hàng.'}`),
+      });
+    }
+  }
+
+  // --- LOGIC GỬI MAIL ---
+  openMailModal(): void {
+    if (!this.booking) return;
+
+    // Tạo nội dung email mẫu
+    const subject = `Xác nhận Booking #${this.booking.bookingCode} - Tour ${this.booking.tourName}`;
+    const content = `
+Kính gửi ${this.booking.customerName},
+
+Cảm ơn bạn đã đặt tour tại Đi Đâu. Chúng tôi xin xác nhận thông tin booking của bạn như sau:
+
+- Mã booking: ${this.booking.bookingCode}
+- Tên tour: ${this.booking.tourName}
+- Ngày khởi hành: ${new Date(this.booking.departureDate).toLocaleDateString(
+      'vi-VN'
+    )}
+- Tổng số khách: ${this.booking.customers.length + 1} người
+- Tổng thanh toán: ${new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+    }).format(this.booking.totalAmount)}
+
+Vui lòng kiểm tra lại thông tin chi tiết và liên hệ với chúng tôi nếu có bất kỳ thắc mắc nào.
+
+Trân trọng,
+Đội ngũ Đi Đâu.
+    `.trim();
+
+    // Cập nhật giá trị cho form
+    this.mailForm.setValue({
+      email: this.booking.email,
+      subject: subject,
+      content: content,
+    });
+
+    this.isMailModalOpen = true;
+  }
+
+  closeMailModal(): void {
+    this.isMailModalOpen = false;
+  }
+
+  onSendMail(): void {
+    if (this.mailForm.invalid || !this.booking) return;
+
+    this.isSendingMail = true;
+    const formValue = this.mailForm.getRawValue(); // Lấy cả giá trị của trường bị disable
+
+    const mailData: SellerMailRequest = {
+      email: formValue.email,
+      subject: formValue.subject,
+      content: formValue.content,
+    };
+
+    this.sellerService.sendConfirmationEmail(mailData).subscribe({
+      next: () => {
+        this.isSendingMail = false;
+        alert('Gửi email thành công!');
+        this.closeMailModal();
       },
       error: (err) => {
-        console.error('Failed to load booking detail:', err);
-        this.isLoading = false;
-        alert('Không thể tải thông tin booking.');
-        this.router.navigate(['/seller/dashboard']);
+        this.isSendingMail = false;
+        alert(`Lỗi: ${err.error.message || 'Không thể gửi email.'}`);
       },
     });
-  }
-
-  onScheduleChange(): void {
-    if (!this.selectedScheduleId || !this.booking) {
-      return;
-    }
-
-    if (confirm('Bạn có chắc chắn muốn đổi ngày khởi hành cho booking này?')) {
-      this.sellerService
-        .updateBookingSchedule(this.booking.id, this.selectedScheduleId)
-        .subscribe({
-          next: (res) => {
-            alert('Cập nhật ngày khởi hành thành công!');
-            this.booking = res.data; // Cập nhật lại dữ liệu trên view
-          },
-          error: (err) => {
-            alert(`Lỗi: ${err.error.message || 'Không thể cập nhật.'}`);
-            // Reset lại dropdown về giá trị cũ
-            this.selectedScheduleId =
-              this.booking?.schedules.find(
-                (s) => s.departureDate === this.booking?.departureDate
-              )?.id || null;
-          },
-        });
-    } else {
-      // Nếu người dùng hủy, reset lại dropdown
-      this.selectedScheduleId =
-        this.booking?.schedules.find(
-          (s) => s.departureDate === this.booking?.departureDate
-        )?.id || null;
-    }
-  }
-
-  // Hàm trợ giúp để lấy thông tin schedule đã chọn
-  getSelectedScheduleInfo(): TourSchedule | undefined {
-    return this.booking?.schedules.find(
-      (s) => s.id === this.selectedScheduleId
-    );
   }
 }
