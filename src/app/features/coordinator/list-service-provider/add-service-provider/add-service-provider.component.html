@@ -20,6 +20,12 @@
           <input type="text" id="provider_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập tên nhà cung cấp" required>
         </div>
 
+        <!-- Viết tắt -->
+        <div>
+          <label for="provider_shortname" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Viết tắt</label>
+          <input type="text" id="provider_shortname" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập viết tắt (nếu có)">
+        </div>
+
         <!-- Website -->
         <div>
           <label for="provider_website" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Website</label>
@@ -32,16 +38,10 @@
           <input type="email" id="provider_email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập email (nếu có)">
         </div>
 
-        <!-- Hạng (Star) và Số điện thoại (trên cùng một hàng) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label for="provider_star" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Hạng (Star)</label>
-            <input type="number" id="provider_star" min="1" max="5" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập số sao (1-5)">
-          </div>
-          <div>
-            <label for="provider_phone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Số điện thoại</label>
-            <input type="tel" id="provider_phone" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập số điện thoại (nếu có)">
-          </div>
+        <!-- Số điện thoại -->
+        <div>
+          <label for="provider_phone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Số điện thoại</label>
+          <input type="tel" id="provider_phone" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập số điện thoại (nếu có)">
         </div>
 
         <!-- Địa chỉ -->
