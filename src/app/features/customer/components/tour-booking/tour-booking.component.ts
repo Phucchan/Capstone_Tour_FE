@@ -57,7 +57,7 @@ export class TourBookingComponent implements OnInit {
 
   warningMessage: string = '';
 
-  isHelpingInput: boolean = false;
+  isHelpingInput: boolean = true;
 
   constructor(
     private bookingInforService: BookingInfoService,
@@ -86,6 +86,7 @@ export class TourBookingComponent implements OnInit {
       sellingPrice: [0, Validators.required],
       extraHotelCost: [0, Validators.required],
       numberSingleRooms: [1, Validators.required],
+      tourName: ['', Validators.required],
     });
 
     // Dynamically add adult form groups based on numberAdults
@@ -340,6 +341,7 @@ export class TourBookingComponent implements OnInit {
           scheduleId: this.tourSchedule?.id,
           sellingPrice: this.tourSchedule?.price,
           extraHotelCost: this.tourSchedule?.extraHotelCost,
+          tourName: this.tourDetails?.name,
         });
 
         this.isLoading = false;
