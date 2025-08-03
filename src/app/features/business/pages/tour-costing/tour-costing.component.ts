@@ -6,230 +6,320 @@ import {
   computed,
   Signal,
 } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
   Validators,
+  ValidatorFn,
+  AbstractControl,
+  ValidationErrors,
 } from '@angular/forms';
-import { forkJoin, of, Observable } from 'rxjs';
-import { switchMap, tap, finalize, map } from 'rxjs/operators';
-
-import { TourService } from '../../../../core/services/tour.service';
+import { forkJoin } from 'rxjs';
 import { TourPaxService } from '../../../../core/services/tour-pax.service';
+import { TourService } from '../../../../core/services/tour.service';
 import {
   ServiceBreakdownDTO,
-  TourDetail,
+  TourCostSummary,
   TourPaxFullDTO,
   TourPaxRequestDTO,
+  TourDetail,
 } from '../../../../core/models/tour.model';
-
-// COMMENT: Interface để định nghĩa cấu trúc dữ liệu đã được gom nhóm, giúp hiển thị thông minh hơn.
-interface GroupedService {
-  serviceTypeName: string;
-  services: ServiceBreakdownDTO[];
-  totalNettPrice: number;
-}
+import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
+import { ToastrService } from 'ngx-toastr';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-tour-costing',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink,
-    ReactiveFormsModule,
-    CurrencyPipe,
-    // COMMENT: Không cần import PaxFormComponent nữa vì đã hợp nhất logic vào đây.
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, CurrencyVndPipe],
   templateUrl: './tour-costing.component.html',
 })
 export class TourCostingComponent implements OnInit {
   // --- Injections ---
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
   private fb = inject(FormBuilder);
-  private tourService = inject(TourService);
   private tourPaxService = inject(TourPaxService);
+  private tourService = inject(TourService);
+  private toastr = inject(ToastrService);
 
   // --- Component State ---
-  public tourId!: number;
-  public tourDetail$!: Observable<TourDetail>;
+  tourId!: number;
+  tourDetail = signal<TourDetail | null>(null);
+  isLoading = signal(true);
+  isSubmitting = signal(false);
 
-  public services = signal<ServiceBreakdownDTO[]>([]);
-  public paxConfigs = signal<TourPaxFullDTO[]>([]);
-  public isLoading = signal(true);
-  public isCalculating = signal(false);
+  // --- Source of Truth Signals (Dữ liệu gốc) ---
+  services = signal<ServiceBreakdownDTO[]>([]);
+  paxConfigs = signal<TourPaxFullDTO[]>([]);
+  costSummary = signal<TourCostSummary | null>(null);
 
-  // --- Modal State (trước đây nằm trong pax-form.component) ---
-  public isPaxModalOpen = signal(false);
-  public currentPax = signal<TourPaxFullDTO | null>(null);
+  // --- Form & Modal State ---
+  paxForm!: FormGroup;
+  priceToolForm!: FormGroup;
+  isEditMode = signal(false);
+  currentPaxId = signal<number | null>(null);
 
-  // COMMENT: Signal được tính toán (computed signal) để tự động gom nhóm dịch vụ mỗi khi danh sách dịch vụ thay đổi.
-  public groupedServices: Signal<GroupedService[]> = computed(() => {
-    const services = this.services();
-    if (!services.length) return [];
+  // --- FIX: Khai báo signal ở đây, nhưng sẽ khởi tạo trong constructor ---
+  priceToolValues!: Signal<{ profitRate: number; extraCost: number }>;
 
-    const groups = new Map<
-      string,
-      { services: ServiceBreakdownDTO[]; totalNettPrice: number }
-    >();
-
-    for (const service of services) {
-      if (!groups.has(service.serviceTypeName)) {
-        groups.set(service.serviceTypeName, {
-          services: [],
-          totalNettPrice: 0,
-        });
+  // --- Computed Signals for Display (Tín hiệu được tính toán để hiển thị) ---
+  groupedServices = computed(() => {
+    const groups: {
+      [key: string]: { services: ServiceBreakdownDTO[]; total: number };
+    } = {};
+    this.services().forEach((service) => {
+      if (!groups[service.serviceTypeName]) {
+        groups[service.serviceTypeName] = { services: [], total: 0 };
       }
-      const group = groups.get(service.serviceTypeName)!;
-      group.services.push(service);
-      group.totalNettPrice += service.nettPrice;
-    }
-
-    return Array.from(groups.entries()).map(([serviceTypeName, data]) => ({
-      serviceTypeName,
-      ...data,
-    }));
+      groups[service.serviceTypeName].services.push(service);
+      groups[service.serviceTypeName].total += service.nettPrice;
+    });
+    return Object.entries(groups).map(([name, data]) => ({ name, ...data }));
   });
 
-  public totalServiceCost = computed(() =>
-    this.groupedServices().reduce(
-      (total, group) => total + group.totalNettPrice,
-      0
-    )
+  totalServiceCost = computed(() =>
+    this.groupedServices().reduce((total, group) => total + group.total, 0)
   );
 
-  // --- Forms ---
-  public costingForm: FormGroup;
-  public paxForm: FormGroup; // Form này trước đây nằm trong pax-form.component
+  paxConfigsWithPreview = computed(() => {
+    const paxes = this.paxConfigs();
+    const summary = this.costSummary();
+    // FIX: Lấy giá trị từ signal đã được khởi tạo an toàn
+    const toolValues = this.priceToolValues
+      ? this.priceToolValues()
+      : { profitRate: 10, extraCost: 0 };
+
+    if (!summary || !this.priceToolForm?.valid) {
+      return paxes.map((pax) => ({
+        ...pax,
+        previewSellingPrice: pax.sellingPrice ?? 0,
+      }));
+    }
+
+    const { profitRate, extraCost } = toolValues;
+
+    return paxes.map((pax) => {
+      if (pax.manualPrice) {
+        return {
+          ...pax,
+          previewSellingPrice: pax.sellingPrice ?? 0,
+          fixedPrice: pax.fixedPrice,
+        };
+      }
+      const paxCount = pax.maxQuantity;
+      if (paxCount === 0)
+        return { ...pax, previewSellingPrice: 0, fixedPrice: 0 };
+
+      const costPerPax =
+        summary.totalFixedCost / paxCount + summary.totalPerPersonCost;
+      const previewPrice = costPerPax * (1 + profitRate / 100) + extraCost;
+
+      return {
+        ...pax,
+        previewSellingPrice: previewPrice,
+        fixedPrice: costPerPax,
+      };
+    });
+  });
 
   constructor() {
-    this.costingForm = this.fb.group({
+    // --- FIX: Sắp xếp lại thứ tự khởi tạo ---
+    // 1. Tạo các form trước tiên
+    this.priceToolForm = this.fb.group({
       profitRate: [10, [Validators.required, Validators.min(0)]],
       extraCost: [0, [Validators.required, Validators.min(0)]],
     });
 
-    // NÂNG CẤP: Thêm các trường giá vào form để cho phép chỉnh sửa thủ công.
-    this.paxForm = this.fb.group({
-      minQuantity: [1, [Validators.required, Validators.min(1)]],
-      maxQuantity: [1, [Validators.required, Validators.min(1)]],
-      fixedPrice: [null],
-      sellingPrice: [null],
+    this.paxForm = this.fb.group(
+      {
+        minQuantity: [1, [Validators.required, Validators.min(1)]],
+        maxQuantity: [null, [Validators.required, Validators.min(1)]],
+        manualPrice: [false, Validators.required],
+        fixedPrice: [{ value: null, disabled: true }],
+        sellingPrice: [{ value: null, disabled: true }],
+      },
+      { validators: this.formValidator() }
+    );
+
+    // 2. Sau khi form đã tồn tại, khởi tạo các thuộc tính phụ thuộc vào nó
+    this.priceToolValues = toSignal(this.priceToolForm.valueChanges, {
+      initialValue: this.priceToolForm.value,
     });
+
+    // 3. Gọi các phương thức phụ thuộc vào form
+    this.onManualPriceChange();
   }
 
   ngOnInit(): void {
-    this.route.paramMap
-      .pipe(
-        tap((params) => {
-          const id = params.get('id');
-          if (!id) {
-            this.router.navigate(['/business/tour-list']);
-            return;
-          }
-          this.tourId = +id;
-          this.tourDetail$ = this.tourService
-            .getTourById(this.tourId)
-            .pipe(map((res: any) => res.detail));
-        }),
-        switchMap(() => this.loadData())
-      )
-      .subscribe();
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (idParam) {
+      this.tourId = +idParam;
+      this.loadData();
+    }
+    // Không cần gọi onManualPriceChange() ở đây nữa
   }
 
-  loadData() {
+  loadData(): void {
     this.isLoading.set(true);
-    return forkJoin({
+    forkJoin({
+      tourDetail: this.tourService.getTourById(this.tourId),
       services: this.tourPaxService.getServiceBreakdown(this.tourId),
       paxConfigs: this.tourPaxService.getTourPaxConfigurations(this.tourId),
-    }).pipe(
-      tap(({ services, paxConfigs }) => {
+      costSummary: this.tourPaxService.getTourCostSummary(this.tourId),
+    }).subscribe({
+      next: ({ tourDetail, services, paxConfigs, costSummary }) => {
+        this.tourDetail.set(tourDetail.detail);
         this.services.set(services);
         this.paxConfigs.set(paxConfigs);
-      }),
-      finalize(() => this.isLoading.set(false))
-    );
+        this.costSummary.set(costSummary);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.isLoading.set(false);
+        this.toastr.error('Tải dữ liệu thất bại!', 'Lỗi');
+      },
+    });
   }
 
-  calculatePrices(): void {
-    if (this.costingForm.invalid) return;
-
-    this.isCalculating.set(true);
-    this.tourPaxService
-      .calculatePrices(this.tourId, this.costingForm.value)
-      .pipe(finalize(() => this.isCalculating.set(false)))
-      .subscribe({
-        next: (updatedConfigs) => {
-          this.paxConfigs.set(updatedConfigs);
-          alert('Đã tính toán và cập nhật giá thành công!');
-        },
-        error: (err) =>
-          alert(`Lỗi: ${err.error?.message || 'Không thể tính giá.'}`),
-      });
+  onManualPriceChange(): void {
+    this.paxForm.get('manualPrice')?.valueChanges.subscribe((isManual) => {
+      const fixedPriceControl = this.paxForm.get('fixedPrice');
+      const sellingPriceControl = this.paxForm.get('sellingPrice');
+      if (isManual) {
+        fixedPriceControl?.enable();
+        sellingPriceControl?.enable();
+      } else {
+        fixedPriceControl?.disable();
+        sellingPriceControl?.disable();
+      }
+    });
   }
 
-  // --- Pax Modal Logic (trước đây nằm trong pax-form.component) ---
-  openPaxModal(pax: TourPaxFullDTO | null): void {
-    this.currentPax.set(pax);
+  openPaxModal(pax?: TourPaxFullDTO): void {
     if (pax) {
-      // NÂNG CẤP: Cập nhật giá trị cho các trường giá khi mở modal sửa.
-      this.paxForm.patchValue({
-        minQuantity: pax.minQuantity,
-        maxQuantity: pax.maxQuantity,
-        fixedPrice: pax.fixedPrice,
-        sellingPrice: pax.sellingPrice,
-      });
+      this.isEditMode.set(true);
+      this.currentPaxId.set(pax.id);
+      this.paxForm.patchValue(pax);
     } else {
-      this.paxForm.reset({ minQuantity: 1, maxQuantity: 1 });
+      this.isEditMode.set(false);
+      this.currentPaxId.set(null);
+      this.paxForm.reset({
+        minQuantity: 1,
+        maxQuantity: null,
+        manualPrice: false,
+        fixedPrice: null,
+        sellingPrice: null,
+      });
     }
-    this.isPaxModalOpen.set(true);
+    const modal = document.getElementById('pax-modal') as HTMLDialogElement;
+    modal?.showModal();
   }
 
   closePaxModal(): void {
-    this.isPaxModalOpen.set(false);
-    this.currentPax.set(null);
+    const modal = document.getElementById('pax-modal') as HTMLDialogElement;
+    modal?.close();
   }
 
-  handlePaxSave(): void {
+  savePax(): void {
     if (this.paxForm.invalid) {
       this.paxForm.markAllAsTouched();
       return;
     }
-    if (this.paxForm.value.minQuantity > this.paxForm.value.maxQuantity) {
-      alert('Số khách tối thiểu không được lớn hơn số khách tối đa.');
-      return;
-    }
+    this.isSubmitting.set(true);
+    const formData: TourPaxRequestDTO = this.paxForm.getRawValue();
 
-    const formData: TourPaxRequestDTO = this.paxForm.value;
-    const currentPaxData = this.currentPax();
-
-    const saveObservable = currentPaxData
+    const operation = this.isEditMode()
       ? this.tourPaxService.updateTourPax(
           this.tourId,
-          currentPaxData.id,
+          this.currentPaxId()!,
           formData
         )
       : this.tourPaxService.createTourPax(this.tourId, formData);
 
-    saveObservable.subscribe({
+    operation.subscribe({
       next: () => {
+        this.loadData();
+        this.toastr.success('Lưu khoảng khách thành công!', 'Thành công');
         this.closePaxModal();
-        this.loadData().subscribe();
       },
-      error: (err) => alert(`Lỗi: ${err.error?.message || 'Không thể lưu.'}`),
+      error: (err) => {
+        console.error(err);
+        this.toastr.error(err.error?.message || 'Có lỗi xảy ra', 'Lỗi');
+      },
+      complete: () => this.isSubmitting.set(false),
     });
   }
 
-  handlePaxDelete(paxId: number): void {
+  deletePax(paxId: number): void {
     if (confirm('Bạn có chắc chắn muốn xóa khoảng khách này?')) {
       this.tourPaxService.deleteTourPax(this.tourId, paxId).subscribe({
         next: () => {
-          this.loadData().subscribe();
+          this.paxConfigs.update((paxes) =>
+            paxes.filter((p) => p.id !== paxId)
+          );
+          this.toastr.success('Xóa thành công!', 'Thành công');
         },
-        error: (err) => alert(`Lỗi: ${err.error?.message || 'Không thể xóa.'}`),
+        error: (err) => {
+          console.error(err);
+          this.toastr.error('Xóa thất bại', 'Lỗi');
+        },
       });
     }
+  }
+
+  applyAndSaveAllPrices(): void {
+    if (this.priceToolForm.invalid) return;
+    this.isSubmitting.set(true);
+    const { profitRate, extraCost } = this.priceToolForm.value;
+
+    this.tourPaxService
+      .calculatePrices(this.tourId, { profitRate, extraCost })
+      .subscribe({
+        next: (res) => {
+          this.paxConfigs.set(res);
+          this.toastr.success(
+            'Đã cập nhật giá cho toàn bộ tour!',
+            'Thành công'
+          );
+        },
+        error: (err) => {
+          console.error(err);
+          this.toastr.error('Cập nhật giá thất bại', 'Lỗi');
+        },
+        complete: () => this.isSubmitting.set(false),
+      });
+  }
+
+  private formValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const group = control as FormGroup;
+      const min = group.get('minQuantity')?.value;
+      const max = group.get('maxQuantity')?.value;
+
+      if (min !== null && max !== null && min > max) {
+        return { minMax: true };
+      }
+
+      const existingPaxes = this.paxConfigs();
+      const currentId = this.currentPaxId();
+
+      const isOverlapping = existingPaxes
+        .filter((p) => p.id !== currentId)
+        .some(
+          (pax) =>
+            (min >= pax.minQuantity && min <= pax.maxQuantity) ||
+            (max >= pax.minQuantity && max <= pax.maxQuantity) ||
+            (min < pax.minQuantity && max > pax.maxQuantity)
+        );
+
+      if (isOverlapping) {
+        return { overlap: true };
+      }
+      return null;
+    };
   }
 }

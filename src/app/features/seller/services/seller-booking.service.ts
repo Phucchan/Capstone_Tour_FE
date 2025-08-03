@@ -10,7 +10,7 @@ import { BookingRequestCustomer } from '../models/booking-request-customer.model
 import { SellerBookingCreateRequest } from '../models/seller-booking-create-request.model';
 import { SellerBookingUpdateRequest } from '../models/seller-booking-update-request.model';
 import { SellerMailRequest } from '../models/seller-mail-request.model';
-export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+import { BookingStatus } from '../../../core/models/enums';
 
 @Injectable({
   providedIn: 'root',
