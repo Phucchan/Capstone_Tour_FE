@@ -19,7 +19,7 @@ import { BookingRequestCustomer } from '../../models/booking-request-customer.mo
 import { SellerBookingUpdateRequest } from '../../models/seller-booking-update-request.model';
 import { SellerBookingCustomer } from '../../models/seller-booking-customer.model';
 import { SellerMailRequest } from '../../models/seller-mail-request.model';
-import { BookingStatus } from '../../services/seller-booking.service';
+import { BookingStatus } from '../../../../core/models/enums';
 
 
 @Component({

@@ -8,6 +8,7 @@ import {
   TourPaxRequestDTO,
   TourPaxFullDTO,
   TourPriceCalculateRequestDTO,
+  TourCostSummary,
 } from '../models/tour.model';
 
 @Injectable({
@@ -95,5 +96,16 @@ export class TourPaxService {
         `${this.apiUrl}/business/tour/${tourId}/tour-pax/${paxId}`
       )
       .pipe(map((res) => res.message));
+  }
+
+  /**
+   * Lấy tổng hợp chi phí gốc của tour.
+   */
+  getTourCostSummary(tourId: number): Observable<TourCostSummary> {
+    return this.http
+      .get<ApiResponse<TourCostSummary>>(
+        `${this.apiUrl}/business/tours/${tourId}/cost-summary`
+      )
+      .pipe(map((res) => res.data));
   }
 }

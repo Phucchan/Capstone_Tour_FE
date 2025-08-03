@@ -1,5 +1,7 @@
 // src/app/core/models/tour.model.ts
 
+import { CostType } from "./enums";
+
 // Dùng cho các dropdown
 export interface TourOption {
   id: number;
@@ -15,7 +17,6 @@ export interface TourListItem {
   tourStatus: string;
   durationDays: number;
 }
-
 
 /**
  * @description Dữ liệu chi tiết tour trả về từ API.
@@ -78,7 +79,6 @@ export interface TourDetailWithOptions {
   options: TourOptionsData;
 }
 
-
 /**
  * @description Dữ liệu rút gọn của một loại dịch vụ
  */
@@ -99,6 +99,7 @@ export interface ServiceBreakdownDTO {
   partnerAddress: string;
   nettPrice: number;
   sellingPrice: number;
+  costType: CostType;
 }
 
 // Dữ liệu đầy đủ của một khoảng khách, bao gồm cả giá đã tính
@@ -110,7 +111,10 @@ export interface TourPaxFullDTO {
   fixedPrice: number | null;
   extraHotelCost: number | null;
   sellingPrice: number | null;
+  manualPrice: boolean;
   isDeleted: boolean;
+  // Trường này chỉ dùng ở frontend để xem trước
+  previewSellingPrice?: number;
 }
 
 // Dữ liệu gửi lên khi yêu cầu tính giá
@@ -134,6 +138,7 @@ export interface TourPaxRequestDTO {
   maxQuantity: number;
   fixedPrice?: number | null;
   sellingPrice?: number | null;
+  manualPrice?: boolean;
 }
 
 
@@ -150,9 +155,9 @@ export interface TourDayManagerDTO {
   title: string;
   description: string | null;
   location: TourOption | null;
-  // SỬA LỖI: Thuộc tính này chứa các loại dịch vụ chung
+  //  Thuộc tính này chứa các loại dịch vụ chung
   serviceTypes: ServiceTypeShortDTO[];
-  // BỔ SUNG: Thuộc tính này chứa các dịch vụ cụ thể đã được thêm vào
+  //  Thuộc tính này chứa các dịch vụ cụ thể đã được thêm vào
   services?: PartnerServiceShortDTO[];
 }
 
@@ -171,3 +176,8 @@ export interface ServiceInfoDTO {
   serviceTypeName: string;
 }
 
+// Interface mô tả API cost-summary
+export interface TourCostSummary {
+  totalFixedCost: number;
+  totalPerPersonCost: number;
+}
