@@ -1,152 +1,103 @@
-<form class="max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow space-y-8 mg-10">
-  <!-- Điểm đến dự kiến -->
+<form class="max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow space-y-8">
+  <!-- Điểm khởi hành -->
   <div>
-    <label class="block font-semibold">Điểm đến bạn dự kiến</label>
-    <div class="flex items-center space-x-2 mt-2">
-      <input type="checkbox" id="hasDestination" [(ngModel)]="booking.hasDestination" name="hasDestination" />
-      <label for="hasDestination">Địa điểm</label>
-    </div>
-    <input
-      type="text"
-      class="mt-3 w-full border rounded p-2"
-      placeholder="Cụ thể chi tiết điểm đến bạn muốn du lịch"
-      [(ngModel)]="booking.destinationDetail"
-      name="destinationDetail"
-      [disabled]="!booking.hasDestination"
-    />
+    <label class="block font-semibold mb-1">Nơi khởi hành</label>
+    <select [(ngModel)]="booking.departureLocationId" name="departureLocationId"
+      class="w-full border p-2 rounded">
+      <option value="">-- Chọn điểm khởi hành --</option>
+      <option *ngFor="let d of departures" [value]="d.id">{{ d.name }}</option>
+    </select>
   </div>
 
-  <!-- Thông tin cụ thể -->
+  <!-- Điểm đến -->
   <div>
-    <label class="block font-semibold mb-2">Các thông tin cụ thể:</label>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <!-- Ngày khởi hành -->
-      <div>
-        <label>Ngày khởi hành</label>
-        <input
-          type="date"
-          class="w-full border rounded p-2 mt-1"
-          [(ngModel)]="booking.startDate"
-          name="startDate"
-        />
-      </div>
-      <!-- Ngày kết thúc -->
-      <div>
-        <label>Ngày kết thúc</label>
-        <input
-          type="date"
-          class="w-full border rounded p-2 mt-1"
-          [(ngModel)]="booking.endDate"
-          name="endDate"
-        />
-      </div>
-      <!-- Phương tiện -->
-      <div>
-        <label>Tôi thích đi du lịch bằng</label>
-        <select
-          class="w-full border rounded p-2 mt-1"
-          [(ngModel)]="booking.transport"
-          name="transport"
-        >
-          <option value="">-- Chọn --</option>
-          <option *ngFor="let t of transports" [value]="t">{{ t }}</option>
-        </select>
-      </div>
-      <!-- Số lượng khách -->
-      <div>
-        <label>Số lượng khách:</label>
-        <div class="flex space-x-4 mt-1">
-          <div class="flex flex-col items-center">
-            <span>Người lớn</span>
-            <div class="flex items-center">
-              <button type="button" (click)="changeGuest('adult', -1)" [disabled]="booking.adult <= 1" class="px-2 border">-</button>
-              <span class="px-2">{{ booking.adult }}</span>
-              <button type="button" (click)="changeGuest('adult', 1)" class="px-2 border">+</button>
-            </div>
-          </div>
-          <div class="flex flex-col items-center">
-            <span>Trẻ em</span>
-            <div class="flex items-center">
-              <button type="button" (click)="changeGuest('child', -1)" [disabled]="booking.child <= 0" class="px-2 border">-</button>
-              <span class="px-2">{{ booking.child }}</span>
-              <button type="button" (click)="changeGuest('child', 1)" class="px-2 border">+</button>
-            </div>
-          </div>
-          <div class="flex flex-col items-center">
-            <span>Em bé</span>
-            <div class="flex items-center">
-              <button type="button" (click)="changeGuest('baby', -1)" [disabled]="booking.baby <= 0" class="px-2 border">-</button>
-              <span class="px-2">{{ booking.baby }}</span>
-              <button type="button" (click)="changeGuest('baby', 1)" class="px-2 border">+</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Yêu cầu khách sạn -->
-      <div>
-        <label>Yêu cầu về khách sạn:</label>
-        <div class="flex space-x-2 mt-1">
-          <select class="border rounded p-2" [(ngModel)]="booking.hotelRoomCount" name="hotelRoomCount">
-            <option value="">Số lượng phòng</option>
-            <option *ngFor="let num of roomCounts" [value]="num">{{ num }}</option>
-          </select>
-          <select class="border rounded p-2" [(ngModel)]="booking.hotelStandard" name="hotelStandard">
-            <option value="">Tiêu chuẩn khách sạn</option>
-            <option *ngFor="let s of hotelStandards" [value]="s">{{ s }}</option>
-          </select>
-        </div>
-        <div class="grid grid-cols-2 gap-2 mt-2">
-          <div *ngFor="let req of hotelOptions">
-            <label class="flex items-center">
-              <!-- <input
-                type="checkbox"
-                [(ngModel)]="booking.hotelRequirements[req.value]"
-                [name]="req.value"
-              /> -->
-              <span class="ml-2">{{ req.label }}</span>
-            </label>
-          </div>
-        </div>
-      </div>
+    <label class="block font-semibold mb-1">Điểm đến</label>
+    <select [(ngModel)]="booking.destination" name="destination"
+      class="w-full border p-2 rounded">
+      <option value="">-- Chọn điểm đến --</option>
+      <option *ngFor="let dest of destinations" [value]="dest.name">{{ dest.name }}</option>
+    </select>
+    <input [(ngModel)]="booking.destinationDetail" name="destinationDetail"
+      type="text" class="mt-2 w-full border p-2 rounded"
+      placeholder="Chi tiết điểm đến (tùy chọn)">
+  </div>
+
+  <!-- Ngày đi / về -->
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label>Ngày đi</label>
+      <input type="date" [(ngModel)]="booking.startDate" name="startDate" class="w-full border p-2 rounded" />
+    </div>
+    <div>
+      <label>Ngày về</label>
+      <input type="date" [(ngModel)]="booking.endDate" name="endDate" class="w-full border p-2 rounded" />
+    </div>
+  </div>
+
+  <!-- Phương tiện -->
+  <div>
+    <label class="block font-semibold mb-1">Phương tiện</label>
+    <select [(ngModel)]="booking.transport" name="transport"
+      class="w-full border p-2 rounded">
+      <option value="">-- Chọn phương tiện --</option>
+      <option *ngFor="let t of transports" [value]="t">{{ t }}</option>
+    </select>
+  </div>
+
+  <!-- Khách -->
+  <div class="grid grid-cols-3 gap-4">
+    <div>
+      <label>Người lớn</label>
+      <input type="number" [(ngModel)]="booking.adults" name="adults" min="1" class="w-full border p-2 rounded" />
+    </div>
+    <div>
+      <label>Trẻ em</label>
+      <input type="number" [(ngModel)]="booking.children" name="children" min="0" class="w-full border p-2 rounded" />
+    </div>
+    <div>
+      <label>Em bé</label>
+      <input type="number" [(ngModel)]="booking.infants" name="infants" min="0" class="w-full border p-2 rounded" />
+    </div>
+  </div>
+
+  <!-- Khách sạn -->
+  <div>
+    <label class="block font-semibold mb-1">Khách sạn</label>
+    <div class="flex gap-4">
+      <select [(ngModel)]="booking.hotelRooms" name="hotelRooms" class="border rounded p-2 w-1/2">
+        <option value="">Số phòng</option>
+        <option *ngFor="let num of roomCounts" [value]="num">{{ num }}</option>
+      </select>
+      <select [(ngModel)]="booking.roomCategory" name="roomCategory" class="border rounded p-2 w-1/2">
+        <option value="">Tiêu chuẩn</option>
+        <option *ngFor="let s of hotelStandards" [value]="s">{{ s }}</option>
+      </select>
     </div>
   </div>
 
   <!-- Thông tin liên lạc -->
   <div class="pt-4 border-t">
-    <label class="block font-semibold mb-2">Thông tin liên lạc của bạn</label>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <label class="block font-semibold mb-1">Thông tin liên hệ</label>
+    <div class="grid grid-cols-2 gap-4">
       <div>
-        <label>Họ tên <span class="text-red-500">*</span></label>
-        <input type="text" class="w-full border rounded p-2" [(ngModel)]="booking.name" name="name" required />
+        <label>Họ tên *</label>
+        <input type="text" [(ngModel)]="booking.customerName" name="customerName" class="w-full border p-2 rounded" />
       </div>
       <div>
-        <label>Vui lòng... <span class="text-red-500">*</span></label>
-        <div class="flex flex-col space-y-2">
-          <label>
-            <input type="radio" value="email" [(ngModel)]="booking.contactMethod" name="contactMethod" checked />
-            Gửi cho tôi thêm thông tin qua email
-          </label>
-          <label>
-            <input type="radio" value="phone" [(ngModel)]="booking.contactMethod" name="contactMethod" />
-            Hãy gọi cho tôi nếu có thể
-          </label>
-        </div>
+        <label>Email *</label>
+        <input type="email" [(ngModel)]="booking.customerEmail" name="customerEmail" class="w-full border p-2 rounded" />
       </div>
       <div>
-        <label>Email <span class="text-red-500">*</span></label>
-        <input type="email" class="w-full border rounded p-2" [(ngModel)]="booking.email" name="email" required />
-        <small class="text-blue-500">Nếu bạn không nhận được trả lời... hãy kiểm tra thư spam.</small>
-      </div>
-      <div>
-        <label>Điện thoại <span class="text-red-500">*</span></label>
-        <input type="tel" class="w-full border rounded p-2" [(ngModel)]="booking.phone" name="phone" required />
+        <label>Số điện thoại *</label>
+        <input type="tel" [(ngModel)]="booking.customerPhone" name="customerPhone" class="w-full border p-2 rounded" />
       </div>
     </div>
   </div>
 
   <!-- Nút gửi -->
-  <div class="flex justify-center pt-6">
-    <button type="button" class="px-6 py-2 bg-blue-600 text-white rounded-2xl shadow" (click)="submitBooking()">
+  <div class="text-center pt-6">
+    <button (click)="submitBooking()" type="button"
+      class="px-6 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition">
       Xác nhận và gửi
     </button>
   </div>

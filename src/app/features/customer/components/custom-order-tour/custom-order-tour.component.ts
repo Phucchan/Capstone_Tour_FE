@@ -1,72 +1,85 @@
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
-
+import { CustomOrderTourService } from '../../services/custom-order-tour.service';
+import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-custom-order-tour',
   standalone: true,
-  imports: [
-    CommonModule, 
-    RouterModule, 
-    FormsModule],
-  templateUrl: './custom-order-tour.component.html'
+  imports: [CommonModule, FormsModule],
+  templateUrl: './custom-order-tour.component.html',
 })
-export class CustomOrderTourComponent {
-  booking = {
-    hasDestination: false,
+export class CustomOrderTourComponent implements OnInit {
+  booking: any = {
+    departureLocationId: null,
+    destination: '',
     destinationDetail: '',
     startDate: '',
     endDate: '',
     transport: '',
-    adult: 1,
-    child: 0,
-    baby: 0,
-    hotelRoomCount: '',
-    hotelStandard: '',
-    hotelRequirements: {
-      smoke: false,
-      noSmoke: false,
-      kingBed: false,
-      twinBed: false,
-      singleRoom: false,
-      standardRoom: false,
-      luxuryRoom: false,
-      highFloor: false
-    },
-    name: '',
-    email: '',
-    phone: '',
-    contactMethod: 'email'
+    adults: 1,
+    children: 0,
+    infants: 0,
+    hotelRooms: '',
+    roomCategory: '',
+    customerName: '',
+    customerEmail: '',
+    customerPhone: '',
+    priceMin: 0,
+    priceMax: 0,
   };
 
-  transports = ['Ô tô', 'Xe khách', 'Máy bay', 'Tàu hoả', 'Khác'];
+  transports = ['CAR', 'PLANE', 'TRAIN'];
   roomCounts = [1, 2, 3, 4, 5];
-  hotelStandards = ['Tiêu chuẩn', '3 sao', '4 sao', '5 sao'];
-  hotelOptions = [
-    { value: 'smoke', label: 'Hút thuốc' },
-    { value: 'noSmoke', label: 'Không hút thuốc' },
-    { value: 'kingBed', label: 'Giường King/Queen' },
-    { value: 'twinBed', label: 'Giường đôi' },
-    { value: 'singleRoom', label: 'Phòng đơn' },
-    { value: 'standardRoom', label: 'Phòng tiêu chuẩn' },
-    { value: 'luxuryRoom', label: 'Phòng sang trọng' },
-    { value: 'highFloor', label: 'Tầng đặc biệt' },
-  ];
+  hotelStandards = ['standard', 'deluxe', 'vip'];
 
-  changeGuest(type: 'adult' | 'child' | 'baby', change: number) {
-    if (this.booking[type] + change >= 0) {
-      this.booking[type] += change;
+  destinations: any[] = [];
+  departures: any[] = [];
+
+  constructor(
+    private tourService: CustomOrderTourService,
+    private toastr: ToastrService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadDestinations();
+    this.loadDepartures();
+  }
+
+  loadDestinations() {
+    this.tourService.getDestinations().subscribe(res => {
+      this.destinations = res.data;
+    });
+  }
+
+  loadDepartures() {
+    this.tourService.getDepartures().subscribe(res => {
+      this.departures = res.data;
+    });
+  }
+
+  changeGuest(type: string, delta: number) {
+    if (type === 'adults' && this.booking.adults + delta >= 1) {
+      this.booking.adults += delta;
+    }
+    if (type === 'children' && this.booking.children + delta >= 0) {
+      this.booking.children += delta;
+    }
+    if (type === 'infants' && this.booking.infants + delta >= 0) {
+      this.booking.infants += delta;
     }
   }
 
   submitBooking() {
-    // Validate dữ liệu trước khi gửi
-    if (!this.booking.name || !this.booking.email || !this.booking.phone) {
-      alert('Vui lòng điền đầy đủ thông tin liên hệ!');
-      return;
-    }
-    // TODO: Gọi API hoặc gửi dữ liệu tới server
-    alert('Đã gửi thông tin đặt tour thành công!\n' + JSON.stringify(this.booking, null, 2));
+    const payload = { ...this.booking, userId: 0 };
+
+    this.tourService.requestBooking(payload).subscribe({
+      next: () => {
+        this.toastr.success('Yêu cầu đặt tour đã được gửi thành công!');
+      },
+      error: () => {
+        this.toastr.error('Gửi yêu cầu thất bại!');
+      }
+    });
   }
 }
