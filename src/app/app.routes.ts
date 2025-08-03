@@ -3,7 +3,6 @@ import { LoginComponent } from './core/auth/login/login.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { ChatComponent } from './features/customer/components/chat/chat.component';
 import { RegisterComponent } from './core/register/register/register.component';
-import { PlanGenerateComponent } from './features/customer/components/plan-generate/plan-generate.component';
 import { UnauthorizeComponent } from './core/pages/error-page/unauthorize/unauthorize.component';
 import { LayoutComponent } from './features/admin/layout/layout.component';
 
@@ -77,10 +76,6 @@ export const routes: Routes = [
   {
     path: 'chat',
     component: ChatComponent,
-  },
-  {
-    path: 'test',
-    component: PlanGenerateComponent,
   },
   {
     path: 'error/403-unauthorized',

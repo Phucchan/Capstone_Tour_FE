@@ -194,6 +194,7 @@
                         }"
                         class="px-6 py-2 rounded-full font-semibold border border-gray-300 transition cursor-pointer hover:bg-emerald-100">
                         Tiết kiệm
+                       <div>(5 triệu - 10 triệu)</div>
                     </button>
 
                     <button type="button" (click)="selectBudget('medium')" [ngClass]="{
@@ -202,6 +203,7 @@
                         }"
                         class="px-6 py-2 rounded-full font-semibold border border-gray-300 transition cursor-pointer hover:bg-emerald-100">
                         Vừa phải
+                        <div>(10 triệu - 15 triệu)</div>
                     </button>
 
                     <button type="button" (click)="selectBudget('high')" [ngClass]="{
@@ -210,6 +212,7 @@
                         }"
                         class="px-6 py-2 rounded-full font-semibold border border-gray-300 hover:bg-emerald-100 transition cursor-pointer">
                         Cao cấp
+                        <div>(Trên 15 triệu)</div>
                     </button>
 
                     <button type="button" (click)="selectBudget('custom')" [ngClass]="{
