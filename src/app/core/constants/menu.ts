@@ -75,7 +75,7 @@ export const MENU_ITEMS: MenuItem[] = [
       {
         icon: 'assets/icons/heroicons/outline/cart.svg',
         label: 'Quản lý Booking',
-        route: '/seller/dashboard', // <-- SỬA ĐƯỜNG DẪN TẠI ĐÂY
+        route: '/seller/dashboard',
         roles: [ALL_ROLES.SELLER],
       },
     ],

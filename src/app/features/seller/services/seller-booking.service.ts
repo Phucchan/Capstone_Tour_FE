@@ -10,6 +10,7 @@ import { BookingRequestCustomer } from '../models/booking-request-customer.model
 import { SellerBookingCreateRequest } from '../models/seller-booking-create-request.model';
 import { SellerBookingUpdateRequest } from '../models/seller-booking-update-request.model';
 import { SellerMailRequest } from '../models/seller-mail-request.model';
+export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +20,23 @@ export class SellerBookingService {
   private mailApiUrl = `${environment.apiUrl}/seller/mail`;
 
   constructor(private http: HttpClient) {}
+
+  /**
+   * Cập nhật trạng thái của booking
+   * @param bookingId - ID của booking
+   * @param status - Trạng thái mới
+   */
+  updateBookingStatus(
+    bookingId: number,
+    status: BookingStatus
+  ): Observable<ApiResponse<SellerBookingDetail>> {
+    const params = new HttpParams().set('status', status);
+    return this.http.patch<ApiResponse<SellerBookingDetail>>(
+      `${this.apiUrl}/${bookingId}/status`,
+      {},
+      { params }
+    );
+  }
 
   /**
    * Gửi mail xác nhận cho khách hàng
