@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { SellerDashboardComponent } from './pages/seller-dashboard/seller-dashboard.component';
 import { SellerBookingDetailComponent } from './pages/seller-booking-detail/seller-booking-detail.component';
-import { SellerBookingCreateComponent } from './pages/seller-booking-create/seller-booking-create.component';
 
 export const SELLER_ROUTES: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -9,11 +8,6 @@ export const SELLER_ROUTES: Routes = [
     path: 'dashboard',
     component: SellerDashboardComponent,
     title: 'Quản lý Booking',
-  },
-  {
-    path: 'create-booking',
-    component: SellerBookingCreateComponent,
-    title: 'Tạo Booking Mới',
   },
   {
     path: 'booking/:id',

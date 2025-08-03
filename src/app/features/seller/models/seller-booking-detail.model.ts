@@ -12,6 +12,7 @@ export interface SellerBookingDetail {
   paymentDeadline: string; // Giữ dạng string (ISO date)
   createdAt: string;
   status: string;
+  paymentMethod: string; // THÊM DÒNG NÀY
   operator: string;
   departureDate: string;
   tourType: string;

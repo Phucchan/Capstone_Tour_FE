@@ -2,11 +2,6 @@
   <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
     Quản lý Booking
   </h2>
-  <!-- NÚT TẠO BOOKING MỚI -->
-  <a routerLink="/seller/create-booking"
-    class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
-    <span>Tạo Booking Mới &plus;</span>
-  </a>
 </div>
 
 
@@ -84,7 +79,6 @@
           </tbody>
         </table>
       </div>
-      <!-- SỬA LỖI: Truyền các thuộc tính riêng lẻ thay vì cả object [paging] -->
       <app-pagination *ngIf="availableBookings && availableBookings.total > 0"
         [currentPage]="availableBookings.page"
         [totalItems]="availableBookings.total"
@@ -138,7 +132,6 @@
             </tbody>
           </table>
         </div>
-        <!-- SỬA LỖI: Truyền các thuộc tính riêng lẻ thay vì cả object [paging] -->
         <app-pagination *ngIf="editedBookings && editedBookings.total > 0"
           [currentPage]="editedBookings.page"
           [totalItems]="editedBookings.total"

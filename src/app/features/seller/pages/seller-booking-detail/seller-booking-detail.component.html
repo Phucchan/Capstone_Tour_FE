@@ -38,22 +38,43 @@
       <div class="p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
         <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">Thông tin Lịch trình</h4>
         <div class="space-y-3 text-gray-700 dark:text-gray-400">
-          <p><strong>Ngày đi:</strong> {{ booking.departureDate | formatDate }}</p>
+          <div class="flex items-center justify-between">
+            <label for="departureDate" class="text-sm"><strong>Ngày đi:</strong></label>
+            <select id="departureDate" [ngModel]="currentScheduleId" (ngModelChange)="onDepartureDateChange($event)"
+              class="block w-2/3 mt-1 text-sm form-select">
+              <option *ngFor="let schedule of booking.schedules" [value]="schedule.id">
+                {{ schedule.departureDate | formatDate }} (Còn {{ schedule.availableSeats }} chỗ)
+              </option>
+            </select>
+          </div>
           <p><strong>Điều hành viên:</strong> {{ booking.operator }}</p>
-          <p><strong>Số chỗ còn lại:</strong> {{ booking.remainingSeats }} / {{ booking.totalSeats }}</p>
+          <p><strong>Số chỗ còn lại:</strong> {{ selectedScheduleSeats !== null ? selectedScheduleSeats : booking.remainingSeats }} / {{ booking.totalSeats }}</p>
         </div>
       </div>
     </div>
 
-     <!-- Card Thanh toán -->
+    <!-- Cột giữa (Thông tin thanh toán) -->
+    <div class="md:col-span-3 space-y-6">
+      <!-- Card Thanh toán -->
       <div class="p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
         <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">Thanh toán & Xác nhận</h4>
         <div class="space-y-3 text-gray-700 dark:text-gray-400">
           <div class="flex justify-between items-center">
             <span>Trạng thái:</span>
-            <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-              {{ booking.status }}
-            </span>
+            <div class="flex items-center gap-2">
+        <select [(ngModel)]="booking.status" class="form-select text-sm">
+            <option value="PENDING">Chờ xử lý</option>
+            <option value="CONFIRMED">Đã xác nhận</option>
+            <option value="COMPLETED">Hoàn thành</option>
+            <option value="CANCELLED">Đã hủy</option>
+        </select>
+        <button (click)="onUpdateStatus()" class="px-3 py-1 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700">Lưu</button>
+    </div>
+          </div>
+          <!-- HIỂN THỊ HÌNH THỨC THANH TOÁN -->
+          <div class="flex justify-between items-center">
+            <span>Thanh toán:</span>
+            <span class="font-medium">{{ booking.paymentMethod }}</span>
           </div>
           <hr class="dark:border-gray-700">
           <div class="flex justify-between items-center text-lg font-semibold">
@@ -63,15 +84,16 @@
         </div>
         <!-- NÚT GỬI MAIL -->
         <div class="mt-4 pt-4 border-t dark:border-gray-700 text-center">
-            <button (click)="openMailModal()" class="w-full px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-teal-600 border border-transparent rounded-lg active:bg-teal-600 hover:bg-teal-700 focus:outline-none focus:shadow-outline-teal">
-              Gửi xác nhận cho khách hàng
-            </button>
+          <button (click)="openMailModal()"
+            class="w-full px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-teal-600 border border-transparent rounded-lg active:bg-teal-600 hover:bg-teal-700 focus:outline-none focus:shadow-outline-teal">
+            Gửi xác nhận cho khách hàng
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Cột bên phải (Thông tin khách hàng & Đoàn) -->
-    <div class="md:col-span-3 space-y-6">
+    <!-- Cột phải (Thông tin khách hàng & Đoàn) -->
+    <div class="md:col-span-5 space-y-6">
       <!-- Card chỉnh sửa thông tin người đặt -->
       <div class="p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
         <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">Thông tin người đặt</h4>
@@ -128,20 +150,46 @@
       </div>
     </div>
   </div>
-
+</div>
 
 <!-- MODAL THÊM KHÁCH HÀNG -->
-<div *ngIf="isAddCustomerModalOpen"
-  class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black bg-opacity-50">
+<div *ngIf="isAddCustomerModalOpen" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black bg-opacity-50">
   <div class="relative w-full max-w-4xl p-4 mx-auto bg-white rounded-lg shadow-xl dark:bg-gray-800">
-    <!-- Modal header -->
     <div class="flex justify-between items-center pb-3 border-b dark:border-gray-700">
       <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200">Thêm khách hàng mới</h3>
-      <button (click)="closeAddCustomerModal()"
-        class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      <button (click)="closeAddCustomerModal()" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
       </button>
     </div>
+    <form [formGroup]="addCustomerForm" (ngSubmit)="onSubmitAddCustomer()">
+      <div class="py-4 max-h-[60vh] overflow-y-auto">
+        <div formArrayName="customers">
+          <div *ngFor="let customer of customersArray.controls; let i=index" [formGroupName]="i" class="p-4 mb-4 border rounded-lg dark:border-gray-700">
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="font-semibold">Khách hàng {{i + 1}}</h4>
+              <button *ngIf="customersArray.length > 1" (click)="removeCustomerFromAddForm(i)" type="button" class="text-red-500 hover:text-red-700">&times; Xóa</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Họ và tên *</span><input type="text" formControlName="fullName" class="block w-full mt-1 text-sm form-input"></label>
+              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Ngày sinh *</span><input type="date" formControlName="dateOfBirth" class="block w-full mt-1 text-sm form-input"></label>
+              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Giới tính *</span><select formControlName="gender" class="block w-full mt-1 text-sm form-select"><option value="MALE">Nam</option><option value="FEMALE">Nữ</option><option value="OTHER">Khác</option></select></label>
+              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Loại khách *</span><select formControlName="paxType" class="block w-full mt-1 text-sm form-select"><option value="ADULT">Người lớn</option><option value="CHILD">Trẻ em</option><option value="INFANT">Trẻ nhỏ</option></select></label>
+              <div class="flex items-center mt-4 md:col-span-2"><input type="checkbox" formControlName="singleRoom" id="addSingleRoom-{{i}}" class="form-checkbox"><label for="addSingleRoom-{{i}}" class="ml-2 text-sm">Phụ thu phòng đơn</label></div>
+            </div>
+          </div>
+        </div>
+        <button (click)="addMoreCustomer()" type="button" class="mt-2 text-sm text-purple-600 hover:underline">+ Thêm khách hàng khác</button>
+      </div>
+      <div class="flex justify-end items-center pt-4 border-t dark:border-gray-700 gap-2">
+        <button type="button" (click)="closeAddCustomerModal()" class="px-4 py-2 text-sm font-medium bg-gray-100 border rounded-lg hover:bg-gray-200">Hủy</button>
+        <button type="submit" [disabled]="isSubmitting || addCustomerForm.invalid" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 border rounded-lg hover:bg-purple-700 disabled:opacity-50">
+          <span *ngIf="!isSubmitting">Thêm vào đoàn</span>
+          <span *ngIf="isSubmitting">Đang xử lý...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 
 
 <!-- MODAL SỬA KHÁCH HÀNG -->
