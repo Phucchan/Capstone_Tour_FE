@@ -40,5 +40,6 @@ export interface TourScheduleCreateRequest {
   coordinatorId: number;
   tourPaxId: number;
   departureDate: string; // Gửi lên server dưới dạng ISO string
-  endDate?: string; // Backend sẽ tự tính nếu không có
+  repeatType?: 'NONE' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'; // Enum từ backend
+  repeatCount?: number;
 }
