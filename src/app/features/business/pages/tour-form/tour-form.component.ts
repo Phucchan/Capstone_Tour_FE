@@ -193,7 +193,8 @@ export class TourFormComponent implements OnInit, OnDestroy {
       this.tourService.createTourWithFile(formData).subscribe({
         next: (createdTour) => {
           alert(`Tạo tour thành công! Mã tour của bạn là: ${createdTour.code}`);
-          this.router.navigate(['/business/tour-list']);
+          // Trong tour-form.component.ts
+this.router.navigate(['/business/tours', createdTour.id, 'schedule']);
         },
         error: (err) => {
           console.error('Lỗi khi tạo tour:', err);

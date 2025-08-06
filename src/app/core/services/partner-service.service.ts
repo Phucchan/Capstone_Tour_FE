@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
@@ -21,5 +21,25 @@ export class PartnerServiceService {
         `${this.baseApiUrl}/partner-services`
       )
       .pipe(map((res) => res.data));
+  }
+
+  /**
+   * Lấy các dịch vụ của đối tác theo loại dịch vụ.
+   * Giúp khắc phục lỗi Race Condition.
+   * @param serviceTypeName Tên của loại dịch vụ (ví dụ: "Khách sạn")
+   */
+  getPartnerServicesByType(
+    serviceTypeId: number
+  ): Observable<PartnerServiceShortDTO[]> {
+    const params = new HttpParams().set(
+      'serviceTypeId',
+      serviceTypeId.toString()
+    );
+    return this.http
+      .get<ApiResponse<PartnerServiceShortDTO[]>>(
+        `${this.baseApiUrl}/partner-services`,
+        { params }
+      )
+      .pipe(map((response) => response.data));
   }
 }
