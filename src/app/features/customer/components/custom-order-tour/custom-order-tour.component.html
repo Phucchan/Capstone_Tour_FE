@@ -1,78 +1,117 @@
-<form class="max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow space-y-8">
-  <!-- Điểm khởi hành -->
-  <div>
-    <label class="block font-semibold mb-1">Nơi khởi hành</label>
-    <select [(ngModel)]="booking.departureLocationId" name="departureLocationId"
-      class="w-full border p-2 rounded">
-      <option value="">-- Chọn điểm khởi hành --</option>
-      <option *ngFor="let d of departures" [value]="d.id">{{ d.name }}</option>
-    </select>
-  </div>
-
-  <!-- Điểm đến -->
-  <div>
-    <label class="block font-semibold mb-1">Điểm đến</label>
-    <select [(ngModel)]="booking.destination" name="destination"
-      class="w-full border p-2 rounded">
-      <option value="">-- Chọn điểm đến --</option>
-      <option *ngFor="let dest of destinations" [value]="dest.name">{{ dest.name }}</option>
-    </select>
-    <input [(ngModel)]="booking.destinationDetail" name="destinationDetail"
-      type="text" class="mt-2 w-full border p-2 rounded"
-      placeholder="Chi tiết điểm đến (tùy chọn)">
+<form [formGroup]="bookingForm" class="max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow-lg border border-gray-200 space-y-8 mt-10 " >
+  <div class="grid grid-cols-2 gap-4 ">
+    <!-- Điểm khởi hành -->
+    <div>
+      <label class="block font-semibold mb-1">Điểm khởi hành</label>
+      <ng-select [items]="departures" bindLabel="name" bindValue="id" formControlName="departureLocationId"
+        placeholder="Chọn điểm khởi hành" class="w-full">
+      </ng-select>
+      <small class="text-red-500" *ngIf="bookingForm.get('departureLocationId')?.invalid && bookingForm.get('departureLocationId')?.touched">
+        *Thông tin bắt buộc
+      </small>
+    </div>
+    <!-- Chọn nhiều điểm đến -->
+    <div>
+      <label class="block font-semibold mb-1 ">Điểm đến</label>
+      <ng-select [items]="destinations" bindLabel="name" bindValue="id" formControlName="destinationLocationIds"
+        [multiple]="true" placeholder="Chọn các điểm đến" class="w-full ">
+      </ng-select>
+      <small class="text-red-500" *ngIf="bookingForm.get('destinationLocationIds')?.invalid && bookingForm.get('destinationLocationIds')?.touched">
+        *Thông tin bắt buộc
+      </small>
+    </div>
   </div>
 
   <!-- Ngày đi / về -->
-  <div class="grid grid-cols-2 gap-4">
+  <div class="grid grid-cols-2 gap-4 ">
     <div>
-      <label>Ngày đi</label>
-      <input type="date" [(ngModel)]="booking.startDate" name="startDate" class="w-full border p-2 rounded" />
+      <label class="block font-semibold mb-1">Ngày đi</label>
+      <input type="date" formControlName="startDate" class="w-full border p-2 rounded" />
+      <small class="text-red-500" *ngIf="bookingForm.get('startDate')?.invalid && bookingForm.get('startDate')?.touched">
+        *Thông tin bắt buộc
+      </small>
     </div>
     <div>
-      <label>Ngày về</label>
-      <input type="date" [(ngModel)]="booking.endDate" name="endDate" class="w-full border p-2 rounded" />
+      <label class="block font-semibold mb-1">Ngày về</label>
+      <input type="date" formControlName="endDate" class="w-full border p-2 rounded" />
+      <small class="text-red-500" *ngIf="bookingForm.get('endDate')?.invalid && bookingForm.get('endDate')?.touched">
+        *Thông tin bắt buộc
+      </small>
     </div>
   </div>
 
-  <!-- Phương tiện -->
-  <div>
-    <label class="block font-semibold mb-1">Phương tiện</label>
-    <select [(ngModel)]="booking.transport" name="transport"
-      class="w-full border p-2 rounded">
-      <option value="">-- Chọn phương tiện --</option>
-      <option *ngFor="let t of transports" [value]="t">{{ t }}</option>
-    </select>
+  <div class="grid grid-cols-2 gap-4">
+    <!-- Phương tiện -->
+    <div>
+      <label class="block font-semibold mb-1">Phương tiện</label>
+      <select formControlName="transport" class="w-[75%] border p-2 rounded">
+        <option value="">-- Chọn phương tiện --</option>
+        <option *ngFor="let t of transports" [value]="t">{{ t | iconTransport }}</option>
+      </select>
+      <small class="text-red-500" *ngIf="bookingForm.get('transport')?.invalid && bookingForm.get('transport')?.touched">
+        *Thông tin bắt buộc
+      </small>
+    </div>
+    
+
+    <!-- Khách sạn -->
+    <div>
+      <label class="block font-semibold mb-1">Khách sạn</label>
+      <div class="flex gap-4 items-center">
+        <div class="flex items-center gap-2 w-1/2 ">
+          <label for="hotelRooms" class="text font-medium text-gray-700 whitespace-nowrap">
+            Số phòng
+          </label>
+          <input id="hotelRooms" type="number" min="1"
+            class=" w-[15%] flex-1 border border-gray-300 rounded px-3 py-2 text-center focus:outline-none focus:ring focus:ring-blue-200"
+            formControlName="hotelRooms" />
+        </div>
+
+        <!-- Loại phòng -->
+        <select formControlName="roomCategory" class=" border rounded p-2 w-1/2">
+          <option value="" class="text-sm">Loại Phòng</option>
+          <option *ngFor="let s of hotelStandards" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+    </div>
   </div>
 
   <!-- Khách -->
-  <div class="grid grid-cols-3 gap-4">
+  <h2 class=" font-semibold mt-6 mb-1">Hành khách</h2>
+  <div class="grid grid-cols-4 gap-4">
     <div>
-      <label>Người lớn</label>
-      <input type="number" [(ngModel)]="booking.adults" name="adults" min="1" class="w-full border p-2 rounded" />
+      <label>Người lớn (Lớn hơn 12 tuổi)</label>
+      <input type="number" formControlName="adults" min="1" class="w-full border p-2 rounded" />
     </div>
     <div>
-      <label>Trẻ em</label>
-      <input type="number" [(ngModel)]="booking.children" name="children" min="0" class="w-full border p-2 rounded" />
+      <label>Trẻ em (Từ 5 - 11 tuổi)</label>
+      <input type="number" formControlName="children" min="0" class="w-full border p-2 rounded" />
     </div>
     <div>
-      <label>Em bé</label>
-      <input type="number" [(ngModel)]="booking.infants" name="infants" min="0" class="w-full border p-2 rounded" />
+      <label>trẻ nhỏ (Từ 2 - 4 tuổi)</label>
+      <input type="number" formControlName="infants" min="0" class="w-full border p-2 rounded" />
+    </div>
+    <div>
+      <label>Em bé (Dưới 2 tuổi)</label>
+      <input type="number" formControlName="toddlers" min="0" class="w-full border p-2 rounded" />
     </div>
   </div>
 
-  <!-- Khách sạn -->
-  <div>
-    <label class="block font-semibold mb-1">Khách sạn</label>
-    <div class="flex gap-4">
-      <select [(ngModel)]="booking.hotelRooms" name="hotelRooms" class="border rounded p-2 w-1/2">
-        <option value="">Số phòng</option>
-        <option *ngFor="let num of roomCounts" [value]="num">{{ num }}</option>
-      </select>
-      <select [(ngModel)]="booking.roomCategory" name="roomCategory" class="border rounded p-2 w-1/2">
-        <option value="">Tiêu chuẩn</option>
-        <option *ngFor="let s of hotelStandards" [value]="s">{{ s }}</option>
-      </select>
+  <!-- Hiển thị tổng số hành khách -->
+  <p class="mt-2 font-semibold text-blue-700 text-right underline">
+    Tổng số hành khách: {{ getTotalGuests() }}
+  </p>
+
+  <!-- Khoảng giá -->
+  <h2 class=" font-semibold mt-6 mb-1">Khoảng giá (VND) </h2>
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <input type="text" [value]="formatCurrency(bookingForm.get('priceMax')?.value)"
+        (input)="onPriceInput($event, 'max')" class="w-full border p-2 rounded" />
     </div>
+    <small class="text-red-500" *ngIf="bookingForm.get('priceMax')?.invalid && bookingForm.get('priceMax')?.touched">
+      *Thông tin bắt buộc
+    </small>
   </div>
 
   <!-- Thông tin liên lạc -->
@@ -81,22 +120,31 @@
     <div class="grid grid-cols-2 gap-4">
       <div>
         <label>Họ tên *</label>
-        <input type="text" [(ngModel)]="booking.customerName" name="customerName" class="w-full border p-2 rounded" />
+        <input type="text" formControlName="customerName" class="w-full border p-2 rounded" />
+        <small class="text-red-500" *ngIf="bookingForm.get('customerName')?.invalid && bookingForm.get('customerName')?.touched">
+          *Thông tin bắt buộc
+        </small>
       </div>
       <div>
         <label>Email *</label>
-        <input type="email" [(ngModel)]="booking.customerEmail" name="customerEmail" class="w-full border p-2 rounded" />
+        <input type="email" formControlName="customerEmail" class="w-full border p-2 rounded" />
+        <small class="text-red-500" *ngIf="bookingForm.get('customerEmail')?.invalid && bookingForm.get('customerEmail')?.touched">
+          *Thông tin bắt buộc
+        </small>
       </div>
       <div>
         <label>Số điện thoại *</label>
-        <input type="tel" [(ngModel)]="booking.customerPhone" name="customerPhone" class="w-full border p-2 rounded" />
+        <input type="tel" formControlName="customerPhone" class="w-full border p-2 rounded" />
+        <small class="text-red-500" *ngIf="bookingForm.get('customerPhone')?.invalid && bookingForm.get('customerPhone')?.touched">
+          *Thông tin bắt buộc
+        </small>
       </div>
     </div>
   </div>
 
   <!-- Nút gửi -->
   <div class="text-center pt-6">
-    <button (click)="submitBooking()" type="button"
+    <button  type="button" (click)="submitBooking()"
       class="px-6 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition">
       Xác nhận và gửi
     </button>
