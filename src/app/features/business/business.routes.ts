@@ -1,12 +1,7 @@
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './layout/layout.component';
-import { TourListComponent } from './pages/tour-list/tour-list.component';
-import { TourFormComponent } from './pages/tour-form/tour-form.component';
-import { TourScheduleComponent } from './pages/tour-schedule/tour-schedule.component';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
-import { LocationManagementComponent } from './pages/location-management/location-management.component';
-import { TourCostingComponent } from './pages/tour-costing/tour-costing.component';
-import { TourDepartureDateComponent } from './pages/tour-departure-date/tour-departure-date.component';
+
+// Không cần import các component ở đây nữa
 
 export const BUSINESS_ROUTES: Routes = [
   {
@@ -15,60 +10,86 @@ export const BUSINESS_ROUTES: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 
-      // Route cho trang Dashboard
+      // Chuyển đổi tất cả các route sang loadComponent
       {
         path: 'dashboard',
-        component: DashboardComponent,
+        loadComponent: () =>
+          import('./pages/dashboard/dashboard.component').then(
+            (c) => c.DashboardComponent
+          ),
         data: { title: 'Dashboard' },
       },
-
-      //ROUTE CHO LOCATION
       {
         path: 'locations',
-        component: LocationManagementComponent,
+        loadComponent: () =>
+          import(
+            './pages/location-management/location-management.component'
+          ).then((c) => c.LocationManagementComponent),
         data: { title: 'Quản lý Địa điểm' },
       },
-
-      // ROUTE CHO TRANG CHIẾT TÍNH
       {
         path: 'tours/:id/costing',
-        component: TourCostingComponent,
+        loadComponent: () =>
+          import('./pages/tour-costing/tour-costing.component').then(
+            (c) => c.TourCostingComponent
+          ),
         data: { title: 'Chiết tính Giá Tour' },
       },
-
-      // Route cho trang danh sách Tour
       {
         path: 'tours',
-        component: TourListComponent,
+        loadComponent: () =>
+          import('./pages/tour-list/tour-list.component').then(
+            (c) => c.TourListComponent
+          ),
         data: { title: 'Quản lý Tour' },
       },
-
-      // Route cho trang tạo mới
       {
         path: 'tours/new',
-        component: TourFormComponent,
+        loadComponent: () =>
+          import('./pages/tour-form/tour-form.component').then(
+            (c) => c.TourFormComponent
+          ),
         data: { title: 'Tạo Tour mới' },
       },
-
-      // Route cho trang cập nhật/chi tiết
       {
         path: 'tours/:id',
-        component: TourFormComponent,
+        loadComponent: () =>
+          import('./pages/tour-form/tour-form.component').then(
+            (c) => c.TourFormComponent
+          ),
         data: { title: 'Chi tiết Tour' },
       },
-
-      // ROUTE CHO TRANG LỊCH TRÌNH
       {
         path: 'tours/:id/schedule',
-        component: TourScheduleComponent,
+        loadComponent: () =>
+          import('./pages/tour-schedule/tour-schedule.component').then(
+            (c) => c.TourScheduleComponent
+          ),
         data: { title: 'Xây dựng Lịch trình' },
       },
-
-      // Route cho trang quản lý lịch khởi hành
       {
         path: 'tours/:id/departure-dates',
-        component: TourDepartureDateComponent,
+        loadComponent: () =>
+          import(
+            './pages/tour-departure-date/tour-departure-date.component'
+          ).then((c) => c.TourDepartureDateComponent),
         data: { title: 'Quản lý Lịch Khởi Hành' },
+      },
+      {
+        path: 'request-bookings',
+        loadComponent: () =>
+          import(
+            './pages/request-booking-list/request-booking-list.component'
+          ).then((c) => c.RequestBookingListComponent),
+        data: { title: 'Danh sách Yêu cầu' },
+      },
+      {
+        path: 'request-bookings/:id',
+        loadComponent: () =>
+          import(
+            './pages/request-booking-detail/request-booking-detail.component'
+          ).then((c) => c.RequestBookingDetailComponent),
+        data: { title: 'Chi tiết Yêu cầu' },
       },
     ],
   },
