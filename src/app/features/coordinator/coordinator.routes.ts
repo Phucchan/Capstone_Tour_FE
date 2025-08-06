@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { ListServiceProviderComponent } from './list-service-provider/list-service-provider.component';
-// 1. Import component "Thêm mới Nhà cung cấp"
 import { AddServiceProviderComponent } from './list-service-provider/add-service-provider/add-service-provider.component';
+import { ServiceTypeManagementComponent } from './service-type-management/service-type-management.component';
 
 export const COORDINATOR_ROUTES: Routes = [
   {
@@ -10,12 +10,19 @@ export const COORDINATOR_ROUTES: Routes = [
     pathMatch: 'full',
   },
   {
-    path: 'service-providers', // URL: /coordinator/service-providers
+    path: 'service-providers',
     component: ListServiceProviderComponent,
   },
-  // 2. Thêm đường dẫn cho trang tạo mới
   {
-    path: 'service-providers/create', // URL sẽ là: /coordinator/service-providers/create
+    path: 'service-providers/create',
     component: AddServiceProviderComponent,
+  },
+  {
+    path: 'service-providers/edit/:id',
+    component: AddServiceProviderComponent,
+  },
+  {
+    path: 'service-types', // URL: /coordinator/service-types
+    component: ServiceTypeManagementComponent,
   },
 ];

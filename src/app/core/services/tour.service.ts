@@ -11,7 +11,6 @@ import {
   TourDayManagerDTO,
   TourDayManagerCreateRequestDTO,
   ServiceTypeShortDTO,
-  PartnerServiceShortDTO,
 } from '../models/tour.model';
 import { PagingDTO } from '../../core/models/paging.model';
 import { environment } from '../../../environments/environment';
@@ -60,6 +59,30 @@ export class TourService {
   updateTour(id: number, tourData: UpdateTourRequest): Observable<TourDetail> {
     return this.http
       .put<ApiResponse<TourDetail>>(`${this.toursApiUrl}/${id}`, tourData)
+      .pipe(map((response) => response.data));
+  }
+
+  /**
+   * Tạo tour mới với file ảnh (sử dụng FormData)
+   * @param formData Dữ liệu form bao gồm file và thông tin tour
+   * @returns Chi tiết tour đã tạo
+   */
+  createTourWithFile(formData: FormData): Observable<TourDetail> {
+    // Lưu ý: Không cần set Content-Type header, Angular sẽ tự động làm điều đó
+    return this.http
+      .post<ApiResponse<TourDetail>>(`${this.toursApiUrl}`, formData)
+      .pipe(map((response) => response.data));
+  }
+
+  /**
+   * Cập nhật tour với file ảnh (sử dụng FormData)
+   * @param id ID của tour cần cập nhật
+   * @param formData Dữ liệu form bao gồm file và thông tin tour
+   * @returns Chi tiết tour đã cập nhật
+   */
+  updateTourWithFile(id: number, formData: FormData): Observable<TourDetail> {
+    return this.http
+      .put<ApiResponse<TourDetail>>(`${this.toursApiUrl}/${id}`, formData)
       .pipe(map((response) => response.data));
   }
 

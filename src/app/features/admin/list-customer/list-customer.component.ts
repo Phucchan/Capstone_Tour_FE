@@ -1,64 +1,68 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
-// Định nghĩa interface cho Khách hàng
-export interface Customer {
-  id: number;
-  fullName: string;
-  email: string;
-  gender: 'Nam' | 'Nữ' | 'Khác';
-  phone: string;
-  role: 'Admin' | 'User';
-  // Cập nhật kiểu dữ liệu cho trạng thái
-  status: 'Hoạt động' | 'Vô hiệu hóa';
-}
+import { AdminService } from '../admin.service';
+import { UserFullInformation } from '../models/user.model';
+// SỬA LỖI: Dùng đường dẫn tương đối
+import { PagingDTO } from '../../../core/models/paging.model';
+import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
+import { AvatarComponent } from '../../../shared/components/avatar/avatar.component';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-list-customer',
   standalone: true,
   imports: [
     CommonModule,
-    RouterModule
+    FormsModule,
+    DatePipe,
+    SpinnerComponent,
+    AvatarComponent,
+    PaginationComponent,
   ],
   templateUrl: './list-customer.component.html',
 })
 export class ListCustomerComponent implements OnInit {
+  customers: UserFullInformation[] = [];
+  paging: PagingDTO<UserFullInformation> | null = null;
+  isLoading = false;
+  currentPage = 0;
+  pageSize = 10;
+  keyword = '';
 
-  customers: Customer[] = [];
-
-  constructor(private router: Router) {}
+  constructor(private adminService: AdminService) {}
 
   ngOnInit(): void {
-    this.loadSampleData();
+    this.loadCustomers();
   }
 
-  loadSampleData(): void {
-    this.customers = [
-      { id: 101, fullName: 'Nguyễn Văn An', email: 'an.nguyen@example.com', gender: 'Nam', phone: '0987654321', role: 'User', status: 'Hoạt động' },
-      { id: 102, fullName: 'Trần Thị Bích', email: 'bich.tran@example.com', gender: 'Nữ', phone: '0912345678', role: 'Admin', status: 'Hoạt động' },
-      // Cập nhật dữ liệu mẫu để có trạng thái "Vô hiệu hóa"
-      { id: 103, fullName: 'Lê Minh Cường', email: 'cuong.le@example.com', gender: 'Nam', phone: '0905112233', role: 'User', status: 'Vô hiệu hóa' },
-      { id: 104, fullName: 'Phạm Thuỳ Dung', email: 'dung.pham@example.com', gender: 'Nữ', phone: '0934567890', role: 'User', status: 'Hoạt động' }
-    ];
+  loadCustomers(): void {
+    this.isLoading = true;
+    this.adminService
+      .getCustomers(this.currentPage, this.pageSize, this.keyword)
+      .subscribe({
+        next: (response) => {
+          if (response.data) {
+            this.customers = response.data.items;
+            this.paging = response.data;
+          }
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Failed to load customers', err);
+          this.isLoading = false;
+        },
+      });
   }
 
-  /**
-   * === THÊM PHƯƠNG THỨC MỚI TẠI ĐÂY ===
-   * Hàm để thay đổi trạng thái của khách hàng khi click.
-   * @param customer Khách hàng được chọn.
-   */
-  toggleStatus(customer: Customer): void {
-    // Thay đổi trạng thái của khách hàng
-    customer.status = customer.status === 'Hoạt động' ? 'Vô hiệu hóa' : 'Hoạt động';
-
-    // Trong một ứng dụng thực tế, bạn sẽ gọi API để cập nhật trạng thái trên server ở đây.
-    // Ví dụ: this.customerService.updateCustomerStatus(customer.id, customer.status).subscribe();
-    console.log(`Đã cập nhật trạng thái cho khách hàng '${customer.fullName}' thành '${customer.status}'`);
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadCustomers();
   }
 
-  viewDetails(customerId: number): void {
-    console.log('Xem chi tiết cho khách hàng ID:', customerId);
-    // Ví dụ: this.router.navigate(['/admin/customers', customerId]);
+  onSearch(): void {
+    this.currentPage = 0;
+    this.loadCustomers();
   }
 }

@@ -1,87 +1,97 @@
-<!-- Container chính của trang, với nền xám nhạt và padding -->
-<div class="p-4 sm:p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
-  <!-- Card chứa form, với nền trắng -->
-  <div class="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+<!-- Container chính, hiển thị spinner khi đang tải dữ liệu ban đầu -->
+<div class="relative p-4 sm:p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
+  <app-spinner *ngIf="isLoading"></app-spinner>
 
-    <!-- 1. Tiêu đề chính -->
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Thêm mới Nhà cung cấp</h1>
+  <!-- Card chứa form, chỉ hiện khi đã tải xong -->
+  <div *ngIf="!isLoading" class="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
 
-    <form>
-      <div class="space-y-6">
-        <!-- Hình ảnh -->
-        <div>
-          <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="provider_image">Hình ảnh</label>
-          <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" id="provider_image" type="file">
-        </div>
+    <!-- 1. Tiêu đề chính (động) -->
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">{{ pageTitle }}</h1>
 
+    <!-- Thông báo lỗi chung -->
+    <div *ngIf="errorMessage" class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+      <span class="font-medium">Lỗi!</span> {{ errorMessage }}
+    </div>
+
+    <form [formGroup]="partnerForm" (ngSubmit)="onSubmit()">
+      <div class="grid gap-6 mb-6 md:grid-cols-2">
         <!-- Tên Nhà cung cấp -->
         <div>
-          <label for="provider_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tên Nhà cung cấp</label>
-          <input type="text" id="provider_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập tên nhà cung cấp" required>
+          <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tên Nhà cung cấp <span class="text-red-500">*</span></label>
+          <input type="text" id="name" formControlName="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600" placeholder="Nhập tên...">
+          <p *ngIf="partnerForm.get('name')?.invalid && partnerForm.get('name')?.touched" class="mt-2 text-xs text-red-600 dark:text-red-500">Tên nhà cung cấp là bắt buộc.</p>
         </div>
 
-        <!-- Viết tắt -->
+        <!-- Tên người liên hệ -->
         <div>
-          <label for="provider_shortname" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Viết tắt</label>
-          <input type="text" id="provider_shortname" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập viết tắt (nếu có)">
-        </div>
-
-        <!-- Website -->
-        <div>
-          <label for="provider_website" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Website</label>
-          <input type="url" id="provider_website" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập website (nếu có)">
-        </div>
-
-        <!-- Email -->
-        <div>
-          <label for="provider_email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
-          <input type="email" id="provider_email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập email (nếu có)">
+          <label for="contactName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tên người liên hệ</label>
+          <input type="text" id="contactName" formControlName="contactName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600" placeholder="Nhập tên...">
         </div>
 
         <!-- Số điện thoại -->
         <div>
-          <label for="provider_phone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Số điện thoại</label>
-          <input type="tel" id="provider_phone" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập số điện thoại (nếu có)">
+          <label for="contactPhone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Số điện thoại <span class="text-red-500">*</span></label>
+          <input type="tel" id="contactPhone" formControlName="contactPhone" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600" placeholder="0901234567">
+           <p *ngIf="partnerForm.get('contactPhone')?.invalid && partnerForm.get('contactPhone')?.touched" class="mt-2 text-xs text-red-600 dark:text-red-500">Số điện thoại là bắt buộc.</p>
         </div>
 
-        <!-- Địa chỉ -->
+        <!-- Email -->
         <div>
-          <label for="provider_address" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Địa chỉ</label>
-          <textarea id="provider_address" rows="4" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập địa chỉ (nếu có)"></textarea>
+          <label for="contactEmail" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email <span class="text-red-500">*</span></label>
+          <input type="email" id="contactEmail" formControlName="contactEmail" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600" placeholder="example@company.com">
+          <div *ngIf="partnerForm.get('contactEmail')?.touched && partnerForm.get('contactEmail')?.errors">
+            <p *ngIf="partnerForm.get('contactEmail')?.errors?.['required']" class="mt-2 text-xs text-red-600">Email là bắt buộc.</p>
+            <p *ngIf="partnerForm.get('contactEmail')?.errors?.['email']" class="mt-2 text-xs text-red-600">Email không đúng định dạng.</p>
+          </div>
         </div>
 
-        <!-- Địa điểm và Danh mục dịch vụ (trên cùng một hàng) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label for="provider_location" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Địa điểm</label>
-            <select id="provider_location" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
-              <option selected disabled>Chọn địa điểm</option>
-              <!-- Thêm các option địa điểm ở đây -->
-              <option value="hcm">TP. Hồ Chí Minh</option>
-              <option value="hanoi">Hà Nội</option>
-              <option value="danang">Đà Nẵng</option>
-            </select>
-          </div>
-          <div>
-            <label for="provider_category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Danh mục dịch vụ</label>
-            <select id="provider_category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
-              <option selected disabled>Chọn danh mục dịch vụ</option>
-              <!-- Thêm các option danh mục ở đây -->
-              <option value="hotel">Khách sạn</option>
-              <option value="restaurant">Nhà hàng</option>
-              <option value="transport">Vận chuyển</option>
-            </select>
-          </div>
+        <!-- Website -->
+        <div>
+          <label for="websiteUrl" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Website</label>
+          <input type="url" id="websiteUrl" formControlName="websiteUrl" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600" placeholder="https://example.com">
+        </div>
+
+        <!-- Logo URL -->
+        <div>
+          <label for="logoUrl" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">URL Logo</label>
+          <input type="text" id="logoUrl" formControlName="logoUrl" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600" placeholder="https://example.com/logo.png">
+        </div>
+
+        <!-- Địa điểm -->
+        <div>
+          <label for="locationId" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Địa điểm <span class="text-red-500">*</span></label>
+          <select id="locationId" formControlName="locationId" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600">
+            <option [ngValue]="null" disabled>Chọn địa điểm</option>
+            <option *ngFor="let loc of locationOptions" [value]="loc.id">{{ loc.name }}</option>
+          </select>
+          <p *ngIf="partnerForm.get('locationId')?.invalid && partnerForm.get('locationId')?.touched" class="mt-2 text-xs text-red-600">Vui lòng chọn địa điểm.</p>
+        </div>
+
+        <!-- Danh mục dịch vụ -->
+        <div>
+          <label for="serviceTypeId" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Danh mục dịch vụ <span class="text-red-500">*</span></label>
+          <select id="serviceTypeId" formControlName="serviceTypeId" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600">
+            <option [ngValue]="null" disabled>Chọn danh mục</option>
+            <option *ngFor="let st of serviceTypeOptions" [value]="st.id">{{ st.name }}</option>
+          </select>
+           <p *ngIf="partnerForm.get('serviceTypeId')?.invalid && partnerForm.get('serviceTypeId')?.touched" class="mt-2 text-xs text-red-600">Vui lòng chọn danh mục dịch vụ.</p>
         </div>
       </div>
 
-      <!-- 4. Các nút chức năng -->
+      <!-- Mô tả -->
+      <div class="mb-6">
+        <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Mô tả</label>
+        <textarea id="description" formControlName="description" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600" placeholder="Viết mô tả ngắn về nhà cung cấp..."></textarea>
+      </div>
+
+      <!-- Các nút chức năng -->
       <div class="flex items-center justify-end gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-        <button type="button" class="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+        <button type="button" (click)="onCancel()" class="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:bg-gray-800">
           Hủy
         </button>
-        <button type="submit" class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 focus:outline-none dark:focus:ring-green-800">
-          Tạo mới
+        <button type="submit" [disabled]="isSaving" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 disabled:opacity-50 disabled:cursor-not-allowed">
+          <span *ngIf="!isSaving">{{ isEditMode ? 'Cập nhật' : 'Tạo mới' }}</span>
+          <span *ngIf="isSaving">Đang lưu...</span>
         </button>
       </div>
     </form>

@@ -1,0 +1,91 @@
+<!-- src/app/features/business/pages/request-booking-detail/request-booking-detail.component.html -->
+<div class="p-4 sm:p-6 lg:p-8">
+  <ng-container *ngIf="request$ | async as request; else loading">
+    <div class="mb-6">
+      <!-- Header -->
+      <div class="md:flex md:items-center md:justify-between">
+        <div class="min-w-0 flex-1">
+          <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
+            Yêu cầu từ: {{ request.customerName }}
+          </h2>
+        </div>
+        <div class="mt-4 flex md:ml-4 md:mt-0">
+          <button (click)="goBack()" type="button" class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+            Quay lại danh sách
+          </button>
+        </div>
+      </div>
+
+      <!-- Status and Actions -->
+      <div class="mt-4 flex items-center justify-between rounded-lg bg-gray-50 p-4">
+        <div>
+          <span class="text-sm font-medium text-gray-600">Trạng thái:</span>
+          <span class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium" [ngClass]="getStatusClass(request.status)">
+            {{ request.status }}
+          </span>
+        </div>
+        <!-- Action Buttons -->
+        <div *ngIf="request.status === RequestBookingStatus.PENDING" class="flex space-x-3">
+          <button (click)="updateStatus(request.id, 'REJECTED')" type="button" class="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+            Từ chối
+          </button>
+          <button (click)="updateStatus(request.id, 'ACCEPTED')" type="button" class="rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">
+            Chấp nhận
+          </button>
+        </div>
+        <div *ngIf="request.status === RequestBookingStatus.ACCEPTED">
+           <button (click)="createTour(request.id)" type="button" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+            Tạo Tour từ Yêu cầu này
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Details Grid -->
+    <div class="mt-6 border-t border-gray-100">
+      <dl class="divide-y divide-gray-100">
+        <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+          <dt class="text-sm font-medium leading-6 text-gray-900">Thông tin liên hệ</dt>
+          <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+            <p><strong>Email:</strong> {{ request.customerEmail }}</p>
+            <p><strong>Điện thoại:</strong> {{ request.customerPhone }}</p>
+          </dd>
+        </div>
+        <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+          <dt class="text-sm font-medium leading-6 text-gray-900">Hành trình</dt>
+          <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+            <p><strong>Ngày đi:</strong> {{ request.startDate | date:'dd/MM/yyyy' }}</p>
+            <p><strong>Ngày về:</strong> {{ request.endDate | date:'dd/MM/yyyy' }}</p>
+            <p><strong>Phương tiện:</strong> {{ request.transport || 'Chưa xác định' }}</p>
+          </dd>
+        </div>
+        <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+          <dt class="text-sm font-medium leading-6 text-gray-900">Số lượng khách</dt>
+          <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+            <p><strong>Người lớn:</strong> {{ request.adults }}</p>
+            <p><strong>Trẻ em:</strong> {{ request.children }}</p>
+            <p><strong>Trẻ nhỏ:</strong> {{ request.infants }}</p>
+          </dd>
+        </div>
+        <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+          <dt class="text-sm font-medium leading-6 text-gray-900">Ngân sách dự kiến</dt>
+          <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+             {{ request.priceMin | currency:'VND':'symbol':'1.0-0' }} - {{ request.priceMax | currency:'VND':'symbol':'1.0-0' }}
+          </dd>
+        </div>
+        <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+          <dt class="text-sm font-medium leading-6 text-gray-900">Yêu cầu chi tiết</dt>
+          <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 whitespace-pre-wrap">
+            {{ request.destinationDetail || 'Không có yêu cầu đặc biệt.' }}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </ng-container>
+
+  <ng-template #loading>
+    <div class="text-center p-10">
+      <p class="text-gray-500">Đang tải chi tiết yêu cầu...</p>
+    </div>
+  </ng-template>
+</div>

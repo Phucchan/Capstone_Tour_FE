@@ -1,90 +1,107 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
+import { finalize } from 'rxjs/operators';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
-// Định nghĩa interface cho Nhà cung cấp
-export interface ServiceProvider {
-  id: number;
-  image: string;
-  name: string;
-  website: string;
-  email: string;
-  phone: string;
-  address: string;
-  status: 'Hoạt động' | 'Ngưng hoạt động';
-}
+import { PartnerService } from '../services/partner.service';
+import { PartnerSummary } from '../models/partner.model';
+
+// SỬA LỖI: Import các component dùng chung
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 
 @Component({
   selector: 'app-list-service-provider',
   standalone: true,
   imports: [
     CommonModule,
-    RouterModule
+    RouterModule,
+    ReactiveFormsModule,
+    PaginationComponent, // Đảm bảo đã import
+    SpinnerComponent, // Đảm bảo đã import
   ],
   templateUrl: './list-service-provider.component.html',
-  // Không cần file CSS riêng khi dùng Tailwind
 })
 export class ListServiceProviderComponent implements OnInit {
+  partners: PartnerSummary[] = [];
+  totalItems = 0;
+  isLoading = false;
+  errorMessage: string | null = null;
+  filterForm: FormGroup;
+  currentPage = 0;
+  pageSize = 10;
 
-  serviceProviders: ServiceProvider[] = [];
-
-  constructor(private router: Router) {}
+  constructor(private partnerService: PartnerService) {
+    this.filterForm = new FormGroup({
+      keyword: new FormControl(''),
+      isDeleted: new FormControl(null),
+    });
+  }
 
   ngOnInit(): void {
-    this.loadSampleData();
+    this.loadPartners();
+    this.filterForm.valueChanges.subscribe(() => {
+      this.currentPage = 0;
+      this.loadPartners();
+    });
   }
 
-  loadSampleData(): void {
-    this.serviceProviders = [
-      {
-        id: 1,
-        image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80',
-        name: 'Nhà hàng Paradise',
-        website: 'https://paradise.com',
-        email: 'contact@paradise.com',
-        phone: '028 3838 3838',
-        address: '123 Lê Lợi, Quận 1, TP.HCM',
-        status: 'Hoạt động'
-      },
-      {
-        id: 2,
-        image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80',
-        name: 'Khách sạn Ocean View',
-        website: 'https://oceanview.vn',
-        email: 'booking@oceanview.vn',
-        phone: '0236 3999 888',
-        address: '456 Võ Nguyên Giáp, Đà Nẵng',
-        status: 'Hoạt động'
-      },
-      {
-        id: 3,
-        image: 'https://images.unsplash.com/photo-1542314831-068cd1dbb563?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80',
-        name: 'Resort Green Valley',
-        website: 'https://greenvalley.com',
-        email: 'info@greenvalley.com',
-        phone: '0258 3777 999',
-        address: '789 Trần Phú, Nha Trang',
-        status: 'Ngưng hoạt động'
-      }
-    ];
+  loadPartners(): void {
+    if (this.isLoading) return;
+
+    this.isLoading = true;
+    this.errorMessage = null;
+    const { keyword, isDeleted } = this.filterForm.value;
+
+    this.partnerService
+      .getPartners(this.currentPage, this.pageSize, keyword, isDeleted)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (response) => {
+          // SỬA LỖI 1: Thay 'response.isSuccess' bằng 'response.status === 200'
+          if (response.status === 200 && response.data) {
+            this.partners = response.data.items;
+            this.totalItems = response.data.total;
+          } else {
+            this.errorMessage =
+              response.message || 'Đã có lỗi không xác định xảy ra.';
+            this.partners = [];
+            this.totalItems = 0;
+          }
+        },
+        error: (err) => {
+          this.errorMessage = err.message || 'Không thể kết nối đến máy chủ.';
+          this.partners = [];
+          this.totalItems = 0;
+        },
+      });
   }
 
-  /**
-   * === THÊM PHƯƠNG THỨC MỚI TẠI ĐÂY ===
-   * Hàm để thay đổi trạng thái của nhà cung cấp khi click.
-   * @param provider Nhà cung cấp được chọn.
-   */
-  toggleStatus(provider: ServiceProvider): void {
-    // Thay đổi trạng thái của nhà cung cấp
-    provider.status = provider.status === 'Hoạt động' ? 'Ngưng hoạt động' : 'Hoạt động';
+  toggleStatus(partner: PartnerSummary): void {
+    const newStatus = !partner.deleted;
+    const confirmationMessage = `Bạn có chắc muốn ${
+      newStatus ? 'vô hiệu hóa' : 'kích hoạt'
+    } đối tác "${partner.name}" không?`;
 
-    // Trong một ứng dụng thực tế, bạn sẽ gọi API để cập nhật trạng thái trên server ở đây.
-    // Ví dụ: this.serviceProviderService.updateStatus(provider.id, provider.status).subscribe();
-    console.log(`Đã cập nhật trạng thái cho nhà cung cấp '${provider.name}' thành '${provider.status}'`);
+    // Sử dụng một modal/dialog tùy chỉnh thay vì confirm()
+    if (window.confirm(confirmationMessage)) {
+      this.partnerService
+        .changePartnerStatus(partner.id, { deleted: newStatus })
+        .subscribe({
+          next: () => {
+            this.loadPartners();
+          },
+          error: (err) => {
+            // Sử dụng một modal/dialog tùy chỉnh thay vì alert()
+            alert(`Cập nhật thất bại: ${err.message}`);
+          },
+        });
+    }
   }
 
-  viewDetails(providerId: number): void {
-    console.log('Xem chi tiết cho nhà cung cấp ID:', providerId);
-    // Ví dụ: this.router.navigate(['/coordinator/service-providers', providerId]);
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadPartners();
   }
 }

@@ -1,6 +1,6 @@
 // src/app/features/business/pages/tour-departure-date/tour-departure-date.component.ts
 
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
@@ -9,7 +9,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Observable, forkJoin, BehaviorSubject } from 'rxjs';
+import { Observable, forkJoin, BehaviorSubject, Subscription } from 'rxjs';
 import { switchMap, map, tap, finalize } from 'rxjs/operators';
 import { NgSelectModule } from '@ng-select/ng-select';
 
@@ -32,7 +32,7 @@ import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
   standalone: true,
   imports: [
     CommonModule,
-    // RouterLink,
+    RouterLink,
     ReactiveFormsModule,
     NgSelectModule,
     SpinnerComponent,
@@ -41,7 +41,7 @@ import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
   ],
   templateUrl: './tour-departure-date.component.html',
 })
-export class TourDepartureDateComponent implements OnInit {
+export class TourDepartureDateComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
   private tourService = inject(TourService);
@@ -60,9 +60,18 @@ export class TourDepartureDateComponent implements OnInit {
   isSubmitting = false;
 
   departureForm!: FormGroup;
+  private repeatSub!: Subscription;
+
+  // Mảng dữ liệu cho dropdown lặp lại
+  repeatTypes = [
+    { value: 'NONE', label: 'Không lặp lại' },
+    { value: 'WEEKLY', label: 'Hàng tuần' },
+    { value: 'MONTHLY', label: 'Hàng tháng' },
+  ];
 
   ngOnInit(): void {
     this.initForm();
+    this.handleRepeatChanges();
 
     this.route.paramMap
       .pipe(
@@ -70,6 +79,12 @@ export class TourDepartureDateComponent implements OnInit {
         switchMap(() => this.loadInitialData())
       )
       .subscribe();
+  }
+
+  ngOnDestroy(): void {
+    if (this.repeatSub) {
+      this.repeatSub.unsubscribe();
+    }
   }
 
   private loadInitialData() {
@@ -99,7 +114,31 @@ export class TourDepartureDateComponent implements OnInit {
       departureDate: [null, Validators.required],
       coordinatorId: [null, Validators.required],
       tourPaxId: [null, Validators.required],
+      // Thêm 2 trường mới
+      repeatType: ['NONE', Validators.required],
+      repeatCount: [
+        { value: 0, disabled: true },
+        [Validators.required, Validators.min(1)],
+      ],
     });
+  }
+
+  // Xử lý logic ẩn/hiện và yêu cầu của ô "Số lần lặp"
+  private handleRepeatChanges(): void {
+    const repeatTypeControl = this.departureForm.get('repeatType');
+    const repeatCountControl = this.departureForm.get('repeatCount');
+
+    if (repeatTypeControl && repeatCountControl) {
+      this.repeatSub = repeatTypeControl.valueChanges.subscribe((value) => {
+        if (value === 'NONE') {
+          repeatCountControl.setValue(0);
+          repeatCountControl.disable();
+        } else {
+          repeatCountControl.enable();
+          repeatCountControl.setValue(1); // Set giá trị mặc định là 1
+        }
+      });
+    }
   }
 
   private mapScheduleDetails(
@@ -116,7 +155,10 @@ export class TourDepartureDateComponent implements OnInit {
   }
 
   showCreateModal(): void {
-    this.departureForm.reset();
+    this.departureForm.reset({
+      repeatType: 'NONE',
+      repeatCount: { value: 0, disabled: true },
+    });
     this.isModalVisible = true;
   }
 
@@ -131,32 +173,23 @@ export class TourDepartureDateComponent implements OnInit {
     }
 
     this.isSubmitting = true;
-    const formValue = this.departureForm.value;
-    // 1. Tạo đối tượng Date từ giá trị của form (input type="date" trả về múi giờ địa phương)
+    const formValue = this.departureForm.getRawValue(); // Dùng getRawValue để lấy cả trường bị disable
+
+    // Tạo chuỗi ngày giờ đúng định dạng YYYY-MM-DDTHH:mm:ss
     const localDate = new Date(formValue.departureDate);
-
-    // 2. Lấy các thành phần ngày, tháng, năm, giờ, phút, giây từ đối tượng Date đó.
-    // Các hàm getFullYear(), getMonth(),... sẽ lấy theo múi giờ của trình duyệt.
     const year = localDate.getFullYear();
-    const month = ('0' + (localDate.getMonth() + 1)).slice(-2); // Thêm '0' nếu cần
+    const month = ('0' + (localDate.getMonth() + 1)).slice(-2);
     const day = ('0' + localDate.getDate()).slice(-2);
-
-    // Mặc định giờ bắt đầu là 00:00:00
-    const hours = '00';
-    const minutes = '00';
-    const seconds = '00';
-
-    // 3. Ghép lại thành chuỗi đúng định dạng mà LocalDateTime của Java có thể đọc được
-    // Ví dụ: "2025-08-01T00:00:00"
-    const formattedDateString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    const formattedDateString = `${year}-${month}-${day}T00:00:00`;
 
     const payload: TourScheduleCreateRequest = {
       coordinatorId: formValue.coordinatorId,
       tourPaxId: formValue.tourPaxId,
-      departureDate: formattedDateString, // <-- Sử dụng chuỗi đã định dạng
+      departureDate: formattedDateString,
+      repeatType: formValue.repeatType,
+      repeatCount: formValue.repeatType === 'NONE' ? 0 : formValue.repeatCount,
     };
 
-    // Dòng này để bạn kiểm tra lại dữ liệu gửi đi trong Console của trình duyệt
     console.log('Dữ liệu gửi lên server:', payload);
 
     this.tourDepartureService
@@ -164,13 +197,15 @@ export class TourDepartureDateComponent implements OnInit {
       .pipe(finalize(() => (this.isSubmitting = false)))
       .subscribe({
         next: () => {
-          alert('Thêm ngày khởi hành thành công!');
+          alert('Thêm (các) ngày khởi hành thành công!');
           this.closeModal();
           this.loadInitialData().subscribe();
         },
         error: (err) => {
-          console.error(err);
-          alert(`Lỗi: ${err.message || 'Không thể thêm ngày khởi hành.'}`);
+          console.error('Lỗi chi tiết từ server:', err);
+          alert(
+            `Lỗi từ server: ${err.message || 'Không thể thêm ngày khởi hành.'}`
+          );
         },
       });
   }
