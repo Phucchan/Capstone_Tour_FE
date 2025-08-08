@@ -5,7 +5,7 @@ import { CustomerService } from '../../services/customer.service';
 import { UserStorageService } from '../../../../core/services/user-storage/user-storage.service';
 import { BirthDate } from '../../../../shared/pipes/birthdate.pipe';
 import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
-
+import Swal from 'sweetalert2';
 @Component({
   selector: 'app-customer-profile',
   imports: [
@@ -25,6 +25,8 @@ export class CustomerProfileComponent {
   isEditMode = false;
   editFieldKey: keyof UserProfile | null = null;
   profileForm!: FormGroup;
+  today = new Date().toISOString().split('T')[0];
+
 
   constructor(
     private fb: FormBuilder,
@@ -42,9 +44,9 @@ export class CustomerProfileComponent {
           fullName: [res.data.fullName, [Validators.required, Validators.pattern(/^[a-zA-ZÀ-ỹ\s]+$/)]],
           gender: [res.data.gender, Validators.required],
           email: [res.data.email, [Validators.required, Validators.email]],
-          phone: [res.data.phone, [Validators.required, Validators.pattern(/^[0-9]{9,11}$/)]],
+          phone: [res.data.phone, [Validators.required, Validators.pattern(/^(0\d{9})$/)]],
           address: [res.data.address, Validators.required],
-          dateOfBirth: [res.data.dateOfBirth],
+          dateOfBirth: [res.data.dateOfBirth]
         });
       });
     }
@@ -62,6 +64,8 @@ export class CustomerProfileComponent {
       this.editableUser = { ...this.currentUser! };
     }
   }
+
+
 
   onSave() {
     if (this.profileForm.invalid) {
@@ -89,20 +93,34 @@ export class CustomerProfileComponent {
           this.currentUser = res.data;
           this.profileForm.patchValue(res.data);
           this.isEditMode = false;
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Cập nhật thành công!',
+            showConfirmButton: false,
+            timer: 1500
+          });
         });
-        alert('Cập nhật thành công!');
+       
       },
       error: () => {
-        alert('Cập nhật thất bại!');
+        Swal.fire({
+          icon: 'error',
+          title: 'Cập nhật thất bại!',
+          showConfirmButton: false,
+          timer: 1500
+        });
       }
     });
   }
-  /** Khi bấm vào icon ❌ */
+  /** Khi bấm vào icon  */
   cancelEdit() {
     this.editableUser = { ...this.currentUser! };
     this.isEditMode = false;
     this.editFieldKey = null;
   }
+
+
 }
 
 export interface UserProfile {
@@ -116,3 +134,5 @@ export interface UserProfile {
   dateOfBirth: string; // yyyy-MM-dd
   points: number;
 }
+
+ 
