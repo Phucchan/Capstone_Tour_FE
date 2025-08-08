@@ -1,0 +1,59 @@
+<div class="mb-4">
+    <a routerLink="/accountant/refunds" nz-button><i nz-icon nzType="arrow-left"></i> Quay lại danh sách</a>
+</div>
+
+<div *ngIf="isLoading" class="flex justify-center items-center h-full">
+  <nz-spin nzSimple nzSize="large"></nz-spin>
+</div>
+
+<div *ngIf="!isLoading && detail">
+  <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
+      <h2 class="text-2xl font-semibold">Chi tiết Yêu cầu Hoàn tiền #{{ detail.bookingCode }}</h2>
+      <div>
+        <button nz-button (click)="confirmCancellation()" *ngIf="detail.status === 'CANCEL_REQUESTED'" [nzLoading]="isProcessing" nzType="primary" nzDanger>
+          <i nz-icon nzType="check-circle" nzTheme="outline"></i> Duyệt Yêu Cầu Hủy
+        </button>
+        <button nz-button (click)="openCreateBillModal()" *ngIf="detail.status === 'CANCELLED'" [nzLoading]="isProcessing" nzType="primary">
+          <i nz-icon nzType="file-add" nzTheme="outline"></i> Tạo Phiếu Hoàn Tiền
+        </button>
+      </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2">
+      <nz-card nzTitle="Thông tin Booking">
+        <nz-descriptions nzBordered [nzColumn]="{ xxl: 2, xl: 2, lg: 2, md: 2, sm: 2, xs: 1 }">
+          <nz-descriptions-item nzTitle="Mã Tour">{{ detail.tourCode }}</nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Tên Tour">{{ detail.tourName }}</nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Ngày đi">{{ detail.startDate | formatDate }}</nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Trạng thái">
+            <nz-tag [nzColor]="getStatusColor(detail.status)">{{ detail.status }}</nz-tag>
+          </nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Tên khách hàng" [nzSpan]="2">{{ detail.customerName }}</nz-descriptions-item>
+        </nz-descriptions>
+      </nz-card>
+
+      <nz-card nzTitle="Thông tin Tài chính" class="mt-6">
+        <nz-descriptions nzBordered>
+          <nz-descriptions-item nzTitle="Tổng tiền tour">{{ detail.totalAmount | currencyVnd }}</nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Đã thanh toán">{{ detail.paidAmount | currencyVnd }}</nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Số tiền hoàn lại" class="font-bold text-red-600">{{ detail.refundAmount | currencyVnd }}</nz-descriptions-item>
+        </nz-descriptions>
+      </nz-card>
+    </div>
+
+    <div>
+      <nz-card nzTitle="Thông tin Nhận tiền">
+        <nz-descriptions nzLayout="vertical">
+          <nz-descriptions-item nzTitle="Ngân hàng">{{ detail.bankName || 'Chưa có' }}</nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Chủ tài khoản">{{ detail.bankAccountHolder || 'Chưa có' }}</nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Số tài khoản">{{ detail.bankAccountNumber || 'Chưa có' }}</nz-descriptions-item>
+        </nz-descriptions>
+      </nz-card>
+    </div>
+  </div>
+
+  <div *ngIf="detail.refundBill" class="mt-6">
+      <app-refund-bill-view [refundBill]="detail.refundBill"></app-refund-bill-view>
+  </div>
+</div>
