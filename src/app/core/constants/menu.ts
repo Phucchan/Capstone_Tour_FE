@@ -99,13 +99,12 @@ export const MENU_ITEMS: MenuItem[] = [
   // === Nhóm Kế toán ===
   {
     group: 'Kế toán',
-    separator: true,
     roles: [ALL_ROLES.ACCOUNTANT],
     items: [
       {
-        icon: 'assets/icons/heroicons/outline/bill.svg',
-        label: 'Báo cáo Doanh thu',
-        route: '/accounting/reports',
+        icon: 'assets/icons/heroicons/outline/dollar-svgrepo.svg',
+        label: 'Yêu cầu hoàn tiền',
+        route: '/accountant/refunds',
         roles: [ALL_ROLES.ACCOUNTANT],
       },
     ],
