@@ -62,19 +62,18 @@
           <div class="flex justify-between items-center">
             <span>Trạng thái:</span>
             <div class="flex items-center gap-2">
-        <select [(ngModel)]="booking.status" class="form-select text-sm">
-            <option value="PENDING">Chờ xử lý</option>
-            <option value="CONFIRMED">Đã xác nhận</option>
-            <option value="COMPLETED">Hoàn thành</option>
-            <option value="CANCELLED">Đã hủy</option>
-        </select>
-        <button (click)="onUpdateStatus()" class="px-3 py-1 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700">Lưu</button>
-    </div>
+              <select [(ngModel)]="booking.status" class="form-select text-sm">
+                <option value="PENDING">Chờ xử lý</option>
+                <option value="CONFIRMED">Đã xác nhận</option>
+                <option value="COMPLETED">Hoàn thành</option>
+                <option value="CANCELLED">Đã hủy</option>
+              </select>
+              <button (click)="onUpdateStatus()" class="px-3 py-1 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700">Lưu</button>
+            </div>
           </div>
-          <!-- HIỂN THỊ HÌNH THỨC THANH TOÁN -->
           <div class="flex justify-between items-center">
             <span>Thanh toán:</span>
-            <span class="font-medium">{{ booking.paymentMethod }}</span>
+            <span class="font-medium">{{ booking.paymentMethod || 'Chưa có' }}</span>
           </div>
           <hr class="dark:border-gray-700">
           <div class="flex justify-between items-center text-lg font-semibold">
@@ -82,10 +81,8 @@
             <span class="text-purple-600 dark:text-purple-400">{{ booking.totalAmount | currencyVnd }}</span>
           </div>
         </div>
-        <!-- NÚT GỬI MAIL -->
         <div class="mt-4 pt-4 border-t dark:border-gray-700 text-center">
-          <button (click)="openMailModal()"
-            class="w-full px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-teal-600 border border-transparent rounded-lg active:bg-teal-600 hover:bg-teal-700 focus:outline-none focus:shadow-outline-teal">
+          <button (click)="openMailModal()" class="w-full px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-teal-600 border border-transparent rounded-lg active:bg-teal-600 hover:bg-teal-700 focus:outline-none focus:shadow-outline-teal">
             Gửi xác nhận cho khách hàng
           </button>
         </div>
@@ -99,11 +96,43 @@
         <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">Thông tin người đặt</h4>
         <form [formGroup]="bookerForm" (ngSubmit)="onSaveChanges()">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Họ và tên</span><input type="text" formControlName="fullName" class="block w-full mt-1 text-sm form-input"></label>
-            <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Email</span><input type="email" formControlName="email" class="block w-full mt-1 text-sm form-input"></label>
-            <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Số điện thoại</span><input type="tel" formControlName="phone" class="block w-full mt-1 text-sm form-input"></label>
-            <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Địa chỉ</span><input type="text" formControlName="address" class="block w-full mt-1 text-sm form-input"></label>
-            <label class="block text-sm md:col-span-2"><span class="text-gray-700 dark:text-gray-400">Hạn thanh toán</span><input type="datetime-local" formControlName="paymentDeadline" class="block w-full mt-1 text-sm form-input"></label>
+            <!-- Họ và tên -->
+            <div>
+              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Họ và tên</span><input type="text" formControlName="fullName" class="block w-full mt-1 text-sm form-input"></label>
+              <div *ngIf="booker['fullName'].invalid && booker['fullName'].touched" class="text-xs text-red-600 mt-1">
+                <span *ngIf="booker['fullName'].errors?.['required']">Vui lòng nhập họ và tên.</span>
+              </div>
+            </div>
+            <!-- Email -->
+            <div>
+              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Email</span><input type="email" formControlName="email" class="block w-full mt-1 text-sm form-input"></label>
+              <div *ngIf="booker['email'].invalid && booker['email'].touched" class="text-xs text-red-600 mt-1">
+                <span *ngIf="booker['email'].errors?.['required']">Vui lòng nhập email.</span>
+                <span *ngIf="booker['email'].errors?.['email']">Email không đúng định dạng.</span>
+              </div>
+            </div>
+            <!-- Số điện thoại -->
+            <div>
+              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Số điện thoại</span><input type="tel" formControlName="phone" class="block w-full mt-1 text-sm form-input"></label>
+              <div *ngIf="booker['phone'].invalid && booker['phone'].touched" class="text-xs text-red-600 mt-1">
+                <span *ngIf="booker['phone'].errors?.['required']">Vui lòng nhập số điện thoại.</span>
+                <span *ngIf="booker['phone'].errors?.['invalidPhone']">Số điện thoại không đúng định dạng Việt Nam.</span>
+              </div>
+            </div>
+            <!-- Địa chỉ -->
+            <div>
+              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Địa chỉ</span><input type="text" formControlName="address" class="block w-full mt-1 text-sm form-input"></label>
+              <div *ngIf="booker['address'].invalid && booker['address'].touched" class="text-xs text-red-600 mt-1">
+                <span *ngIf="booker['address'].errors?.['required']">Vui lòng nhập địa chỉ.</span>
+              </div>
+            </div>
+            <!-- Hạn thanh toán -->
+            <div class="md:col-span-2">
+              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Hạn thanh toán</span><input type="datetime-local" formControlName="paymentDeadline" class="block w-full mt-1 text-sm form-input"></label>
+              <div *ngIf="booker['paymentDeadline'].invalid && booker['paymentDeadline'].touched" class="text-xs text-red-600 mt-1">
+                <span *ngIf="booker['paymentDeadline'].errors?.['pastDateTime']">Hạn thanh toán không được là ngày trong quá khứ.</span>
+              </div>
+            </div>
           </div>
           <div class="mt-4 text-right">
             <button type="submit" [disabled]="bookerForm.invalid || bookerForm.pristine" class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -125,25 +154,18 @@
           <table class="w-full whitespace-no-wrap">
             <thead>
               <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
-                <th class="px-4 py-3">Họ tên</th>
-                <th class="px-4 py-3">Loại khách</th>
-                <th class="px-4 py-3">Ngày sinh</th>
-                <th class="px-4 py-3">Hành động</th>
+                <th class="px-4 py-3">Họ tên</th><th class="px-4 py-3">Loại khách</th><th class="px-4 py-3">Ngày sinh</th><th class="px-4 py-3">Hành động</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
               <tr *ngFor="let customer of booking.customers" class="text-gray-700 dark:text-gray-400">
-                <td class="px-4 py-3">{{customer.fullName}}</td>
-                <td class="px-4 py-3">{{customer.paxType}}</td>
-                <td class="px-4 py-3">{{customer.dateOfBirth | formatDate}}</td>
+                <td class="px-4 py-3">{{customer.fullName}}</td><td class="px-4 py-3">{{customer.paxType}}</td><td class="px-4 py-3">{{customer.dateOfBirth | formatDate}}</td>
                 <td class="px-4 py-3">
                   <button (click)="openEditCustomerModal(customer)" class="px-2 py-1 text-sm font-medium text-blue-600 hover:underline">Sửa</button>
                   <button (click)="onDeleteCustomer(customer.id)" class="px-2 py-1 text-sm font-medium text-red-600 hover:underline">Xóa</button>
                 </td>
               </tr>
-              <tr *ngIf="booking.customers.length === 0">
-                <td colspan="4" class="px-4 py-3 text-center">Chưa có khách hàng nào trong đoàn.</td>
-              </tr>
+              <tr *ngIf="booking.customers.length === 0"><td colspan="4" class="px-4 py-3 text-center">Chưa có khách hàng nào trong đoàn.</td></tr>
             </tbody>
           </table>
         </div>
@@ -170,8 +192,22 @@
               <button *ngIf="customersArray.length > 1" (click)="removeCustomerFromAddForm(i)" type="button" class="text-red-500 hover:text-red-700">&times; Xóa</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Họ và tên *</span><input type="text" formControlName="fullName" class="block w-full mt-1 text-sm form-input"></label>
-              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Ngày sinh *</span><input type="date" formControlName="dateOfBirth" class="block w-full mt-1 text-sm form-input"></label>
+              <!-- Họ và tên khách hàng -->
+              <div>
+                <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Họ và tên *</span><input type="text" formControlName="fullName" class="block w-full mt-1 text-sm form-input"></label>
+                <div *ngIf="getCustomerControls(i)['fullName'].invalid && getCustomerControls(i)['fullName'].touched" class="text-xs text-red-600 mt-1">
+                  <span *ngIf="getCustomerControls(i)['fullName'].errors?.['required']">Vui lòng nhập họ và tên.</span>
+                </div>
+              </div>
+              <!-- Ngày sinh khách hàng -->
+              <div>
+                <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Ngày sinh *</span><input type="date" formControlName="dateOfBirth" class="block w-full mt-1 text-sm form-input"></label>
+                <div *ngIf="getCustomerControls(i)['dateOfBirth'].invalid && getCustomerControls(i)['dateOfBirth'].touched" class="text-xs text-red-600 mt-1">
+                  <span *ngIf="getCustomerControls(i)['dateOfBirth'].errors?.['required']">Vui lòng chọn ngày sinh.</span>
+                  <span *ngIf="getCustomerControls(i)['dateOfBirth'].errors?.['futureDate']">Ngày sinh không được ở tương lai.</span>
+                </div>
+              </div>
+              <!-- Giới tính và Loại khách -->
               <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Giới tính *</span><select formControlName="gender" class="block w-full mt-1 text-sm form-select"><option value="MALE">Nam</option><option value="FEMALE">Nữ</option><option value="OTHER">Khác</option></select></label>
               <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Loại khách *</span><select formControlName="paxType" class="block w-full mt-1 text-sm form-select"><option value="ADULT">Người lớn</option><option value="CHILD">Trẻ em</option><option value="INFANT">Trẻ nhỏ</option></select></label>
               <div class="flex items-center mt-4 md:col-span-2"><input type="checkbox" formControlName="singleRoom" id="addSingleRoom-{{i}}" class="form-checkbox"><label for="addSingleRoom-{{i}}" class="ml-2 text-sm">Phụ thu phòng đơn</label></div>
@@ -191,7 +227,6 @@
   </div>
 </div>
 
-
 <!-- MODAL SỬA KHÁCH HÀNG -->
 <div *ngIf="isEditCustomerModalOpen" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black bg-opacity-50">
   <div class="relative w-full max-w-lg p-4 mx-auto bg-white rounded-lg shadow-xl dark:bg-gray-800">
@@ -203,10 +238,23 @@
     </div>
     <form [formGroup]="editCustomerForm" (ngSubmit)="onSubmitEditCustomer()">
       <div class="py-4 space-y-4">
-        <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Họ và tên</span><input type="text" formControlName="fullName" class="block w-full mt-1 text-sm form-input"></label>
+        <!-- Họ tên -->
+        <div>
+          <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Họ và tên</span><input type="text" formControlName="fullName" class="block w-full mt-1 text-sm form-input"></label>
+          <div *ngIf="editCustomer['fullName'].invalid && editCustomer['fullName'].touched" class="text-xs text-red-600 mt-1">
+            <span *ngIf="editCustomer['fullName'].errors?.['required']">Vui lòng nhập họ và tên.</span>
+          </div>
+        </div>
         <div class="grid grid-cols-2 gap-4">
           <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Giới tính</span><select formControlName="gender" class="block w-full mt-1 text-sm form-select"><option value="MALE">Nam</option><option value="FEMALE">Nữ</option><option value="OTHER">Khác</option></select></label>
-          <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Ngày sinh</span><input type="date" formControlName="dateOfBirth" class="block w-full mt-1 text-sm form-input"></label>
+          <!-- Ngày sinh -->
+          <div>
+            <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Ngày sinh</span><input type="date" formControlName="dateOfBirth" class="block w-full mt-1 text-sm form-input"></label>
+            <div *ngIf="editCustomer['dateOfBirth'].invalid && editCustomer['dateOfBirth'].touched" class="text-xs text-red-600 mt-1">
+              <span *ngIf="editCustomer['dateOfBirth'].errors?.['required']">Vui lòng chọn ngày sinh.</span>
+              <span *ngIf="editCustomer['dateOfBirth'].errors?.['futureDate']">Ngày sinh không được ở tương lai.</span>
+            </div>
+          </div>
         </div>
         <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Loại khách</span><select formControlName="paxType" class="block w-full mt-1 text-sm form-select"><option value="ADULT">Người lớn</option><option value="CHILD">Trẻ em</option><option value="INFANT">Trẻ nhỏ</option><option value="TODDLER">Em bé</option></select></label>
         <div class="flex items-center mt-4"><input type="checkbox" formControlName="singleRoom" id="editSingleRoom" class="form-checkbox"><label for="editSingleRoom" class="ml-2 text-sm">Phòng đơn</label></div>
