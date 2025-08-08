@@ -3,6 +3,7 @@ import { ChangePasswordComponent } from "./components/change-password/change-pas
 import { CustomerProfileComponent } from "./components/customer-profile/customer-profile.component";
 import { CustomerLayoutComponent } from "./components/Customer-layout/Customer-layout.component";
 import { WishlistComponent } from "./components/wishlist/wishlist.component";
+import { BookingHistoriesComponent } from "./components/booking-histories/booking-histories.component";
 
 
 export const CUSTOMER_ROUTES: Route[] = [
@@ -23,6 +24,9 @@ export const CUSTOMER_ROUTES: Route[] = [
   {
     path: 'wishlist',
     component: WishlistComponent
+  },
+  { path: 'booking-histories', 
+    component: BookingHistoriesComponent 
   },
 
 
