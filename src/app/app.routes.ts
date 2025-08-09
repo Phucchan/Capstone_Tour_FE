@@ -70,6 +70,15 @@ export const routes: Routes = [
           ),
         data: { expectedRoles: ['SERVICE_COORDINATOR'] }, // Đảm bảo vai trò này đúng
       },
+
+      {
+        path: 'accountant',
+        loadChildren: () =>
+          import('./features/accountant/accountant.routes').then(
+            (m) => m.ACCOUNTANT_ROUTES
+          ),
+          data: { expectedRoles: ['ACCOUNTANT'] },
+      },
     ],
   },
 

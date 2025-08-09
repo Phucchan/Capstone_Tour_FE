@@ -72,9 +72,9 @@ export class TourBookingComponent implements OnInit {
       userId: ['', Validators.required],
       tourId: ['', Validators.required],
       scheduleId: ['', Validators.required],
-      fullName: ['', Validators.required],
+      fullName: ['', [Validators.required, Validators.pattern(/^[a-zA-ZÀ-ỹ\s]+$/)]],
       email: ['', [Validators.required, Validators.email]],
-      phone: [null, [Validators.required, Validators.pattern('^[0-9]*$')]],
+      phone: [null, [Validators.required, Validators.pattern(/^(0\d{9})$/)]],
       address: ['', Validators.required],
       note: [''],
       paymentMethod: ['CASH', Validators.required],
@@ -401,7 +401,7 @@ export class TourBookingComponent implements OnInit {
     }
   }
 
-  increamentSingleRooms() {
+  incrementSingleRooms() {
     if (this.numberSingleRooms < this.numberAdults) {
       this.numberSingleRooms++;
       this.bookingForm.patchValue({
@@ -424,7 +424,7 @@ export class TourBookingComponent implements OnInit {
     });
   }
 
-  incrementAldults() {
+  incrementAdults() {
     if (
       this.numberAdults +
         this.numberChildren +
@@ -447,7 +447,20 @@ export class TourBookingComponent implements OnInit {
     }
   }
 
-  decrementAldults() {
+  get availableSeats(): number {
+    return this.tourSchedule?.availableSeats! - this.getTotalGuests();
+  }
+
+  getTotalGuests(): number {
+    return (
+      this.numberAdults +
+      this.numberChildren +
+      this.numberInfants +
+      this.numberToddlers
+    );
+  }
+
+  decrementAdults() {
     if (this.numberAdults > 1) {
       this.numberAdults--;
       this.adultsFormArray.removeAt(this.numberAdults); // Remove the last adult form group

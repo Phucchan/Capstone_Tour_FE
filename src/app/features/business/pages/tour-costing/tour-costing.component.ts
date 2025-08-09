@@ -141,7 +141,7 @@ export class TourCostingComponent implements OnInit {
         fixedPrice: [{ value: null, disabled: true }],
         sellingPrice: [{ value: null, disabled: true }],
       },
-      { validators: this.formValidator() }
+      { validators: [this.formValidator(), this.priceValidator()] }
     );
 
     // 2. Sau khi form đã tồn tại, khởi tạo các thuộc tính phụ thuộc vào nó
@@ -319,6 +319,25 @@ export class TourCostingComponent implements OnInit {
       if (isOverlapping) {
         return { overlap: true };
       }
+      return null;
+    };
+  }
+
+  // --- Price Validator ---
+  private priceValidator(): ValidatorFn {
+    return (formGroup: AbstractControl): ValidationErrors | null => {
+      const isManual = formGroup.get('manualPrice')?.value;
+      const fixedPrice = formGroup.get('fixedPrice')?.value;
+      const sellingPrice = formGroup.get('sellingPrice')?.value;
+
+      // Chỉ validate khi người dùng chọn "Tự nhập giá" và đã nhập cả 2 giá trị
+      if (isManual && fixedPrice !== null && sellingPrice !== null) {
+        if (fixedPrice > sellingPrice) {
+          // Trả về một object lỗi nếu giá bán nhỏ hơn giá vốn
+          return { priceInvalid: true };
+        }
+      }
+      // Trả về null nếu không có lỗi
       return null;
     };
   }

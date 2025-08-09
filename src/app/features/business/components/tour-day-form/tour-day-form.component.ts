@@ -55,12 +55,11 @@ export class TourDayFormComponent implements OnInit, OnChanges {
 
   // --- State cho việc chọn dịch vụ ---
   public serviceTypes: ServiceTypeShortDTO[] = [];
-  public allPartnerServices: PartnerServiceShortDTO[] = [];
   public filteredPartnerServices: PartnerServiceShortDTO[] = [];
 
-  public selectedServiceType: string | null = null;
+  public selectedServiceType: ServiceTypeShortDTO | null = null;
   public selectedPartnerService: number | null = null;
-  public selectedServicesList: ServiceInfoDTO[] = []; // <-- Sử dụng ServiceInfoDTO
+  public selectedServicesList: ServiceInfoDTO[] = [];
 
   constructor() {
     this.dayForm = this.fb.group({
@@ -74,12 +73,11 @@ export class TourDayFormComponent implements OnInit, OnChanges {
     this.locations$ = this.tourService
       .getTourOptions()
       .pipe(map((options) => options.destinations));
+
+    // Chỉ tải danh sách loại dịch vụ khi component khởi tạo
     this.tourService
       .getServiceTypes()
       .subscribe((types) => (this.serviceTypes = types));
-    this.partnerService
-      .getPartnerServices()
-      .subscribe((services) => (this.allPartnerServices = services));
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -96,19 +94,32 @@ export class TourDayFormComponent implements OnInit, OnChanges {
       this.dayForm.reset();
       this.selectedServicesList = [];
     }
+    // Reset lựa chọn dịch vụ mỗi khi form mở/thay đổi
+    this.selectedServiceType = null;
+    this.filteredPartnerServices = [];
+    this.selectedPartnerService = null;
   }
 
+  /**
+   * SỬA LỖI RACE CONDITION:
+   * Chỉ gọi API để lấy dịch vụ cụ thể SAU KHI người dùng đã chọn một loại.
+   */
   onServiceTypeChange(serviceType: ServiceTypeShortDTO | null): void {
     this.selectedPartnerService = null;
+    this.filteredPartnerServices = [];
+    this.selectedServiceType = serviceType;
+
     if (serviceType) {
-      this.filteredPartnerServices = this.allPartnerServices.filter(
-        (s) => s.serviceTypeName === serviceType.name
-      );
-    } else {
-      this.filteredPartnerServices = [];
+      this.isLoading = true;
+      // Gửi ID của loại dịch vụ đi
+      this.partnerService
+        .getPartnerServicesByType(serviceType.id)
+        .pipe(finalize(() => (this.isLoading = false)))
+        .subscribe((services) => {
+          this.filteredPartnerServices = services;
+        });
     }
   }
-
   addSelectedService(): void {
     if (!this.selectedPartnerService || !this.dayData) return;
 
@@ -125,9 +136,9 @@ export class TourDayFormComponent implements OnInit, OnChanges {
       .subscribe({
         next: (updatedDay: TourDayManagerDTO) => {
           this.selectedServicesList = [...(updatedDay.services || [])];
-          this.selectedPartnerService = null;
+          this.selectedPartnerService = null; // Reset ô chọn dịch vụ cụ thể
         },
-        error: (err) => alert('Lỗi khi thêm dịch vụ: ' + err.error.message),
+        error: (err) => alert('Lỗi khi thêm dịch vụ: ' + err.error?.message),
       });
   }
 
@@ -142,7 +153,7 @@ export class TourDayFormComponent implements OnInit, OnChanges {
         next: (updatedDay: TourDayManagerDTO) => {
           this.selectedServicesList = [...(updatedDay.services || [])];
         },
-        error: (err) => alert('Lỗi khi xóa dịch vụ: ' + err.error.message),
+        error: (err) => alert('Lỗi khi xóa dịch vụ: ' + err.error?.message),
       });
   }
 
@@ -153,7 +164,7 @@ export class TourDayFormComponent implements OnInit, OnChanges {
     let saveObservable: Observable<any>;
     const payload: TourDayManagerCreateRequestDTO = {
       ...this.dayForm.value,
-      serviceTypeIds: [],
+      serviceTypeIds: [], // Trường này có vẻ không còn cần thiết
     };
 
     if (this.dayData) {
@@ -173,7 +184,7 @@ export class TourDayFormComponent implements OnInit, OnChanges {
         );
         this.formSaved.emit();
       },
-      error: (err) => alert('Lỗi khi lưu: ' + err.error.message),
+      error: (err) => alert('Lỗi khi lưu: ' + err.error?.message),
     });
   }
 

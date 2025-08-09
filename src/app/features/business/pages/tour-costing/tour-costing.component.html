@@ -156,6 +156,9 @@
                     <input id="sellingPrice" type="number" formControlName="sellingPrice" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-100">
                 </div>
             </div>
+             <div *ngIf="paxForm.hasError('priceInvalid') && paxForm.get('sellingPrice')?.touched" class="text-red-500 text-sm mt-1 col-span-2">
+                Giá bán không được nhỏ hơn giá vốn.
+            </div>
 
             <div class="mt-6 flex justify-end gap-4">
                 <button type="button" (click)="closePaxModal()" class="bg-gray-200 py-2 px-4 rounded-md text-sm hover:bg-gray-300">Hủy</button>

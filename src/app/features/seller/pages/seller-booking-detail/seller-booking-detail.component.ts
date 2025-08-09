@@ -20,7 +20,7 @@ import { SellerBookingUpdateRequest } from '../../models/seller-booking-update-r
 import { SellerBookingCustomer } from '../../models/seller-booking-customer.model';
 import { SellerMailRequest } from '../../models/seller-mail-request.model';
 import { BookingStatus } from '../../../../core/models/enums';
-
+import { CustomValidators } from '../../../../core/validators/custom-validators';
 
 @Component({
   selector: 'app-seller-booking-detail',
@@ -75,7 +75,7 @@ export class SellerBookingDetailComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       phone: ['', Validators.required],
       address: ['', Validators.required],
-      paymentDeadline: [''],
+      paymentDeadline: ['', CustomValidators.noPastDateTime],
     });
     // Khởi tạo mailForm
     this.mailForm = this.fb.group({
@@ -108,6 +108,11 @@ export class SellerBookingDetailComponent implements OnInit {
     this.sellerService.getBookingDetail(this.bookingId).subscribe({
       next: (res) => {
         this.booking = res.data;
+        // BẢO VỆ DỮ LIỆU: Đảm bảo tổng tiền không bao giờ âm
+        if (this.booking) {
+          this.booking.totalAmount = Math.max(0, this.booking.totalAmount);
+        }
+
         this.initialBookingStatus = this.booking.status; // Lưu lại trạng thái ban đầu
         const currentSchedule = this.booking.schedules.find(
           (s) =>
@@ -256,12 +261,26 @@ export class SellerBookingDetailComponent implements OnInit {
     return this.fb.group({
       fullName: ['', Validators.required],
       gender: ['MALE', Validators.required],
-      dateOfBirth: ['', Validators.required],
+      dateOfBirth: ['', [Validators.required, CustomValidators.noFutureDate]],
       paxType: ['ADULT', Validators.required],
       singleRoom: [false],
       note: [''],
       pickUpAddress: [''],
     });
+  }
+
+  // Thêm các hàm helper để dễ dàng truy cập lỗi trên template
+  get booker() {
+    return this.bookerForm.controls;
+  }
+
+  getCustomerControls(index: number) {
+    const customerGroup = this.customersArray.at(index) as FormGroup;
+    return customerGroup.controls;
+  }
+
+  get editCustomer() {
+    return this.editCustomerForm.controls;
   }
 
   // Thêm khách hàng
@@ -356,9 +375,10 @@ export class SellerBookingDetailComponent implements OnInit {
   onDeleteCustomer(customerId: number): void {
     if (confirm('Bạn có chắc chắn muốn xóa khách hàng này khỏi đoàn?')) {
       this.sellerService.deleteCustomer(customerId).subscribe({
-        next: (res) => {
+        next: () => {
           alert('Xóa khách hàng thành công!');
-          this.booking = res.data;
+          // Tải lại toàn bộ thông tin booking để đảm bảo dữ liệu mới nhất
+          this.loadBookingDetail();
         },
         error: (err) =>
           alert(`Lỗi: ${err.error.message || 'Không thể xóa khách hàng.'}`),
