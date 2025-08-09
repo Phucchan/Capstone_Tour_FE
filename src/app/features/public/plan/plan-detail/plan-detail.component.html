@@ -9,11 +9,24 @@
       <p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">
         {{ displayedText }}
       </p>
-      <button type="button"
-        class="text-lg text-gray-500 dark:text-gray-400 text-right cursor-pointer hover:text-blue-500"
-        (click)="nextStep()">
-        Tiếp theo >>
-      </button>
+      <div class="flex justify-between items-center mt-4">
+        <button type="button" *ngIf="step > 0"
+          class="text-lg text-gray-500 dark:text-gray-400 text-right cursor-pointer hover:text-blue-500"
+          (click)="previousStep()">
+          Quay lại
+        </button>
+        <button type="button" *ngIf="step <= plan?.days.length - 1"
+          class="text-lg text-gray-500 dark:text-gray-400 text-right cursor-pointer hover:text-blue-500"
+          (click)="nextStep()">
+          Tiếp theo >>
+        </button>
+        <button type="button" *ngIf="step >plan?.days.length - 1"
+          class="text-lg text-gray-500 dark:text-gray-400 text-right cursor-pointer hover:text-blue-500"
+          (click)="nextStep()">
+          Lưu kế hoạch >>
+        </button>
+      </div>
+
     </div>
     <video src="/assets/video/walking-duck.mp4" autoplay loop muted playsinline class="w-60 h-auto " preload="auto">
       Trình duyệt của bạn không hỗ trợ video.
