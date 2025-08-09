@@ -4,6 +4,7 @@ import { CustomerProfileComponent } from "./components/customer-profile/customer
 import { CustomerLayoutComponent } from "./components/Customer-layout/Customer-layout.component";
 import { WishlistComponent } from "./components/wishlist/wishlist.component";
 import { BookingHistoriesComponent } from "./components/booking-histories/booking-histories.component";
+import { ListPlanComponent } from "./components/list-plan/list-plan.component";
 
 
 export const CUSTOMER_ROUTES: Route[] = [
@@ -29,6 +30,11 @@ export const CUSTOMER_ROUTES: Route[] = [
     component: BookingHistoriesComponent 
   },
 
+  
+  {
+    path: 'list-plan',
+    component: ListPlanComponent
+  }
 
 
 ];
