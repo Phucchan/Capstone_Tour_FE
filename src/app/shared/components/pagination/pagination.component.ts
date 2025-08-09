@@ -1,5 +1,4 @@
-// src/app/shared/components/pagination/pagination.component.ts
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -7,51 +6,56 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './pagination.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PaginationComponent {
-  @Input() currentPage: number = 0; // 0-based
-  @Input() totalItems: number = 0;
-  @Input() pageSize: number = 10;
+export class PaginationComponent implements OnChanges {
+  /** 0-based */
+  @Input() currentPage = 0;
+  @Input() totalItems = 0;
+  @Input() pageSize = 10;
+
+  /** số trang hiển thị hai bên trang hiện tại (mặc định 1: ... 3 [4] 5 ...) */
+  @Input() siblingCount = 1;
 
   @Output() pageChange = new EventEmitter<number>();
-
+  track = (_: number, v: number | '...') => (v === '...' ? -1 : v);
   get totalPages(): number {
-    return Math.ceil(this.totalItems / this.pageSize);
+    const size = Math.max(1, this.pageSize || 1);
+    return Math.max(0, Math.ceil(this.totalItems / size));
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Clamp currentPage khi totalItems/pageSize đổi
+    const maxPage = Math.max(this.totalPages - 1, 0);
+    if (this.currentPage > maxPage) {
+      this.currentPage = maxPage;
+    }
+    if (this.currentPage < 0) this.currentPage = 0;
   }
 
   get visiblePages(): (number | '...')[] {
     const total = this.totalPages;
-    const current = this.currentPage;
-    const delta = 1;
+    if (total <= 1) return [];
 
-    const range: (number | '...')[] = [];
+    const cur = this.currentPage + 1; // 1-based for display
+    const left = Math.max(2, cur - this.siblingCount);
+    const right = Math.min(total - 1, cur + this.siblingCount);
 
-    const left = Math.max(1, current + 1 - delta);
-    const right = Math.min(total, current + 1 + delta);
+    const pages: (number | '...')[] = [1];
 
-    const showLeftDots = left > 2;
-    const showRightDots = right < total - 1;
+    if (left > 2) pages.push('...');
+    for (let i = left; i <= right; i++) pages.push(i);
+    if (right < total - 1) pages.push('...');
+    pages.push(total);
 
-    range.push(1);
-
-    if (showLeftDots) range.push('...');
-
-    for (let i = left; i <= right; i++) {
-      if (i !== 1 && i !== total) {
-        range.push(i);
-      }
-    }
-
-    if (showRightDots) range.push('...');
-
-    if (total > 1) range.push(total);
-
-    return range;
+    return pages;
   }
 
   changePage(p: number | '...') {
-    if (p === '...' || p - 1 === this.currentPage) return;
-    this.pageChange.emit((p as number) - 1);
+    if (p === '...') return;
+    const zeroBased = p - 1;
+    if (zeroBased === this.currentPage) return;
+    this.pageChange.emit(zeroBased);
   }
 
   previous() {

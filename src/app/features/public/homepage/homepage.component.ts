@@ -7,6 +7,8 @@ import { Router, RouterModule } from '@angular/router';
 import { CurrencyVndPipe } from '../../../shared/pipes/currency-vnd.pipe';
 import { IconTransportPipe } from '../../../shared/pipes/icon-transport.pipe';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
+import { CustomOrderTourService } from '../../customer/services/custom-order-tour.service';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 
 @Component({
@@ -20,6 +22,7 @@ import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.
     CurrencyVndPipe,
     IconTransportPipe,
     SkeletonComponent,
+    NgSelectModule
 
   ],
   templateUrl: './homepage.component.html',
@@ -27,6 +30,7 @@ import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.
 })
 export class HomepageComponent implements OnInit {
   blogs: Blog[] = [];
+  destinationList: Location[] = [];
   saleTours: SaleTour[] = [];
   locations: Location[] = [];
   isLoading = true;
@@ -34,6 +38,7 @@ export class HomepageComponent implements OnInit {
 
   constructor(
     private homepageService: HomepageService,
+    private customOrderTourService: CustomOrderTourService,
     @Inject(PLATFORM_ID) private platformId: Object,
     private router: Router
   ) { }
@@ -42,6 +47,7 @@ export class HomepageComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.getHomePageData();
     }
+    this.getDestinations();
   }
 
   getHomePageData(): void {
@@ -103,11 +109,27 @@ export class HomepageComponent implements OnInit {
 
   goToLocation(destId: number) {
     this.router.navigate(['/tours/location', destId]);
-    // hoặc '/list-tour', destId nếu bạn đặt route là vậy
+
   }
 
   goToTourDiscountBooking(tourId: number, scheduleId: number): void {
     this.router.navigate(['/tour-booking', tourId, scheduleId]);
+  }
+
+  getDestinations(): void {
+    this.customOrderTourService.getDestinations().subscribe({
+      next: (response) => {
+        this.destinationList = response.data.map((d: any) => ({
+            id: +d.id,
+            name: d.name,
+            description: d.description,
+            image: d.image,
+          }));
+      },
+      error: (err) => {
+        console.error('Error fetching destinations', err);
+      },
+    });
   }
 
 }

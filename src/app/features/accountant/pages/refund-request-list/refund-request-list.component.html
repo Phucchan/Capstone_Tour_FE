@@ -1,0 +1,79 @@
+<div class="p-6 bg-white rounded-lg shadow-md">
+  <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
+    <h2 class="text-2xl font-semibold">Danh sách Yêu cầu Hoàn tiền</h2>
+    <div class="w-full sm:w-auto md:w-1/3">
+      <nz-input-group [nzSuffix]="inputClearTpl" nzSearch [nzAddOnAfter]="suffixIconButton">
+        <input
+          type="text"
+          nz-input
+          placeholder="Tìm kiếm theo mã tour, tên khách hàng..."
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange($event)"
+        />
+      </nz-input-group>
+      <ng-template #inputClearTpl>
+        <i
+          nz-icon
+          class="ant-input-clear-icon"
+          nzTheme="fill"
+          nzType="close-circle"
+          *ngIf="searchTerm"
+          (click)="onSearchChange('')"
+        ></i>
+      </ng-template>
+      <ng-template #suffixIconButton>
+        <button nz-button nzType="primary" nzSearch><i nz-icon nzType="search"></i></button>
+      </ng-template>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    <nz-table
+      #refundTable
+      [nzData]="refunds.items"
+      [nzFrontPagination]="false"
+      [nzLoading]="isLoading"
+      [nzTotal]="refunds.total"
+      [nzPageSize]="refunds.size"
+      [nzPageIndex]="refunds.page + 1"
+      (nzPageIndexChange)="onPageChange($event)"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th>Mã Tour</th>
+          <th>Tên Tour</th>
+          <th>Tên Khách Hàng</th>
+          <th>Ngày đi</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let data of refundTable.data">
+          <td>{{ data.tourCode }}</td>
+          <td>{{ data.tourName }}</td>
+          <td>{{ data.customerName }}</td>
+          <td>{{ data.startDate | formatDate }}</td>
+          <td>
+            <nz-tag [nzColor]="getStatusColor(data.status)">{{ data.status }}</nz-tag>
+          </td>
+          <td>
+            <button nz-button nzType="primary" (click)="viewDetail(data.bookingId)">
+              <i nz-icon nzType="eye" nzTheme="outline"></i> Xem chi tiết
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+
+  <div class="mt-4 flex justify-end">
+      <app-pagination
+        [currentPage]="refunds.page + 1"
+        [totalItems]="refunds.total"
+        [pageSize]="refunds.size"
+        (pageChange)="onPageChange($event)"
+      ></app-pagination>
+  </div>
+</div>

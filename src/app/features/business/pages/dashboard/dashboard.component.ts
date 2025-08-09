@@ -1,6 +1,13 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
 import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -13,6 +20,22 @@ import {
 } from '../../../../core/models/dashboard.model';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 
+//Tạo một custom validator function
+export const dateRangeValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const startDate = control.get('startDate')?.value;
+  const endDate = control.get('endDate')?.value;
+
+  // Chỉ validate khi cả hai ngày đều có giá trị
+  if (startDate && endDate) {
+    const isError = new Date(endDate) < new Date(startDate);
+    // Nếu ngày kết thúc nhỏ hơn ngày bắt đầu, trả về lỗi
+    return isError ? { dateRange: true } : null;
+  }
+
+  // Nếu không có lỗi, trả về null
+  return null;
+};
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -20,7 +43,6 @@ import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.
     CommonModule,
     ReactiveFormsModule,
     NgxChartsModule,
-    // SỬA LỖI: CurrencyPipe không cần import ở đây vì đã có trong providers
     SpinnerComponent,
   ],
   providers: [CurrencyPipe],
@@ -63,18 +85,38 @@ export class DashboardComponent implements OnInit {
     const today = new Date();
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-    this.filterForm = this.fb.group({
-      startDate: [this.formatDate(firstDayOfMonth)],
-      endDate: [this.formatDate(today)],
-    });
+    this.filterForm = this.fb.group(
+      {
+        startDate: [this.formatDate(firstDayOfMonth)],
+        endDate: [this.formatDate(today)],
+      },
+      {
+        //Thêm custom validator vào form group
+        validators: dateRangeValidator,
+      }
+    );
 
     this.fetchDashboardData();
-    this.filterForm.valueChanges.subscribe(() => this.fetchDashboardData());
+
+    // Chỉ fetch lại data khi form hợp lệ
+    this.filterForm.valueChanges.subscribe(() => {
+      if (this.filterForm.valid) {
+        this.fetchDashboardData();
+      }
+    });
   }
 
   fetchDashboardData(): void {
+    //Chỉ fetch khi form hợp lệ
+    if (this.filterForm.invalid) {
+      return;
+    }
+
     this.isLoading = true;
     this.error = null;
+    //Vô hiệu hóa form khi đang tải dữ liệu
+    this.filterForm.disable();
+
     const { startDate, endDate } = this.filterForm.value;
 
     forkJoin({
@@ -131,10 +173,12 @@ export class DashboardComponent implements OnInit {
         ];
 
         this.isLoading = false;
+        this.filterForm.enable(); // Bật lại form sau khi tải xong
       },
       error: (err) => {
         this.error = 'Không thể tải dữ liệu dashboard. Vui lòng thử lại.';
         this.isLoading = false;
+        this.filterForm.enable(); // Bật lại form nếu có lỗi
         console.error(err);
       },
     });

@@ -15,17 +15,6 @@ export const routes: Routes = [
     path: 'register',
     component: RegisterComponent,
   },
-  // {
-  //   path: 'customer',
-  //   loadChildren: () =>
-  //     import('./features/customer/customer.routes').then(
-  //       (m) => m.CUSTOMER_ROUTES
-  //     ),
-  //   canActivate: [AuthGuard],
-  //   data: { expectedRoles: ['CUSTOMER'] },
-  // },
-
-  // --- Gom tất cả các route quản lý vào chung một Layout ---
   {
     path: '',
     loadChildren: () =>
@@ -33,14 +22,14 @@ export const routes: Routes = [
   },
   {
     path: '',
-    component: LayoutComponent, // SỬ DỤNG LAYOUT LÀM COMPONENT CHA
-    canActivate: [AuthGuard], // AuthGuard bảo vệ tất cả các route con bên dưới
+    component: LayoutComponent, // Layout CHUNG cho toàn bộ trang quản trị
+    canActivate: [AuthGuard], // Guard bảo vệ tất cả các route con
     children: [
+      // --- Các module chức năng sẽ được render bên trong LayoutComponent ---
       {
         path: 'admin',
         loadChildren: () =>
           import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
-        // Dữ liệu phân quyền sẽ được kiểm tra bởi AuthGuard của route cha
         data: { expectedRoles: ['ADMIN'] },
       },
       {
@@ -49,7 +38,6 @@ export const routes: Routes = [
           import('./features/business/business.routes').then(
             (m) => m.BUSINESS_ROUTES
           ),
-        // AuthGuard ở route cha sẽ dùng data này để kiểm tra quyền
         data: { expectedRoles: ['BUSINESS_DEPARTMENT', 'SERVICE_COORDINATOR'] },
       },
       {
@@ -58,17 +46,32 @@ export const routes: Routes = [
           import('./features/seller/seller.routes').then(
             (m) => m.SELLER_ROUTES
           ),
-        data: { expectedRoles: ['SELLER'] }, // AuthGuard sẽ dùng mảng này để kiểm tra quyền
+        data: { expectedRoles: ['SELLER'] },
       },
-      // Thêm các vai trò khác ở đây nếu chúng cũng dùng chung layout
-      // >>> BẠN CẦN THÊM ĐOẠN NÀY VÀO <<<
       {
         path: 'coordinator',
         loadChildren: () =>
           import('./features/coordinator/coordinator.routes').then(
             (m) => m.COORDINATOR_ROUTES
           ),
-        data: { expectedRoles: ['SERVICE_COORDINATOR'] }, // Đảm bảo vai trò này đúng
+        data: { expectedRoles: ['SERVICE_COORDINATOR'] },
+      },
+      {
+        path: 'accountant',
+        loadChildren: () =>
+          import('./features/accountant/accountant.routes').then(
+            (m) => m.ACCOUNTANT_ROUTES
+          ),
+        data: { expectedRoles: ['ACCOUNTANT'] },
+      },
+      // BỔ SUNG ROUTE CHO MARKETING
+      {
+        path: 'marketing',
+        loadChildren: () =>
+          import('./features/marketing/marketing-blog.routes').then(
+            (m) => m.MARKETING_BLOG_ROUTES
+          ),
+        data: { expectedRoles: ['MARKETING_MANAGER'] },
       },
     ],
   },

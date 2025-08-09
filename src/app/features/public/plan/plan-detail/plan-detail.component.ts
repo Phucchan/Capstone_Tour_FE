@@ -55,6 +55,20 @@ export class PlanPreviewComponent {
     this.typeNextCharacter();
   }
 
+  previousStep() {
+    if (this.step > 0) {
+      this.step--;
+      console.log('Current step:', this.step);
+      this.selectedDay = this.plan.days[this.step - 1];
+      if(this.step == 0) {
+        this.fullText = '🐤 Tớ là hướng dẫn viên đặc biệt của bạn hôm nay. Tớ sẽ đồng hành cùng bạn trong suốt chuyến đi này, kể cho bạn nghe từng câu chuyện thú vị ở mỗi điểm đến. Cùng tớ khám phá các địa điểm hấp dẫn, thưởng thức món ăn ngon, và tạo nên những kỷ niệm tuyệt vời nhé! 🧳✨';
+      }
+      else this.fullText = this.selectedDay.longDescription;
+      this.displayedText = this.fullText;
+      this.index = 0;
+    }
+  }
+
 
   ngOnInit() {
     const planId = this.router.url.split('/').pop();
