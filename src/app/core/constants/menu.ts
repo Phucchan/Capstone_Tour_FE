@@ -1,8 +1,9 @@
 import { MenuItem } from '../models/menu.model';
 
-// Danh sách tất cả các role trong hệ thống.
-// Lấy từ file RoleName.java để đảm bảo tính nhất quán.
-const ALL_ROLES = {
+/**
+ * Định nghĩa hằng số cho tất cả các vai trò trong hệ thống.
+ */
+const ROLES = {
   ADMIN: 'ADMIN',
   MARKETING_MANAGER: 'MARKETING_MANAGER',
   SELLER: 'SELLER',
@@ -11,101 +12,140 @@ const ALL_ROLES = {
   ACCOUNTANT: 'ACCOUNTANT',
 };
 
+/**
+ * MENU_ITEMS - Phiên bản đã được đối chiếu chính xác với các file routes.
+ * Mỗi 'route' dưới đây đều tồn tại trong dự án của bạn.
+ */
 export const MENU_ITEMS: MenuItem[] = [
-  // === Nhóm Quản trị Hệ thống ===
+  // ============================================
+  // === 1. Nhóm Quản trị Hệ thống (ADMIN) ===
+  // ============================================
   {
-    group: 'Quản trị hệ thống',
+    group: 'Quản trị Hệ thống',
     separator: true,
-    roles: [ALL_ROLES.ADMIN], // Chỉ ADMIN thấy nhóm này
+    roles: [ROLES.ADMIN],
     items: [
+      // Route được sửa lại từ 'user-management' thành các route thực tế
       {
         icon: 'assets/icons/heroicons/outline/users.svg',
-        label: 'Quản lý người dùng',
-        route: '/admin/user-management',
-        roles: [ALL_ROLES.ADMIN],
+        label: 'Danh sách khách hàng',
+        route: '/admin/list-customer', // <-- Đã sửa
+        roles: [ROLES.ADMIN],
       },
       {
-        icon: 'assets/icons/heroicons/outline/cog.svg',
-        label: 'Cấu hình hệ thống',
-        route: '/admin/settings',
-        roles: [ALL_ROLES.ADMIN],
+        icon: 'assets/icons/heroicons/outline/users.svg',
+        label: 'Danh sách nhân viên',
+        route: '/admin/list-staff', // <-- Đã sửa
+        roles: [ROLES.ADMIN],
       },
     ],
   },
 
-  // === Nhóm Kinh doanh ===
+  // ============================================
+  // === 2. Nhóm Quản lý Kinh doanh (BUSINESS) ===
+  // ============================================
   {
-    group: 'Kinh doanh', // Đổi tên nhóm cho gọn hơn
+    group: 'Quản lý Kinh doanh',
     separator: true,
-    roles: [ALL_ROLES.BUSINESS_DEPARTMENT], // Chỉ còn vai trò Business
+    roles: [ROLES.BUSINESS_DEPARTMENT],
     items: [
       {
         icon: 'assets/icons/heroicons/outline/chart-pie.svg',
-        label: 'Dashboard Kinh doanh',
-        route: '/business/dashboard',
-        roles: [ALL_ROLES.BUSINESS_DEPARTMENT],
+        label: 'Dashboard',
+        route: '/business/dashboard', // Chính xác
+        roles: [ROLES.BUSINESS_DEPARTMENT],
       },
       {
         icon: 'assets/icons/heroicons/outline/travel-bag-svgrepo-com.svg',
         label: 'Quản lý Tour',
-        route: '/business/tours', // Đưa route trực tiếp, không cần menu con
-        roles: [ALL_ROLES.BUSINESS_DEPARTMENT],
+        route: '/business/tours', // Chính xác
+        roles: [ROLES.BUSINESS_DEPARTMENT],
+      },
+      {
+        icon: 'assets/icons/heroicons/outline/request-quote-svgrepo-com.svg',
+        label: 'Yêu cầu đặt Tour',
+        route: '/business/request-bookings', // <-- Sửa 'request-booking' thành 'request-bookings'
+        roles: [ROLES.BUSINESS_DEPARTMENT],
       },
     ],
   },
 
-  // === NHÓM cho Coordinator ===
+  // ============================================
+  // === 3. Nhóm Điều phối Dịch vụ (COORDINATOR) ===
+  // ============================================
   {
     group: 'Điều phối Dịch vụ',
     separator: true,
-    roles: [ALL_ROLES.SERVICE_COORDINATOR], // Chỉ SERVICE_COORDINATOR thấy nhóm này
+    roles: [ROLES.SERVICE_COORDINATOR],
     items: [
       {
-        icon: 'assets/icons/heroicons/outline/users.svg', // Icon có thể thay đổi
+        icon: 'assets/icons/heroicons/outline/users.svg',
         label: 'Quản lý Đối tác',
-        route: '/coordinator/service-providers',
-        roles: [ALL_ROLES.SERVICE_COORDINATOR],
+        route: '/coordinator/service-providers', // Chính xác
+        roles: [ROLES.SERVICE_COORDINATOR],
       },
       {
-        icon: 'assets/icons/heroicons/outline/category-svgrepo-com.svg', // Icon mới
+        icon: 'assets/icons/heroicons/outline/category-svgrepo-com.svg',
         label: 'Quản lý Loại Dịch vụ',
-        route: '/coordinator/service-types', // Link đến trang mới tạo
-        roles: [ALL_ROLES.SERVICE_COORDINATOR],
+        route: '/coordinator/service-types', // Chính xác
+        roles: [ROLES.SERVICE_COORDINATOR],
       },
       {
         icon: 'assets/icons/heroicons/outline/location-pin-svgrepo-com.svg',
         label: 'Quản lý Địa điểm',
-        route: '/business/locations', // Vẫn dùng route cũ nhưng gom về đây cho Coordinator
-        roles: [ALL_ROLES.SERVICE_COORDINATOR],
+        route: '/business/locations', // Route này dùng chung với business, đã chính xác
+        roles: [ROLES.SERVICE_COORDINATOR],
       },
     ],
   },
 
-  // === Nhóm Bán hàng & Marketing ===
+  // ============================================
+  // === 4. Nhóm Bán hàng (SELLER) ===
+  // ============================================
   {
-    group: 'Bán hàng & Marketing',
+    group: 'Quản lý Bán hàng',
     separator: true,
-    roles: [ALL_ROLES.SELLER, ALL_ROLES.MARKETING_MANAGER],
+    roles: [ROLES.SELLER],
     items: [
       {
         icon: 'assets/icons/heroicons/outline/cart.svg',
         label: 'Quản lý Booking',
-        route: '/seller/dashboard',
-        roles: [ALL_ROLES.SELLER],
+        route: '/seller/dashboard', // Chính xác
+        roles: [ROLES.SELLER],
       },
     ],
   },
 
-  // === Nhóm Kế toán ===
+  // ============================================
+  // === 5. Nhóm Marketing ===
+  // ============================================
   {
-    group: 'Kế toán',
-    roles: [ALL_ROLES.ACCOUNTANT],
+    group: 'Quản lý Marketing',
+    separator: true,
+    roles: [ROLES.MARKETING_MANAGER],
     items: [
       {
-        icon: 'assets/icons/heroicons/outline/dollar-svgrepo.svg',
+        icon: 'assets/icons/heroicons/outline/marketing-svgrepo-com.svg',
+        label: 'Quản lý Bài viết',
+        route: '/marketing', // <-- Sửa từ '/marketing/blogs' thành '/marketing' cho đúng
+        roles: [ROLES.MARKETING_MANAGER],
+      },
+    ],
+  },
+
+  // ============================================
+  // === 6. Nhóm Kế toán (ACCOUNTANT) ===
+  // ============================================
+  {
+    group: 'Quản lý Kế toán',
+    separator: true,
+    roles: [ROLES.ACCOUNTANT],
+    items: [
+      {
+        icon: 'assets/icons/heroicons/outline/refund-2-svgrepo-com.svg',
         label: 'Yêu cầu hoàn tiền',
-        route: '/accountant/refunds',
-        roles: [ALL_ROLES.ACCOUNTANT],
+        route: '/accountant/refunds', // Chính xác
+        roles: [ROLES.ACCOUNTANT],
       },
     ],
   },
