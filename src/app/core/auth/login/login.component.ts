@@ -12,7 +12,6 @@ import { catchError, of } from 'rxjs';
 import { UserStorageService } from '../../services/user-storage/user-storage.service';
 import { CommonModule } from '@angular/common';
 import { SsrService } from '../../services/ssr.service';
-import { SocketSerivce } from '../../services/socket/socket.service';
 import { environment } from '../../../../environments/environment';
 import { CurrentUserService } from '../../services/user-storage/current-user.service';
 
@@ -39,8 +38,6 @@ export class LoginComponent implements OnInit {
     maxLength: false,
   };
 
-  activeUsersSubcription: any;
-
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -49,7 +46,7 @@ export class LoginComponent implements OnInit {
     private ssrService: SsrService,
     private route: ActivatedRoute,
     private currentUserService: CurrentUserService
-  ) { }
+  ) {}
 
   ngOnInit() {
     const rememberedUsername = this.ssrService
@@ -61,7 +58,11 @@ export class LoginComponent implements OnInit {
       const token = params['token'];
       const email = params['email'];
       if (token) {
-        this.postLogin(token, { username: email, password: null });
+        this.postLogin(token, {
+          username: email,
+          password: null,
+          redirectUrl: params['redirectUrl'] || '/',
+        });
       }
     });
 
@@ -134,8 +135,8 @@ export class LoginComponent implements OnInit {
           return of(null);
         })
       )
-      .subscribe((user: any) => {
-        if (user) {
+      .subscribe((response: any) => {
+        if (response && response.data) {
           // Logic rememberMe
           const rememberMe = (
             document.getElementById('remember-me') as HTMLInputElement
@@ -147,39 +148,25 @@ export class LoginComponent implements OnInit {
           }
 
           // Điều hướng sau khi đăng nhập thành công
-          this.navigateAfterLogin(user);
+          this.navigateAfterLogin(response.data);
         }
       });
   }
 
-   navigateAfterLogin(user: any) {
-    // AuthService đã lo việc lưu thông tin user, component không cần làm lại.
-    const userRoles = user?.roles?.map((roleObj: any) => roleObj.roleName) || [];
+  /**
+   * Hàm điều hướng sau khi đăng nhập thành công.
+   * Ưu tiên sử dụng `redirectUrl` từ API.
+   * @param loginData Dữ liệu trả về từ API, chứa user, token và redirectUrl
+   */
+  navigateAfterLogin(loginData: any) {
+    // AuthService đã lo việc lưu token và thông tin user
 
-    let redirectTo = '/'; // Mặc định là trang chủ
+    // Lấy redirectUrl từ dữ liệu API, nếu không có thì mặc định là trang chủ '/'
+    const redirectTo = loginData.redirectUrl || '/';
 
-    // Ưu tiên chuyển hướng: ADMIN > BUSINESS > ...
-    if (userRoles.includes('ADMIN')) {
-      redirectTo = '/admin';
-    } else if (
-      userRoles.includes('BUSINESS_DEPARTMENT') ||
-      userRoles.includes('SERVICE_COORDINATOR')
-    ) {
-      redirectTo = '/business';
-    } else if (
-      userRoles.includes('SELLER') ||
-      userRoles.includes('MARKETING_MANAGER')
-    ) {
-      // redirectTo = '/sales'; // Sẽ dùng khi bạn tạo khu vực /sales
-    } else if (userRoles.includes('ACCOUNTANT')) {
-      // redirectTo = '/accounting'; // Sẽ dùng khi bạn tạo khu vực /accounting
-    } else if (userRoles.includes('CUSTOMER')) {
-      // redirectTo = '/customer/profile'; // Chuyển đến trang cá nhân của khách
-    }
-
+    // Điều hướng đến URL được chỉ định
     this.router.navigate([redirectTo]);
   }
-
 
   // Hàm postLogin không còn cần thiết cho luồng đăng nhập bằng form nữa,
   // nhưng vẫn giữ lại để xử lý login qua social
