@@ -5,12 +5,11 @@ import { CommonModule } from '@angular/common';
 import { BlogManagementService } from '../../services/blog-management.service';
 import { BlogManagerDTO, PagingDTO } from '../../models/blog.model';
 import { finalize } from 'rxjs/operators';
-import { SpinnerComponent } from '../../../../../../src/app/shared/components/spinner/spinner.component'; // Import Spinner
 
 @Component({
   selector: 'app-blog-list',
   standalone: true,
-  imports: [CommonModule, SpinnerComponent],
+  imports: [CommonModule],
   templateUrl: './blog-list.component.html',
 })
 export class BlogListComponent implements OnInit {

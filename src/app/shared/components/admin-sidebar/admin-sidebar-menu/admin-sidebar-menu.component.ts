@@ -27,11 +27,12 @@ export class AdminSidebarMenuComponent implements OnInit {
   public layoutService = inject(LayoutService);
 
   ngOnInit(): void {
-    // Service sẽ tự động xử lý việc lọc menu cho tất cả các role, kể cả ADMIN.
+    // Component chỉ cần lấy dữ liệu đã được lọc sẵn từ service của bạn
     this.menuItems$ = this.menuService.menuItems$;
   }
 
-  public toggleMenu(subMenu: SubMenuItem) {
-    this.layoutService.toggleMenu(subMenu);
+  // SỬA LỖI 1: Hàm này phải nhận vào SubMenuItem vì 'item' trong template là SubMenuItem
+  public toggleMenu(item: SubMenuItem): void {
+    item.expanded = !item.expanded;
   }
 }

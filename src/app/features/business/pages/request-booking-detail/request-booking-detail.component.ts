@@ -2,7 +2,7 @@
 
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, EMPTY } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
@@ -15,7 +15,7 @@ import {
 @Component({
   selector: 'app-request-booking-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, CurrencyPipe],
+  imports: [CommonModule, DatePipe, CurrencyPipe],
   templateUrl: './request-booking-detail.component.html',
 })
 export class RequestBookingDetailComponent implements OnInit {
