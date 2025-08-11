@@ -7,6 +7,7 @@ import {
   signal,
   inject,
 } from '@angular/core';
+import { forkJoin, Observable } from 'rxjs';
 import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -35,6 +36,7 @@ type BookingItem = {
   status: BookingStatus;
   totalAmount: number;
   createdAt: string; // ISO string
+  departureDate: string; // ISO string
   hasRefundInfo: boolean;
 };
 
@@ -53,6 +55,8 @@ type BookingItem = {
   styleUrls: ['./booking-histories.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
+
+
 export class BookingHistoriesComponent implements OnInit {
   // ===== UI state =====
   loading = signal(true);
@@ -61,11 +65,15 @@ export class BookingHistoriesComponent implements OnInit {
 
   // ===== Data state =====
   bookings = signal<BookingItem[]>([]);
+  allBookings = signal<BookingItem[]>([]);
   page = signal(0);
   size = signal(10);
   total = signal(0);
 
   // ===== Filters =====
+  selectedStatus = signal<string>('');
+  searchCode = signal<string>('');
+  searchDate = signal<string>('');
   readonly statuses: BookingStatus[] = [
     'PENDING',
     'CONFIRMED',
@@ -88,7 +96,7 @@ export class BookingHistoriesComponent implements OnInit {
     };
     return map[status] || status;
   }
-  selectedStatus = signal<string>('');
+
 
   // ===== User =====
   private currentUser = inject(CurrentUserService);
@@ -128,60 +136,199 @@ export class BookingHistoriesComponent implements OnInit {
     );
   }
 
-  onPageChange(p: number) {   // p là 0-based do PaginationComponent phát ra
-    this.page.set(p);
-    this.fetch();
-  }
+
 
   // ===== API =====
-  fetch() {
-    if (!this.userId()) {
-      this.loading.set(false);
-      return;
-    }
+  private fetchAllForFilters() {
+  if (!this.userId()) return;
+  this.fetchingAll.set(true);
+  this.loading.set(true);
+  this.errorMsg.set(null);
 
-    this.loading.set(true);
-    this.errorMsg.set(null);
+  this.bookingService.getUserBookings({
+    page: 0,
+    size: this.size(),
+    userId: this.userId()!,
+    status: this.selectedStatus() || undefined,
+  }).subscribe({
+    next: (res: ApiPageResp) => {
+      const data = res?.data || { items: [], total: 0, size: this.size(), page: 0 };
+      const firstItems = data.items || [];
+      const total = data.total ?? firstItems.length;
+      const pageSize = data.size ?? this.size();
+      const totalPages = Math.max(Math.ceil(total / pageSize), 1);
 
-    this.bookingService
-      .getUserBookings({
-        page: this.page(),
-        size: this.size(),
-        userId: this.userId()!, // đã guard ở trên
-        status: this.selectedStatus() || undefined,
-      })
-      .subscribe({
-        next: (res) => {
-          const data = res.data || { items: [], total: 0 };
-          const items = (data.items || []) as BookingItem[];
-
-          const normalized: BookingItem[] = items.map((i: any) => ({
+      const normalize = (arr: any[]) => arr.map(i => ({
         id: i.id,
-        tourId: Number(i.tourId),                               // 👈 giữ chắc tourId
+        tourId: Number(i.tourId),
         bookingCode: i.bookingCode,
         tourName: i.tourName,
         status: i.status as BookingStatus,
         totalAmount: i.totalAmount,
         createdAt: i.createdAt,
-        hasRefundInfo: i.hasRefundInfo ?? false,                // 👈 mặc định client
+        departureDate: i.departureDate,
+        hasRefundInfo: i.hasRefundInfo ?? false,
       }));
-          const filtered = this.selectedStatus()
-            ? normalized.filter(i => i.status === this.selectedStatus())
-            : normalized;
 
-          this.bookings.set(this.sortByCreatedAtDesc(filtered));
-          this.total.set(data.total || filtered.length);
+      if (totalPages === 1) {
+        this.allBookings.set(normalize(firstItems));
+        this.applyFilters();
+        this.fetchingAll.set(false);
+        this.loading.set(false);
+        return;
+      }
+
+      // 👇 GÁN KIỂU RÕ RÀNG CHO MẢNG OBSERVABLE
+      const pageCalls: Observable<ApiPageResp>[] = [];
+      for (let p = 1; p < totalPages; p++) {
+        pageCalls.push(
+          this.bookingService.getUserBookings({
+            page: p,
+            size: pageSize,
+            userId: this.userId()!,
+            status: this.selectedStatus() || undefined,
+          }) as Observable<ApiPageResp>
+        );
+      }
+
+      forkJoin(pageCalls).subscribe({
+        next: (rest: ApiPageResp[]) => {
+          const all = normalize(firstItems).concat(
+            ...rest.map(r => normalize(r?.data?.items || []))
+          );
+          this.allBookings.set(all);
+          this.applyFilters();
+          this.fetchingAll.set(false);
           this.loading.set(false);
         },
-        error: (err) => {
-          console.error(err);
-          this.errorMsg.set('Không tải được danh sách đơn.');
+        error: (e) => {
+          console.error(e);
+          this.errorMsg.set('Không thể tải đầy đủ dữ liệu để lọc.');
+          this.fetchingAll.set(false);
           this.loading.set(false);
-        },
+        }
       });
+    },
+    error: (e) => {
+      console.error(e);
+      this.errorMsg.set('Không tải được danh sách đơn.');
+      this.fetchingAll.set(false);
+      this.loading.set(false);
+    }
+  });
+}
+
+
+  fetch() {
+  if (!this.userId()) { this.loading.set(false); return; }
+
+  this.clientMode.set(this.hasClientFilters());
+
+  if (this.clientMode()) {
+    // lọc client → gom tất cả trang
+    this.page.set(0);        // luôn về trang 0 khi đổi filter
+    this.fetchAllForFilters();
+    return;
   }
 
+  // --- server mode (giữ nguyên như bạn đang có) ---
+  this.loading.set(true);
+  this.errorMsg.set(null);
+
+  this.bookingService.getUserBookings({
+    page: this.page(),
+    size: this.size(),
+    userId: this.userId()!,
+    status: this.selectedStatus() || undefined,
+  })
+  .subscribe({
+    next: (res) => {
+      const data = res.data || { items: [], total: 0 };
+      const items = (data.items || []) as any[];
+
+      const normalized: BookingItem[] = items.map((i: any) => ({
+        id: i.id,
+        tourId: Number(i.tourId),
+        bookingCode: i.bookingCode,
+        tourName: i.tourName,
+        status: i.status as BookingStatus,
+        totalAmount: i.totalAmount,
+        createdAt: i.createdAt,
+        departureDate: i.departureDate,
+        hasRefundInfo: i.hasRefundInfo ?? false,
+      }));
+
+      // server mode: dùng total từ BE
+      this.bookings.set(normalized);
+      this.total.set(data.total || 0);
+      this.loading.set(false);
+    },
+    error: (err) => {
+      console.error(err);
+      this.errorMsg.set('Không tải được danh sách đơn.');
+      this.loading.set(false);
+    },
+  });
+}
+
+
+  //fillter
+  clientMode = signal(false);       // true khi có filter
+  fetchingAll = signal(false);
+
+  hasClientFilters(): boolean {
+  return !!(this.searchCode().trim() || this.searchDate() || this.selectedStatus());
+}
+  private filterBookings(list: BookingItem[]): BookingItem[] {
+    let out = [...list];
+
+    // theo status (nếu chọn)
+    if (this.selectedStatus()) {
+      out = out.filter(i => i.status === this.selectedStatus());
+    }
+
+    // theo bookingCode (contains, không phân biệt hoa/thường)
+    const code = this.searchCode().trim().toLowerCase();
+    if (code) {
+      out = out.filter(i => i.bookingCode?.toLowerCase().includes(code));
+    }
+
+    // theo ngày khởi hành, so sánh theo ngày (yyyy-MM-dd)
+    const d = this.searchDate();
+    if (d) {
+      out = out.filter(i => {
+        if (!i.departureDate) return false;
+        const onlyDate = new Date(i.departureDate).toISOString().split('T')[0];
+        return onlyDate === d;
+      });
+    }
+
+    return out;
+  }
+
+  applyFilters() {
+    const filtered = this.filterBookings(this.allBookings());
+    const sorted = this.sortByCreatedAtDesc(filtered);
+    this.bookings.set(sorted);
+    this.total.set(filtered.length);
+    const maxPage = Math.max(Math.ceil(this.total() / this.size()) - 1, 0);
+    if (this.page() > maxPage) this.page.set(0);
+  }
+  resetFilters() {
+    // Reset all filters
+    this.selectedStatus.set('');
+    this.searchCode.set('');
+    this.searchDate.set('');
+    this.page.set(0);
+    this.fetch();
+  }
+
+
   // ===== Pagination =====
+  onPageChange(p: number) {   // p là 0-based do PaginationComponent phát ra
+    this.page.set(p);
+    this.fetch();
+  }
   nextPage() {
     const maxPage = Math.max(Math.ceil(this.total() / this.size()) - 1, 0);
     if (this.page() < maxPage) {
@@ -269,54 +416,54 @@ export class BookingHistoriesComponent implements OnInit {
 
 
   submitRefund(b: BookingItem) {
-  if (!this.canSubmitRefund(b.status)) return;
+    if (!this.canSubmitRefund(b.status)) return;
 
-  if (b.hasRefundInfo) {
+    if (b.hasRefundInfo) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Thông báo',
+        text: 'Bạn đã gửi thông tin STK cho đơn này.',
+        timer: 1600,
+        showConfirmButton: false
+      });
+      return;
+    }
+
+    const BANKS: { label: string; value: string }[] = [
+      { label: 'Vietcombank (VCB)', value: 'Vietcombank' },
+      { label: 'VietinBank (CTG)', value: 'VietinBank' },
+      { label: 'BIDV (BIDV)', value: 'BIDV' },
+      { label: 'Agribank (AGR)', value: 'Agribank' },
+      { label: 'Techcombank (TCB)', value: 'Techcombank' },
+      { label: 'MB Bank (MBB)', value: 'MB Bank' },
+      { label: 'VPBank (VPB)', value: 'VPBank' },
+      { label: 'ACB', value: 'ACB' },
+      { label: 'VIB', value: 'VIB' },
+      { label: 'HDBank', value: 'HDBank' },
+      { label: 'TPBank', value: 'TPBank' },
+      { label: 'Sacombank (STB)', value: 'Sacombank' },
+      { label: 'MSB', value: 'MSB' },
+      { label: 'SHB', value: 'SHB' },
+      { label: 'OCB', value: 'OCB' },
+      { label: 'SeABank', value: 'SeABank' },
+      { label: 'Eximbank (EIB)', value: 'Eximbank' },
+      { label: 'DongA Bank (DAB)', value: 'DongA Bank' },
+      { label: 'PVcomBank', value: 'PVcomBank' },
+      { label: 'OceanBank', value: 'OceanBank' },
+      { label: 'BaoVietBank', value: 'BaoVietBank' },
+      { label: 'NCB', value: 'NCB' },
+      { label: 'LienVietPostBank (LPB)', value: 'LienVietPostBank' },
+      { label: 'ABBANK', value: 'ABBANK' },
+      { label: 'PG Bank', value: 'PG Bank' },
+      { label: 'KienLongBank', value: 'KienLongBank' },
+      { label: 'SaigonBank (SGB)', value: 'SaigonBank' }
+    ];
+
+    const bankOptions = BANKS.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('');
+
     Swal.fire({
-      icon: 'info',
-      title: 'Thông báo',
-      text: 'Bạn đã gửi thông tin STK cho đơn này.',
-      timer: 1600,
-      showConfirmButton: false
-    });
-    return;
-  }
-
-  const BANKS: { label: string; value: string }[] = [
-    { label: 'Vietcombank (VCB)', value: 'Vietcombank' },
-    { label: 'VietinBank (CTG)', value: 'VietinBank' },
-    { label: 'BIDV (BIDV)', value: 'BIDV' },
-    { label: 'Agribank (AGR)', value: 'Agribank' },
-    { label: 'Techcombank (TCB)', value: 'Techcombank' },
-    { label: 'MB Bank (MBB)', value: 'MB Bank' },
-    { label: 'VPBank (VPB)', value: 'VPBank' },
-    { label: 'ACB', value: 'ACB' },
-    { label: 'VIB', value: 'VIB' },
-    { label: 'HDBank', value: 'HDBank' },
-    { label: 'TPBank', value: 'TPBank' },
-    { label: 'Sacombank (STB)', value: 'Sacombank' },
-    { label: 'MSB', value: 'MSB' },
-    { label: 'SHB', value: 'SHB' },
-    { label: 'OCB', value: 'OCB' },
-    { label: 'SeABank', value: 'SeABank' },
-    { label: 'Eximbank (EIB)', value: 'Eximbank' },
-    { label: 'DongA Bank (DAB)', value: 'DongA Bank' },
-    { label: 'PVcomBank', value: 'PVcomBank' },
-    { label: 'OceanBank', value: 'OceanBank' },
-    { label: 'BaoVietBank', value: 'BaoVietBank' },
-    { label: 'NCB', value: 'NCB' },
-    { label: 'LienVietPostBank (LPB)', value: 'LienVietPostBank' },
-    { label: 'ABBANK', value: 'ABBANK' },
-    { label: 'PG Bank', value: 'PG Bank' },
-    { label: 'KienLongBank', value: 'KienLongBank' },
-    { label: 'SaigonBank (SGB)', value: 'SaigonBank' }
-  ];
-
-  const bankOptions = BANKS.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('');
-
-  Swal.fire({
-    title: 'Nhập thông tin tài khoản nhận hoàn',
-    html: `
+      title: 'Nhập thông tin tài khoản nhận hoàn',
+      html: `
       <div class="text-left space-y-3">
       <div>
           <label class="block text-sm text-gray-600 mb-1">Ngân hàng</label>
@@ -335,101 +482,109 @@ export class BookingHistoriesComponent implements OnInit {
         </div>
       </div>
     `,
-    focusConfirm: false,
-    showCancelButton: true,
-    confirmButtonText: 'Gửi',
-    cancelButtonText: 'Hủy',
-    reverseButtons: true,
-    buttonsStyling: false,
-    customClass: {
-      popup: 'rounded-lg',
-      confirmButton: 'swal-confirm-btn',
-      cancelButton: 'swal-cancel-btn'
-    },
-    preConfirm: () => {
-      const bankAccountNumber = (document.getElementById('bankAccountNumber') as HTMLInputElement)?.value?.trim() || '';
-      const bankAccountHolder = (document.getElementById('bankAccountHolder') as HTMLInputElement)?.value?.trim() || '';
-      const bankName = (document.getElementById('bankName') as HTMLSelectElement)?.value || '';
-
-      if (!bankAccountNumber || !bankAccountHolder || !bankName) {
-        Swal.showValidationMessage('Vui lòng nhập đầy đủ thông tin');
-        return false as any;
-      }
-      if (!/^\d{6,20}$/.test(bankAccountNumber)) {
-        Swal.showValidationMessage('Số tài khoản không hợp lệ (chỉ số, 6–20 ký tự)');
-        return false as any;
-      }
-
-      return { bankAccountNumber, bankAccountHolder, bankName };
-    }
-  }).then(result => {
-    if (!result.isConfirmed || !result.value) return;
-
-    const payload = result.value as {
-      bankAccountNumber: string;
-      bankAccountHolder: string;
-      bankName: string;
-    };
-
-    Swal.fire({
-      title: 'Đang gửi...',
-      allowOutsideClick: false,
-      allowEscapeKey: false,
-      showConfirmButton: false,
-      didOpen: () => Swal.showLoading()
-    });
-
-    this.bookingService.submitRefundInfo(b.id, this.userId()!, payload).subscribe({
-      next: () => {
-        // Đánh dấu đã gửi STK ngay trên client
-        this.bookings.update(list =>
-          list.map(x =>
-            x.id === b.id ? { ...x, hasRefundInfo: true } : x
-          )
-        );
-
-        Swal.fire({
-          icon: 'success',
-          title: 'Đã gửi thông tin',
-          text: `Thông tin hoàn tiền cho đơn ${b.bookingCode} đã được gửi.`,
-          timer: 1800,
-          showConfirmButton: false
-        });
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Gửi',
+      cancelButtonText: 'Hủy',
+      reverseButtons: true,
+      buttonsStyling: false,
+      customClass: {
+        popup: 'rounded-lg',
+        confirmButton: 'swal-confirm-btn',
+        cancelButton: 'swal-cancel-btn'
       },
-      error: (e) => {
-        console.error(e);
-        Swal.fire({
-          icon: 'error',
-          title: 'Gửi thất bại',
-          text: 'Vui lòng thử lại sau.'
-        });
-      }
-    });
-  });
-}
+      preConfirm: () => {
+        const bankAccountNumber = (document.getElementById('bankAccountNumber') as HTMLInputElement)?.value?.trim() || '';
+        const bankAccountHolder = (document.getElementById('bankAccountHolder') as HTMLInputElement)?.value?.trim() || '';
+        const bankName = (document.getElementById('bankName') as HTMLSelectElement)?.value || '';
 
-          // ===== UI helpers =====
-          statusColor(s: BookingStatus) {
-        switch(s) {
+        if (!bankAccountNumber || !bankAccountHolder || !bankName) {
+          Swal.showValidationMessage('Vui lòng nhập đầy đủ thông tin');
+          return false as any;
+        }
+        if (!/^\d{6,20}$/.test(bankAccountNumber)) {
+          Swal.showValidationMessage('Số tài khoản không hợp lệ (chỉ số, 6–20 ký tự)');
+          return false as any;
+        }
+
+        return { bankAccountNumber, bankAccountHolder, bankName };
+      }
+    }).then(result => {
+      if (!result.isConfirmed || !result.value) return;
+
+      const payload = result.value as {
+        bankAccountNumber: string;
+        bankAccountHolder: string;
+        bankName: string;
+      };
+
+      Swal.fire({
+        title: 'Đang gửi...',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      this.bookingService.submitRefundInfo(b.id, this.userId()!, payload).subscribe({
+        next: () => {
+          // Đánh dấu đã gửi STK ngay trên client
+          this.bookings.update(list =>
+            list.map(x =>
+              x.id === b.id ? { ...x, hasRefundInfo: true } : x
+            )
+          );
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Đã gửi thông tin',
+            text: `Thông tin hoàn tiền cho đơn ${b.bookingCode} đã được gửi.`,
+            timer: 1800,
+            showConfirmButton: false
+          });
+        },
+        error: (e) => {
+          console.error(e);
+          Swal.fire({
+            icon: 'error',
+            title: 'Gửi thất bại',
+            text: 'Vui lòng thử lại sau.'
+          });
+        }
+      });
+    });
+  }
+
+  // ===== UI helpers =====
+  statusColor(s: BookingStatus) {
+    switch (s) {
       case 'PENDING':
         return 'bg-yellow-100 text-yellow-700';
-        case 'CONFIRMED':
+      case 'CONFIRMED':
         return 'bg-blue-100 text-blue-700';
-        case 'CANCEL_REQUESTED':
+      case 'CANCEL_REQUESTED':
         return 'bg-amber-100 text-amber-700';
-        case 'CANCELLED':
+      case 'CANCELLED':
         return 'bg-red-100 text-red-700';
-        case 'COMPLETED':
+      case 'COMPLETED':
         return 'bg-green-100 text-green-700';
-        case 'NO_SHOW':
+      case 'NO_SHOW':
         return 'bg-gray-200 text-gray-700';
-        case 'REFUNDED':
+      case 'REFUNDED':
         return 'bg-purple-100 text-purple-700';
-        default:
+      default:
         return 'bg-gray-100 text-gray-700';
-      }
+    }
   }
 
 }
 
-  
+type ApiPageResp = {
+  data?: {
+    items?: any[];
+    total?: number;
+    size?: number;
+    page?: number;
+  };
+};
+

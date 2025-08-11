@@ -10,14 +10,14 @@ export class WishlistService {
   constructor(private http: HttpClient) {}
 
   addToWishlist(userId: number, tourId: number): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/public/users/${userId}/wishlists/${tourId}`, {});
+    return this.http.post(`${environment.apiUrl}/public/customer/${userId}/wishlists/${tourId}`, {});
   }
 
   getWishlist(userId: number): Observable<any> {
-  return this.http.get(`${environment.apiUrl}/public/users/${userId}/wishlists`);
+  return this.http.get(`${environment.apiUrl}/public/customer/${userId}/wishlists`);
 }
 
 removeFromWishlist(userId: number, wishlistId: number): Observable<any> {
-  return this.http.delete(`${environment.apiUrl}/public/users/${userId}/wishlists/${wishlistId}`);
+  return this.http.delete(`${environment.apiUrl}/public/customer/${userId}/wishlists/${wishlistId}`);
 }
 }

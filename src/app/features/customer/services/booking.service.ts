@@ -37,7 +37,7 @@ type RefundInfoPayload = {
 
 @Injectable({ providedIn: 'root' })
 export class BookingService {
-    base = `${environment.apiUrl}/users/bookings`;
+    base = `${environment.apiUrl}/customer/bookings`;
 
   constructor(private http: HttpClient) {}
 

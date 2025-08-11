@@ -12,24 +12,24 @@ export class CustomerService {
 
   getUserProfile(userId: number): Observable<any> {
     console.log('{CustomerService} Fetching user profile with userId:', userId);
-    return this.http.get<{ data: any }>(`${environment.apiUrl}/users/profile`, {
+    return this.http.get<{ data: any }>(`${environment.apiUrl}/customer/profile`, {
       params: new HttpParams().set('userId', userId.toString()),
     });
   }
   updateProfile(userId: number, data: any): Observable<UserProfile> {
   return this.http.put<{ data: UserProfile }>(
-    `${environment.apiUrl}/users/profile`,
+    `${environment.apiUrl}/customer/profile`,
     data,
     { params: { userId } }
   ).pipe(map(res => res.data));
 }
   getProfile(): Observable<UserProfile> {
-    return this.http.get<{ data: UserProfile }>(`${environment.apiUrl}/users/profile`)
+    return this.http.get<{ data: UserProfile }>(`${environment.apiUrl}/customer/profile`)
       .pipe(map(res => res.data));
   }
 
   changePassword(userId: number, body: { currentPassword: string, newPassword: string, rePassword: string }) {
-  return this.http.put<any>(`${environment.apiUrl}/users/change-password`, body, {
+  return this.http.put<any>(`${environment.apiUrl}/customer/change-password`, body, {
     params: { userId }
   });
 }
