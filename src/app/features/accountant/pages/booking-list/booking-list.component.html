@@ -1,0 +1,89 @@
+
+<!-- Page Header -->
+<div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+  <div>
+    <h1 class="text-2xl md:text-3xl font-bold text-gray-800">
+      Quản lý Quyết toán Booking
+    </h1>
+    <p class="text-sm text-gray-500 mt-1">
+      Xem và quản lý tình hình tài chính của các booking.
+    </p>
+  </div>
+</div>
+
+<!-- Main Content Card - Đã xóa [nzBordered]="false" không hợp lệ -->
+<nz-card class="shadow-sm">
+  <!-- Card Header with Search -->
+  <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
+    <h3 class="text-lg font-semibold text-gray-700">Danh sách Booking</h3>
+    <div class="w-full sm:w-auto md:w-1/3">
+      <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton">
+        <input
+          type="text"
+          nz-input
+          placeholder="Tìm kiếm theo tên tour..."
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange($event)"
+        />
+      </nz-input-group>
+      <ng-template #suffixIconButton>
+        <button nz-button nzType="primary" nzSearch><i nz-icon nzType="search"></i></button>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="overflow-x-auto">
+    <nz-table
+      #bookingTable
+      [nzData]="bookings.items"
+      [nzFrontPagination]="false"
+      [nzLoading]="isLoading"
+      [nzTotal]="bookings.total"
+      [nzPageSize]="bookings.size"
+      [nzPageIndex]="bookings.page + 1"
+      (nzPageIndexChange)="onPageChange($event)"
+    >
+      <thead>
+        <tr>
+          <th>STT</th>
+          <th>Tên Tour</th>
+          <th>Ngày đi</th>
+          <th>Ngày về</th>
+          <th class="text-center">Trạng thái</th>
+          <th class="text-right">Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let data of bookingTable.data">
+          <td class="font-medium text-gray-600">{{ data.stt }}</td>
+          <td>
+            <div class="font-semibold">{{ data.tourName }}</div>
+            <div class="text-xs text-gray-500">{{ data.duration }} ngày</div>
+          </td>
+          <td>{{ data.startDate | formatDate }}</td>
+          <td>{{ data.endDate | formatDate }}</td>
+          <td class="text-center">
+            <nz-tag [nzColor]="getStatusColor(data.status)">{{ data.status }}</nz-tag>
+          </td>
+          <td class="text-right">
+            <button nz-button nzType="primary" nz-tooltip="Xem chi tiết quyết toán" (click)="viewSettlementDetail(data.bookingId)">
+              <i nz-icon nzType="dollar-circle" nzTheme="outline"></i>
+              <span>Xem quyết toán</span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="mt-6 flex justify-end">
+      <app-pagination
+        [currentPage]="bookings.page + 1"
+        [totalItems]="bookings.total"
+        [pageSize]="bookings.size"
+        (pageChange)="onPageChange($event)"
+      ></app-pagination>
+  </div>
+</nz-card>
