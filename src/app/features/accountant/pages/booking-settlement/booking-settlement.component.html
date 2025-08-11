@@ -1,87 +1,129 @@
-<div class="mb-4">
-    <a routerLink="/accountant/bookings" nz-button><i nz-icon nzType="arrow-left"></i> Quay lại danh sách</a>
-</div>
-
-<div *ngIf="isLoading" class="flex justify-center items-center h-full">
-  <nz-spin nzSimple nzSize="large"></nz-spin>
-</div>
-
-<div *ngIf="!isLoading && detail">
-  <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
-      <h2 class="text-2xl font-semibold">Chi tiết Quyết toán Booking #{{ detail.bookingCode }}</h2>
-      <div>
-        <button nz-button (click)="openCreateBillModal('receipt')" nzType="primary" class="mr-2">
-          <i nz-icon nzType="plus-circle" nzTheme="outline"></i> Tạo Phiếu Thu
-        </button>
-        <button nz-button (click)="openCreateBillModal('payment')" class="mr-2">
-          <i nz-icon nzType="minus-circle" nzTheme="outline"></i> Tạo Phiếu Chi
-        </button>
-        <button nz-button nzType="default" (click)="completeBooking()" *ngIf="detail.status === 'CONFIRMED'" [nzLoading]="isProcessing" nzDanger>
-          <i nz-icon nzType="check-square" nzTheme="outline"></i> Hoàn tất Booking
-        </button>
-      </div>
-  </div>
-
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2">
-      <nz-card nzTitle="Thông tin Booking">
-        <nz-descriptions nzBordered [nzColumn]="{ xxl: 2, xl: 2, lg: 2, md: 2, sm: 2, xs: 1 }">
-          <nz-descriptions-item nzTitle="Tên Tour">{{ detail.tourName }}</nz-descriptions-item>
-          <nz-descriptions-item nzTitle="Trạng thái">
-            <nz-tag [nzColor]="getStatusColor(detail.status)">{{ detail.status }}</nz-tag>
-          </nz-descriptions-item>
-          <nz-descriptions-item nzTitle="Ngày đi">{{ detail.startDate | formatDate }}</nz-descriptions-item>
-          <nz-descriptions-item nzTitle="Ngày về">{{ detail.endDate | formatDate }}</nz-descriptions-item>
-        </nz-descriptions>
-      </nz-card>
-
-      <nz-card nzTitle="Chi tiết Dịch vụ" class="mt-6">
-        <div class="overflow-x-auto">
-            <nz-table #serviceTable [nzData]="detail.services" nzSize="small" nzBordered [nzShowPagination]="false">
-                <thead>
-                    <tr>
-                        <th>Tên Dịch vụ</th>
-                        <th>Ngày</th>
-                        <th>Số lượng (pax)</th>
-                        <th>Giá nett</th>
-                        <th>Giá bán</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let service of serviceTable.data">
-                        <td>{{ service.serviceName }}</td>
-                        <td>{{ service.dayNumber }}</td>
-                        <td>{{ service.pax }}</td>
-                        <td>{{ service.costPerPax | currencyVnd }}</td>
-                        <td>{{ service.sellingPrice | currencyVnd }}</td>
-                    </tr>
-                </tbody>
-            </nz-table>
-        </div>
-      </nz-card>
+<!-- Ghi chú: Sử dụng màu nền xám nhạt và container căn giữa để đồng bộ với trang danh sách. -->
+<div class="bg-gray-50 min-h-screen">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Spinner hiển thị khi đang tải dữ liệu -->
+    <div *ngIf="isLoading" class="flex justify-center items-center py-20">
+      <nz-spin nzSimple nzSize="large"></nz-spin>
     </div>
 
-    <div class="lg:col-span-1">
-        <nz-tabset>
-            <nz-tab nzTitle="Phiếu Thu">
-                <app-bill-table
-                    [bills]="detail.receiptBills"
-                    (markPaid)="markBillAsPaid($event)">
-                </app-bill-table>
-            </nz-tab>
-            <nz-tab nzTitle="Phiếu Chi">
-                <app-bill-table
-                    [bills]="detail.paymentBills"
-                    (markPaid)="markBillAsPaid($event)">
-                </app-bill-table>
-            </nz-tab>
-            <nz-tab nzTitle="Phiếu Hoàn tiền">
-                <app-bill-table
-                    [bills]="detail.refundBills"
-                    (markPaid)="markBillAsPaid($event)">
-                </app-bill-table>
-            </nz-tab>
-        </nz-tabset>
+    <!-- Nội dung chính của trang -->
+    <div *ngIf="!isLoading && detail">
+      <!-- Page Header: Bao gồm nút quay lại, tiêu đề và các nút hành động chính -->
+      <div class="mb-6">
+        <!-- Nút quay lại -->
+        <a routerLink="/accountant/bookings" class="text-sm text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-2 mb-4">
+          <i nz-icon nzType="arrow-left"></i>
+          Quay lại danh sách
+        </a>
+
+        <!-- Tiêu đề và các nút hành động -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
+            Quyết toán Booking #{{ detail.bookingCode }}
+          </h1>
+          <!-- Nhóm các nút hành động -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <button nz-button (click)="openCreateBillModal('receipt')" nzType="primary">
+              <i nz-icon nzType="plus-circle" nzTheme="outline"></i> Tạo Phiếu Thu
+            </button>
+            <button nz-button (click)="openCreateBillModal('payment')">
+              <i nz-icon nzType="minus-circle" nzTheme="outline"></i> Tạo Phiếu Chi
+            </button>
+            <button nz-button nzType="default" (click)="completeBooking()" *ngIf="detail.status === 'CONFIRMED'" [nzLoading]="isProcessing" nzDanger>
+              <i nz-icon nzType="check-square" nzTheme="outline"></i> Hoàn tất
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid Layout: Chia làm 2 cột chính -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Cột trái: Chứa thông tin chính -->
+        <div class="lg:col-span-2 flex flex-col gap-6">
+          <!-- Card: Thông tin Booking -->
+          <div class="bg-white rounded-lg shadow-md">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-xl font-semibold text-gray-800">Thông tin Booking</h3>
+            </div>
+            <!-- Ghi chú: Thay thế nz-descriptions bằng dl/dt/dd để kiểm soát spacing tốt hơn -->
+            <dl class="divide-y divide-gray-200">
+              <div class="px-6 py-4 grid grid-cols-3 gap-4">
+                <dt class="text-sm font-medium text-gray-500">Tên Tour</dt>
+                <dd class="text-sm text-gray-900 col-span-2 font-semibold">{{ detail.tourName }}</dd>
+              </div>
+              <div class="px-6 py-4 grid grid-cols-3 gap-4">
+                <dt class="text-sm font-medium text-gray-500">Trạng thái</dt>
+                <dd class="text-sm text-gray-900 col-span-2">
+                   <nz-tag [nzColor]="getStatusColor(detail.status)">{{ detail.status }}</nz-tag>
+                </dd>
+              </div>
+              <div class="px-6 py-4 grid grid-cols-3 gap-4">
+                <dt class="text-sm font-medium text-gray-500">Ngày đi</dt>
+                <dd class="text-sm text-gray-900 col-span-2">{{ detail.startDate | formatDate }}</dd>
+              </div>
+              <div class="px-6 py-4 grid grid-cols-3 gap-4">
+                <dt class="text-sm font-medium text-gray-500">Ngày về</dt>
+                <dd class="text-sm text-gray-900 col-span-2">{{ detail.endDate | formatDate }}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <!-- Card: Chi tiết Dịch vụ -->
+          <div class="bg-white rounded-lg shadow-md overflow-hidden">
+             <div class="p-6 border-b border-gray-200">
+                <h3 class="text-xl font-semibold text-gray-800">Chi tiết Dịch vụ</h3>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tên Dịch vụ</th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Ngày</th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Số lượng (pax)</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Giá nett</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Giá bán</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr *ngFor="let service of detail.services" class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ service.serviceName }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center">{{ service.dayNumber }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center">{{ service.pax }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">{{ service.costPerPax | currencyVnd }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">{{ service.sellingPrice | currencyVnd }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cột phải: Chứa các tab phiếu thu/chi -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-lg shadow-md">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-xl font-semibold text-gray-800">Quản lý Phiếu</h3>
+            </div>
+            <nz-tabset class="custom-tabset">
+              <nz-tab nzTitle="Phiếu Thu">
+                <div class="p-4">
+                  <app-bill-table [bills]="detail.receiptBills" (markPaid)="markBillAsPaid($event)"></app-bill-table>
+                </div>
+              </nz-tab>
+              <nz-tab nzTitle="Phiếu Chi">
+                 <div class="p-4">
+                  <app-bill-table [bills]="detail.paymentBills" (markPaid)="markBillAsPaid($event)"></app-bill-table>
+                 </div>
+              </nz-tab>
+              <nz-tab nzTitle="Phiếu Hoàn tiền">
+                 <div class="p-4">
+                  <app-bill-table [bills]="detail.refundBills" (markPaid)="markBillAsPaid($event)"></app-bill-table>
+                 </div>
+              </nz-tab>
+            </nz-tabset>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

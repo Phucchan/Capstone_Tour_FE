@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzEmptyModule } from 'ng-zorro-antd/empty'; // Thêm import này
 import { RefundBill } from '../../models/refund-bill.model';
 import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
 import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
@@ -21,6 +22,7 @@ import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
     NzCardModule,
     NzDescriptionsModule,
     NzTableModule,
+    NzEmptyModule, // Thêm vào đây
     FormatDatePipe,
     CurrencyVndPipe,
   ],

@@ -339,3 +339,13 @@ select:focus {
   justify-content: center !important;
   gap: 1rem !important;
 }
+
+/* Lớp nền mờ của modal */
+.ant-modal-mask {
+  z-index: 1050 !important;
+}
+
+/* Lớp bao bọc nội dung modal */
+.ant-modal-wrap {
+  z-index: 1050 !important;
+}
