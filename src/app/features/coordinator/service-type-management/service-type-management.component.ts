@@ -26,6 +26,7 @@ export class ServiceTypeManagementComponent implements OnInit {
   // Thuộc tính cho modal form
   showModal = false;
   isEditMode = false;
+  isSubmitting = false;
   currentServiceTypeId: number | null = null;
   serviceTypeForm: FormGroup;
 
@@ -56,7 +57,8 @@ export class ServiceTypeManagementComponent implements OnInit {
             this.errorMessage = res.message;
           }
         },
-        error: (err) => (this.errorMessage = err.message),
+        error: (err) =>
+          (this.errorMessage = err.error?.message || 'Lỗi tải dữ liệu'),
       });
   }
 
@@ -89,6 +91,7 @@ export class ServiceTypeManagementComponent implements OnInit {
     if (this.serviceTypeForm.invalid) {
       return;
     }
+    this.isSubmitting = true;
 
     const formData = this.serviceTypeForm.value;
     const action$ = this.isEditMode
@@ -98,19 +101,20 @@ export class ServiceTypeManagementComponent implements OnInit {
         )
       : this.serviceTypeService.createServiceType(formData);
 
-    action$.subscribe({
+    action$.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
       next: () => {
+        alert(this.isEditMode ? 'Cập nhật thành công!' : 'Tạo mới thành công!');
         this.loadServiceTypes();
         this.closeModal();
       },
       error: (err) => {
-        // Hiển thị lỗi ngay trên form
-        alert(err.message || 'Có lỗi xảy ra');
+        alert(err.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
       },
     });
   }
 
   // Thay đổi trạng thái
+
   toggleStatus(serviceType: ServiceType): void {
     const newStatus = !serviceType.deleted;
     const confirmation = confirm(
@@ -124,7 +128,7 @@ export class ServiceTypeManagementComponent implements OnInit {
         .changeStatus(serviceType.id, { deleted: newStatus })
         .subscribe({
           next: () => this.loadServiceTypes(),
-          error: (err) => alert(`Cập nhật thất bại: ${err.message}`),
+          error: (err) => alert(`Cập nhật thất bại: ${err.error?.message}`),
         });
     }
   }

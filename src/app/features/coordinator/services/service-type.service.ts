@@ -9,7 +9,7 @@ import { ChangeStatusRequest, ServiceType } from '../models/service-type.model';
   providedIn: 'root',
 })
 export class ServiceTypeService {
-  private apiUrl = `${environment.apiUrl}/cordinator/service-types`;
+  private apiUrl = `${environment.apiUrl}/coordinator/service-types`;
 
   constructor(private http: HttpClient) {}
 

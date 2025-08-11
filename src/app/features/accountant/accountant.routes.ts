@@ -10,6 +10,24 @@ export const ACCOUNTANT_ROUTES: Routes = [
     redirectTo: 'refunds',
     pathMatch: 'full',
   },
+  // Luồng Quản lý Quyết toán
+  {
+    path: 'bookings',
+    loadComponent: () =>
+      import('./pages/booking-list/booking-list.component').then(
+        (c) => c.BookingListComponent
+      ),
+    title: 'Quản lý Quyết toán',
+  },
+  {
+    path: 'bookings/:id/settlement',
+    loadComponent: () =>
+      import('./pages/booking-settlement/booking-settlement.component').then(
+        (c) => c.BookingSettlementComponent
+      ),
+    title: 'Chi tiết Quyết toán',
+  },
+  // Luồng Quản lý Hoàn tiền
   {
     path: 'refunds',
     loadComponent: () =>

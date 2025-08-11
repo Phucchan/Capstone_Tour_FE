@@ -1,0 +1,24 @@
+<div class="overflow-x-auto">
+  <nz-table #billTable [nzData]="bills" nzSize="small" [nzShowPagination]="false" [nzNoResult]="'Chưa có phiếu nào'">
+    <thead>
+      <tr>
+        <th>Số phiếu</th>
+        <th>Ngày tạo</th>
+        <th>Số tiền</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let bill of billTable.data">
+        <td>{{ bill.billNumber }}</td>
+        <td>{{ bill.createdDate | formatDate }}</td>
+        <td>{{ bill.totalAmount | currencyVnd }}</td>
+        <td>
+          <button nz-button nz-tooltip="Đánh dấu đã thanh toán" nzType="text" nzShape="circle" (click)="onMarkPaid(bill.billId)">
+            <i nz-icon nzType="check-circle" nzTheme="twotone" nzTwotoneColor="#52c41a"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</div>
