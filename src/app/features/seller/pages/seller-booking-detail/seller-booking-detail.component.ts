@@ -73,7 +73,7 @@ export class SellerBookingDetailComponent implements OnInit {
     this.bookerForm = this.fb.group({
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', Validators.required],
+      phone: ['', [Validators.required, CustomValidators.vietnamesePhone]],
       address: ['', Validators.required],
       paymentDeadline: ['', CustomValidators.noPastDateTime],
     });
@@ -230,7 +230,11 @@ export class SellerBookingDetailComponent implements OnInit {
   }
 
   onSaveChanges(): void {
-    if (this.bookerForm.invalid) return;
+    if (this.bookerForm.invalid) {
+      this.bookerForm.markAllAsTouched();
+      return;
+    }
+    this.isSubmitting = true;
     const formData = this.bookerForm.value;
     const requestData: SellerBookingUpdateRequest = {
       fullName: formData.fullName,
@@ -245,12 +249,16 @@ export class SellerBookingDetailComponent implements OnInit {
         next: (res) => {
           alert('Cập nhật thông tin thành công!');
           this.booking = res.data;
-          this.bookerForm.markAsPristine();
+          this.bookerForm.markAsPristine(); // Đánh dấu form là "chưa thay đổi"
+          this.isSubmitting = false;
         },
-        error: (err) =>
-          alert(`Lỗi: ${err.error.message || 'Không thể cập nhật.'}`),
+        error: (err) => {
+          alert(`Lỗi: ${err.error.message || 'Không thể cập nhật.'}`);
+          this.isSubmitting = false;
+        },
       });
   }
+
 
   // --- LOGIC QUẢN LÝ KHÁCH HÀNG ---
   get customersArray(): FormArray {

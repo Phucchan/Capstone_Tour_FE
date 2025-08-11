@@ -40,6 +40,8 @@
               class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
               <th class="px-4 py-3">Tên Tour</th>
               <th class="px-4 py-3">Khách hàng</th>
+              <!-- === THÊM MỚI === -->
+              <th class="px-4 py-3">Ngày đặt</th>
               <th class="px-4 py-3">Ngày đi</th>
               <th class="px-4 py-3">Số khách</th>
               <th class="px-4 py-3">Trạng thái</th>
@@ -52,6 +54,8 @@
                 class="text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                 <td class="px-4 py-3">{{ booking.tourName }}</td>
                 <td class="px-4 py-3">{{ booking.customer }}</td>
+                 <!-- === THÊM MỚI === -->
+                <td class="px-4 py-3">{{ booking.bookingDate | formatDate }}</td>
                 <td class="px-4 py-3">{{ booking.departureDate | formatDate }}</td>
                 <td class="px-4 py-3">{{ booking.seats }}</td>
                 <td class="px-4 py-3">
@@ -67,12 +71,14 @@
                   </button>
                 </td>
               </tr>
+              <!-- === CẬP NHẬT COLSPAN === -->
               <tr *ngIf="!availableBookings?.items?.length">
-                <td colspan="6" class="px-4 py-3 text-center">Không có booking nào.</td>
+                <td colspan="7" class="px-4 py-3 text-center">Không có booking nào.</td>
               </tr>
             </ng-container>
+            <!-- === CẬP NHẬT COLSPAN === -->
             <tr *ngIf="isLoadingAvailable">
-              <td colspan="6" class="text-center py-4">
+              <td colspan="7" class="text-center py-4">
                 <app-spinner></app-spinner>
               </td>
             </tr>
@@ -100,6 +106,8 @@
                 class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
                 <th class="px-4 py-3">Tên Tour</th>
                 <th class="px-4 py-3">Khách hàng</th>
+                 <!-- === THÊM MỚI === -->
+                <th class="px-4 py-3">Ngày đặt</th>
                 <th class="px-4 py-3">Ngày đi</th>
                 <th class="px-4 py-3">Số khách</th>
                 <th class="px-4 py-3">Trạng thái</th>
@@ -111,6 +119,8 @@
                   class="text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                   <td class="px-4 py-3">{{ booking.tourName }}</td>
                   <td class="px-4 py-3">{{ booking.customer }}</td>
+                   <!-- === THÊM MỚI === -->
+                  <td class="px-4 py-3">{{ booking.bookingDate | formatDate }}</td>
                   <td class="px-4 py-3">{{ booking.departureDate | formatDate }}</td>
                   <td class="px-4 py-3">{{ booking.seats }}</td>
                   <td class="px-4 py-3">
@@ -120,12 +130,14 @@
                     </span>
                   </td>
                 </tr>
+                 <!-- === CẬP NHẬT COLSPAN === -->
                 <tr *ngIf="!editedBookings?.items?.length">
-                  <td colspan="5" class="px-4 py-3 text-center">Bạn chưa xử lý booking nào.</td>
+                  <td colspan="6" class="px-4 py-3 text-center">Bạn chưa xử lý booking nào.</td>
                 </tr>
               </ng-container>
+               <!-- === CẬP NHẬT COLSPAN === -->
               <tr *ngIf="isLoadingEdited">
-                <td colspan="5" class="text-center py-4">
+                <td colspan="6" class="text-center py-4">
                   <app-spinner></app-spinner>
                 </td>
               </tr>

@@ -23,10 +23,12 @@ export enum PaymentType {
   FINAL_PAYMENT = 'FINAL_PAYMENT',
   REFUND = 'REFUND',
   OTHER = 'OTHER',
+  RECEIPT = 'RECEIPT',
+  PAYMENT = 'PAYMENT',
 }
 
 export enum PaymentBillItemStatus {
   PAID = 'PAID',
-  UNPAID = 'UNPAID',
+  UNPAID = 'PENDING',
 }
 

@@ -1,37 +1,25 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { layoutService } from '../../../../features/admin/layout/services/layout.service';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { SubMenuItem } from '../../../../core/models/menu.model';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { SubMenuItem } from '../../../../core/models/menu.model';
+import { LayoutService } from '../../../../core/services/layout.service';
 
 @Component({
   selector: 'app-admin-sidebar-sub-menu',
-  imports: [
-    CommonModule,
-    RouterLink,
-    RouterLinkActive,
-    AngularSvgIconModule
-  ],
+  standalone: true,
+  imports: [CommonModule, RouterLink, RouterLinkActive, AngularSvgIconModule],
   templateUrl: './admin-sidebar-sub-menu.component.html',
-  styleUrl: './admin-sidebar-sub-menu.component.css'
 })
 export class AdminSidebarSubMenuComponent implements OnInit {
-  @Input() public submenu = <SubMenuItem>{};
+  @Input() public submenu: SubMenuItem[] = [];
 
-  constructor(public layoutService: layoutService) {}
+  private layoutService = inject(LayoutService);
 
   ngOnInit(): void {}
 
-  public toggleMenu(menu: any) {
-    this.layoutService.toggleSubMenu(menu);
-  }
+  public toggleMenu(subMenu: SubMenuItem) {
 
-  private collapse(items: Array<any>) {
-    items.forEach((item) => {
-      item.expanded = false;
-      if (item.children) this.collapse(item.children);
-    });
+     this.layoutService.toggleSubMenu(subMenu);
   }
-
 }

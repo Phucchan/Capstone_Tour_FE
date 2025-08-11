@@ -1,3 +1,4 @@
+<!-- Sử dụng async pipe để hiển thị menu từ Observable -->
 <div *ngFor="let menu of menuItems$ | async">
   <div
     *ngIf="menu.separator"
@@ -27,8 +28,9 @@
           class="h-5 w-5 text-gray-500 transition-transform duration-300"
         ></svg-icon>
       </div>
+      <!-- Sửa lỗi: Truyền đúng `item.children` vào submenu -->
       <div [ngClass]="{ hidden: !item.expanded }" class="ms-4 ps-2">
-        <app-admin-sidebar-sub-menu [submenu]="item"></app-admin-sidebar-sub-menu>
+        <app-admin-sidebar-sub-menu [submenu]="item.children"></app-admin-sidebar-sub-menu>
       </div>
     </div>
 

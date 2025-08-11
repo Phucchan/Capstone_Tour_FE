@@ -1,20 +1,16 @@
-/*
-================================================================
-File: src/app/features/marketing/pages/blog-list/blog-list.component.ts
-Description: Component logic for displaying and managing the list of blogs.
-================================================================
-*/
+
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { BlogManagementService } from '../../services/blog-management.service';
 import { BlogManagerDTO, PagingDTO } from '../../models/blog.model';
 import { finalize } from 'rxjs/operators';
+import { SpinnerComponent } from '../../../../../../src/app/shared/components/spinner/spinner.component'; // Import Spinner
 
 @Component({
   selector: 'app-blog-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SpinnerComponent],
   templateUrl: './blog-list.component.html',
 })
 export class BlogListComponent implements OnInit {
@@ -42,15 +38,16 @@ export class BlogListComponent implements OnInit {
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (response) => {
-          if (response && response.statusCode === 200) {
+          if (response && response.data) {
             this.blogPaging = response.data;
           } else {
+            this.blogPaging = null;
             this.error =
               response.message || 'Không thể tải danh sách bài viết.';
           }
         },
         error: (err) => {
-          this.error = 'Đã xảy ra lỗi. Vui lòng thử lại.';
+          this.error = err.error?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.';
           console.error(err);
         },
       });
@@ -58,32 +55,26 @@ export class BlogListComponent implements OnInit {
 
   onDelete(blogId: number): void {
     if (confirm('Bạn có chắc chắn muốn xóa bài viết này không?')) {
-      this.isLoading = true;
-      this.blogService
-        .deleteBlog(blogId)
-        .pipe(finalize(() => (this.isLoading = false)))
-        .subscribe({
-          next: (response) => {
-            if (response.statusCode === 200) {
-              this.loadBlogs();
-            } else {
-              this.error = response.message;
-            }
-          },
-          error: (err) => {
-            this.error = 'Xóa bài viết thất bại. Vui lòng thử lại.';
-            console.error(err);
-          },
-        });
+      this.blogService.deleteBlog(blogId).subscribe({
+        next: (response) => {
+          alert(response.message || 'Xóa bài viết thành công!');
+          this.currentPage = 0;
+          this.loadBlogs();
+        },
+        error: (err) => {
+          this.error = err.error?.message || 'Xóa bài viết thất bại.';
+          console.error(err);
+        },
+      });
     }
   }
 
   goToCreatePage(): void {
-    this.router.navigate(['/marketing/blogs/new']); // Adjusted route
+    this.router.navigate(['/marketing/blogs/new']);
   }
 
   goToEditPage(blogId: number): void {
-    this.router.navigate(['/marketing/blogs/edit', blogId]); // Adjusted route
+    this.router.navigate(['/marketing/blogs/edit', blogId]);
   }
 
   onPageChange(page: number): void {
