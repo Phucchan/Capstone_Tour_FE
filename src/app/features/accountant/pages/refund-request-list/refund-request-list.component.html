@@ -1,79 +1,102 @@
-<div class="p-6 bg-white rounded-lg shadow-md">
-  <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
-    <h2 class="text-2xl font-semibold">Danh sách Yêu cầu Hoàn tiền</h2>
-    <div class="w-full sm:w-auto md:w-1/3">
-      <nz-input-group [nzSuffix]="inputClearTpl" nzSearch [nzAddOnAfter]="suffixIconButton">
-        <input
-          type="text"
-          nz-input
-          placeholder="Tìm kiếm theo mã tour, tên khách hàng..."
-          [(ngModel)]="searchTerm"
-          (ngModelChange)="onSearchChange($event)"
-        />
-      </nz-input-group>
-      <ng-template #inputClearTpl>
-        <i
-          nz-icon
-          class="ant-input-clear-icon"
-          nzTheme="fill"
-          nzType="close-circle"
-          *ngIf="searchTerm"
-          (click)="onSearchChange('')"
-        ></i>
-      </ng-template>
-      <ng-template #suffixIconButton>
-        <button nz-button nzType="primary" nzSearch><i nz-icon nzType="search"></i></button>
-      </ng-template>
+<!-- Ghi chú: Áp dụng layout container căn giữa và nền xám. -->
+<div class="bg-gray-50 p-4 sm:p-6 lg:p-8 min-h-screen">
+  <div class="container mx-auto">
+    <!-- Page Header -->
+    <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
+          Yêu cầu Hoàn tiền
+        </h1>
+        <p class="text-sm text-gray-600 mt-1">
+          Duyệt và xử lý các yêu cầu hoàn tiền từ khách hàng.
+        </p>
+      </div>
     </div>
-  </div>
 
-  <div class="overflow-x-auto">
-    <nz-table
-      #refundTable
-      [nzData]="refunds.items"
-      [nzFrontPagination]="false"
-      [nzLoading]="isLoading"
-      [nzTotal]="refunds.total"
-      [nzPageSize]="refunds.size"
-      [nzPageIndex]="refunds.page + 1"
-      (nzPageIndexChange)="onPageChange($event)"
-      nzBordered
-    >
-      <thead>
-        <tr>
-          <th>Mã Tour</th>
-          <th>Tên Tour</th>
-          <th>Tên Khách Hàng</th>
-          <th>Ngày đi</th>
-          <th>Trạng thái</th>
-          <th>Hành động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let data of refundTable.data">
-          <td>{{ data.tourCode }}</td>
-          <td>{{ data.tourName }}</td>
-          <td>{{ data.customerName }}</td>
-          <td>{{ data.startDate | formatDate }}</td>
-          <td>
-            <nz-tag [nzColor]="getStatusColor(data.status)">{{ data.status }}</nz-tag>
-          </td>
-          <td>
-            <button nz-button nzType="primary" (click)="viewDetail(data.bookingId)">
-              <i nz-icon nzType="eye" nzTheme="outline"></i> Xem chi tiết
+    <!-- Main Content Card -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <!-- Card Header with Search -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 sm:p-6 border-b border-gray-200">
+        <h3 class="text-xl font-semibold text-gray-800">Danh sách Yêu cầu</h3>
+        <div class="w-full sm:w-auto sm:max-w-xs">
+          <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton">
+            <input
+              type="text"
+              nz-input
+              placeholder="Tìm kiếm..."
+              [(ngModel)]="searchTerm"
+              (ngModelChange)="onSearchChange($event)"
+            />
+          </nz-input-group>
+          <ng-template #suffixIconButton>
+            <button nz-button nzType="primary" nzSearch>
+              <i nz-icon nzType="search"></i>
             </button>
-          </td>
-        </tr>
-      </tbody>
-    </nz-table>
-  </div>
+          </ng-template>
+        </div>
+      </div>
 
-  <div class="mt-4 flex justify-end">
-      <app-pagination
-        [currentPage]="refunds.page + 1"
-        [totalItems]="refunds.total"
-        [pageSize]="refunds.size"
-        (pageChange)="onPageChange($event)"
-      ></app-pagination>
+      <!-- Table Wrapper -->
+      <div class="overflow-x-auto">
+        <nz-table
+          #refundTable
+          [nzData]="refunds.items"
+          [nzFrontPagination]="false"
+          [nzLoading]="isLoading"
+          [nzTotal]="refunds.total"
+          [nzPageSize]="refunds.size"
+          [nzPageIndex]="refunds.page + 1"
+          (nzPageIndexChange)="onPageChange($event)"
+          [nzShowPagination]="false"
+          [nzBordered]="false"
+          class="min-w-full"
+        >
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Mã Tour</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tên Khách Hàng</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ngày đi</th>
+              <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Trạng thái</th>
+              <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let data of refundTable.data" class="border-b border-gray-200 hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-semibold text-gray-900">{{ data.tourCode }}</div>
+                <div class="text-xs text-gray-500">{{ data.tourName }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ data.customerName }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ data.startDate | formatDate }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-center">
+                <nz-tag [nzColor]="getStatusColor(data.status)">{{ data.status }}</nz-tag>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <a (click)="viewDetail(data.bookingId)" class="text-indigo-600 hover:text-indigo-800 cursor-pointer inline-flex items-center gap-1">
+                  <i nz-icon nzType="eye" nzTheme="outline"></i>
+                  <span>Xem chi tiết</span>
+                </a>
+              </td>
+            </tr>
+            <!-- Empty State -->
+            <tr *ngIf="!isLoading && refunds.total === 0">
+              <td colspan="5" class="text-center py-16">
+                <nz-empty nzNotFoundImage="simple" nzNotFoundContent="Không có dữ liệu"></nz-empty>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="refunds.total > refunds.size" class="flex justify-end p-4 sm:p-6">
+        <app-pagination
+          [currentPage]="refunds.page + 1"
+          [totalItems]="refunds.total"
+          [pageSize]="refunds.size"
+          (pageChange)="onPageChange($event)"
+        ></app-pagination>
+      </div>
+    </div>
   </div>
 </div>

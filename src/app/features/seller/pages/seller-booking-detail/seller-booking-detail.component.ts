@@ -21,6 +21,16 @@ import { SellerBookingCustomer } from '../../models/seller-booking-customer.mode
 import { SellerMailRequest } from '../../models/seller-mail-request.model';
 import { BookingStatus } from '../../../../core/models/enums';
 import { CustomValidators } from '../../../../core/validators/custom-validators';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 
 @Component({
   selector: 'app-seller-booking-detail',
@@ -33,6 +43,15 @@ import { CustomValidators } from '../../../../core/validators/custom-validators'
     ReactiveFormsModule,
     RouterModule,
     CurrencyVndPipe,
+    NzModalModule,
+    NzSelectModule,
+    NzInputModule,
+    NzFormModule,
+    NzButtonModule,
+    NzCheckboxModule,
+    NzTableModule,
+    NzDividerModule,
+    NzIconModule,
   ],
   templateUrl: './seller-booking-detail.component.html',
 })
@@ -41,8 +60,10 @@ export class SellerBookingDetailComponent implements OnInit {
   private router = inject(Router);
   private sellerService = inject(SellerBookingService);
   private fb = inject(FormBuilder);
+  private message = inject(NzMessageService);
+  private modal = inject(NzModalService);
 
-  booking: SellerBookingDetail | null = null;
+  booking!: SellerBookingDetail;
   isLoading = true;
   bookingId!: number;
 
@@ -259,7 +280,6 @@ export class SellerBookingDetailComponent implements OnInit {
       });
   }
 
-
   // --- LOGIC QUẢN LÝ KHÁCH HÀNG ---
   get customersArray(): FormArray {
     return this.addCustomerForm.get('customers') as FormArray;
@@ -395,12 +415,18 @@ export class SellerBookingDetailComponent implements OnInit {
   }
 
   // --- LOGIC GỬI MAIL ---
+
   openMailModal(): void {
     if (!this.booking) return;
 
+    const totalGuests =
+      (this.booking.adults || 0) +
+      (this.booking.children || 0) +
+      (this.booking.infants || 0) +
+      (this.booking.toddlers || 0);
+
     const subject = `Xác nhận Booking #${this.booking.bookingCode} - Tour ${this.booking.tourName}`;
-    const content = `
-Kính gửi ${this.booking.customerName},
+    const content = `Kính gửi ${this.booking.customerName},
 
 Cảm ơn bạn đã đặt tour tại Đi Đâu. Chúng tôi xin xác nhận thông tin booking của bạn như sau:
 
@@ -409,7 +435,7 @@ Cảm ơn bạn đã đặt tour tại Đi Đâu. Chúng tôi xin xác nhận th
 - Ngày khởi hành: ${new Date(this.booking.departureDate).toLocaleDateString(
       'vi-VN'
     )}
-- Tổng số khách: ${this.booking.customers.length} người // <--- SỬA LẠI TẠI ĐÂY
+- Tổng số khách: ${totalGuests} người
 - Tổng thanh toán: ${new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND',
@@ -421,7 +447,6 @@ Trân trọng,
 Đội ngũ Đi Đâu.
     `.trim();
 
-    // Cập nhật giá trị cho form
     this.mailForm.setValue({
       email: this.booking.email,
       subject: subject,
@@ -435,18 +460,28 @@ Trân trọng,
   }
 
   onSendMail(): void {
-    if (this.mailForm.invalid) return;
+    if (this.mailForm.invalid) {
+      Object.values(this.mailForm.controls).forEach((control) => {
+        if (control.invalid) {
+          control.markAsDirty();
+          control.updateValueAndValidity({ onlySelf: true });
+        }
+      });
+      return;
+    }
+
     this.isSendingMail = true;
     const mailData: SellerMailRequest = this.mailForm.getRawValue();
-    this.sellerService.sendConfirmationEmail(mailData).subscribe({
+
+    this.sellerService.sendCustomEmail(mailData).subscribe({
       next: () => {
         this.isSendingMail = false;
-        alert('Gửi email thành công!');
+        this.message.success('Gửi email thành công!');
         this.closeMailModal();
       },
       error: (err) => {
         this.isSendingMail = false;
-        alert(`Lỗi: ${err.error.message || 'Không thể gửi email.'}`);
+        this.message.error(err.error.message || 'Không thể gửi email.');
       },
     });
   }

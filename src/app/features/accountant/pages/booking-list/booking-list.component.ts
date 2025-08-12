@@ -17,6 +17,8 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+// Ghi chú: Thêm import cho NzEmptyModule để sửa lỗi
+import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { AccountantService } from '../../services/accountant.service';
 import { BookingList } from '../../models/booking-list.model';
 import { PagingDTO } from '../../../../core/models/paging.model';
@@ -36,6 +38,8 @@ import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
     NzTagModule,
     NzCardModule,
     NzToolTipModule,
+    // Ghi chú: Thêm NzEmptyModule vào đây
+    NzEmptyModule,
     PaginationComponent,
     FormatDatePipe,
   ],
@@ -107,6 +111,9 @@ export class BookingListComponent implements OnInit {
       case 'CANCELLED':
       case 'REFUNDED':
         return 'red';
+      // Ghi chú: Thêm màu cho trạng thái yêu cầu hủy
+      case 'CANCEL_REQUESTED':
+        return 'orange';
       case 'PENDING':
         return 'gold';
       default:

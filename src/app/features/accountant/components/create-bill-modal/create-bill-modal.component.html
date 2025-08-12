@@ -1,50 +1,93 @@
-<form nz-form [formGroup]="validateForm">
-    <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired>
-            {{ isReceipt() ? 'Người nộp' : 'Người chi' }}
-        </nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" [nzErrorTip]="(isReceipt() ? 'Vui lòng nhập người nộp tiền!' : 'Vui lòng nhập người chi tiền!')">
-            <input nz-input formControlName="paidBy" />
-        </nz-form-control>
+<!--
+  Ghi chú:
+  - Thay thế layout mặc định bằng Tailwind CSS Grid để kiểm soát tốt hơn.
+  - Mỗi dòng là một grid, chia làm 4 cột, label chiếm 1 và control chiếm 3.
+  - Thêm khoảng cách dọc giữa các dòng bằng `space-y-6`.
+-->
+<form nz-form [formGroup]="validateForm" class="space-y-6 py-2">
+  <!-- Row: Người nộp/chi -->
+  <div class="grid grid-cols-1 sm:grid-cols-4 gap-x-4 items-center">
+    <nz-form-label class="sm:col-span-1 sm:text-right" nzRequired>
+      {{ isReceipt() ? 'Người nộp' : 'Người chi' }}
+    </nz-form-label>
+    <nz-form-item class="sm:col-span-3 mb-0">
+      <nz-form-control [nzErrorTip]="paidByErrorTpl">
+        <input nz-input formControlName="paidBy" placeholder="Nhập tên..." />
+      </nz-form-control>
+      <ng-template #paidByErrorTpl let-control>
+        <ng-container *ngIf="control.hasError('required')">
+          {{ isReceipt() ? 'Vui lòng nhập người nộp tiền!' : 'Vui lòng nhập người chi tiền!' }}
+        </ng-container>
+      </ng-template>
     </nz-form-item>
-    <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired>
-            {{ isReceipt() ? 'Nộp cho' : 'Người nhận' }}
-        </nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" [nzErrorTip]="(isReceipt() ? 'Vui lòng nhập người nhận tiền!' : 'Vui lòng nhập người nhận tiền!')">
-            <input nz-input formControlName="payTo" />
-        </nz-form-control>
+  </div>
+
+  <!-- Row: Nộp cho/Người nhận -->
+  <div class="grid grid-cols-1 sm:grid-cols-4 gap-x-4 items-center">
+    <nz-form-label class="sm:col-span-1 sm:text-right" nzRequired>
+      {{ isReceipt() ? 'Nộp cho' : 'Người nhận' }}
+    </nz-form-label>
+    <nz-form-item class="sm:col-span-3 mb-0">
+      <nz-form-control [nzErrorTip]="payToErrorTpl">
+        <input nz-input formControlName="payTo" placeholder="Nhập tên..." />
+      </nz-form-control>
+      <ng-template #payToErrorTpl let-control>
+        <ng-container *ngIf="control.hasError('required')">
+           Vui lòng nhập người nhận tiền!
+        </ng-container>
+      </ng-template>
     </nz-form-item>
-    <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired>Ngày tạo</nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Vui lòng chọn ngày!">
-            <nz-date-picker formControlName="createdDate" class="w-full"></nz-date-picker>
-        </nz-form-control>
+  </div>
+
+  <!-- Row: Ngày tạo -->
+  <div class="grid grid-cols-1 sm:grid-cols-4 gap-x-4 items-center">
+    <nz-form-label class="sm:col-span-1 sm:text-right" nzRequired>Ngày tạo</nz-form-label>
+    <nz-form-item class="sm:col-span-3 mb-0">
+      <nz-form-control nzErrorTip="Vui lòng chọn ngày!">
+        <nz-date-picker formControlName="createdDate" class="w-full"></nz-date-picker>
+      </nz-form-control>
     </nz-form-item>
-    <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired>Phương thức</nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Vui lòng chọn phương thức!">
-            <nz-select formControlName="paymentMethod">
-                <nz-option *ngFor="let method of paymentMethods" [nzLabel]="method" [nzValue]="method"></nz-option>
-            </nz-select>
-        </nz-form-control>
+  </div>
+
+  <!-- Row: Phương thức -->
+  <div class="grid grid-cols-1 sm:grid-cols-4 gap-x-4 items-center">
+    <nz-form-label class="sm:col-span-1 sm:text-right" nzRequired>Phương thức</nz-form-label>
+    <nz-form-item class="sm:col-span-3 mb-0">
+      <nz-form-control nzErrorTip="Vui lòng chọn phương thức!">
+        <nz-select formControlName="paymentMethod">
+          <nz-option *ngFor="let method of paymentMethods" [nzLabel]="method" [nzValue]="method"></nz-option>
+        </nz-select>
+      </nz-form-control>
     </nz-form-item>
-    <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired>Số tiền</nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Vui lòng nhập số tiền!">
-            <nz-input-number formControlName="amount" [nzMin]="1" [nzStep]="1000" class="w-full"></nz-input-number>
-        </nz-form-control>
+  </div>
+
+  <!-- Row: Số tiền -->
+  <div class="grid grid-cols-1 sm:grid-cols-4 gap-x-4 items-center">
+    <nz-form-label class="sm:col-span-1 sm:text-right" nzRequired>Số tiền</nz-form-label>
+    <nz-form-item class="sm:col-span-3 mb-0">
+      <nz-form-control nzErrorTip="Vui lòng nhập số tiền hợp lệ!">
+        <nz-input-number formControlName="amount" [nzMin]="1" [nzStep]="1000" class="w-full" [nzFormatter]="formatterVND" [nzParser]="parserVND"></nz-input-number>
+      </nz-form-control>
     </nz-form-item>
-    <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired>Nội dung</nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Vui lòng nhập nội dung!">
-            <textarea nz-input formControlName="content" [nzAutosize]="{ minRows: 2, maxRows: 4 }"></textarea>
-        </nz-form-control>
+  </div>
+
+  <!-- Row: Nội dung -->
+  <div class="grid grid-cols-1 sm:grid-cols-4 gap-x-4 items-start">
+    <nz-form-label class="sm:col-span-1 sm:text-right pt-1" nzRequired>Nội dung</nz-form-label>
+    <nz-form-item class="sm:col-span-3 mb-0">
+      <nz-form-control nzErrorTip="Vui lòng nhập nội dung!">
+        <textarea nz-input formControlName="content" [nzAutosize]="{ minRows: 2, maxRows: 4 }"></textarea>
+      </nz-form-control>
     </nz-form-item>
-    <nz-form-item>
-        <nz-form-label [nzSm]="6" [nzXs]="24">Ghi chú</nz-form-label>
-        <nz-form-control [nzSm]="14" [nzXs]="24">
-            <textarea nz-input formControlName="note" [nzAutosize]="{ minRows: 2, maxRows: 4 }"></textarea>
-        </nz-form-control>
+  </div>
+
+  <!-- Row: Ghi chú -->
+  <div class="grid grid-cols-1 sm:grid-cols-4 gap-x-4 items-start">
+    <nz-form-label class="sm:col-span-1 sm:text-right pt-1">Ghi chú</nz-form-label>
+    <nz-form-item class="sm:col-span-3 mb-0">
+      <nz-form-control>
+        <textarea nz-input formControlName="note" [nzAutosize]="{ minRows: 2, maxRows: 4 }"></textarea>
+      </nz-form-control>
     </nz-form-item>
+  </div>
 </form>

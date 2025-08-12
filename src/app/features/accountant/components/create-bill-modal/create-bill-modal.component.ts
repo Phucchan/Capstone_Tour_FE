@@ -19,11 +19,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { AccountantService } from '../../services/accountant.service';
-import {
-  PaymentMethod,
-  PaymentType,
-  PaymentBillItemStatus,
-} from '../../../../core/models/enums';
+import { PaymentMethod, PaymentType } from '../../../../core/models/enums';
 import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
 import { BookingSettlement } from '../../models/booking-settlement.model';
 
@@ -55,6 +51,12 @@ export class CreateBillModalComponent implements OnInit {
   isReceipt(): boolean {
     return this.billType === PaymentType.RECEIPT;
   }
+
+  // Ghi chú: Sửa kiểu trả về của parserVND thành number
+  formatterVND = (value: number): string =>
+    value ? `${value.toLocaleString('vi-VN')} ₫` : '';
+  parserVND = (value: string): number =>
+    parseFloat(value.replace(' ₫', '').replace(/,/g, ''));
 
   ngOnInit(): void {
     const currentUser = this.currentUserService.getCurrentUser();

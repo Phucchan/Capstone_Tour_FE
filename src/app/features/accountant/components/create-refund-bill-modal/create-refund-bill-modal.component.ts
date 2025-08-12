@@ -52,6 +52,12 @@ export class CreateRefundBillModalComponent implements OnInit {
   validateForm!: FormGroup;
   paymentMethods = Object.values(PaymentMethod);
 
+  // Thêm hàm định dạng tiền tệ
+  formatterVND = (value: number): string =>
+    value ? `${value.toLocaleString('vi-VN')} ₫` : '';
+  parserVND = (value: string): number =>
+    parseFloat(value.replace(' ₫', '').replace(/,/g, ''));
+
   ngOnInit(): void {
     const currentUser = this.currentUserService.getCurrentUser();
     this.validateForm = this.fb.group({

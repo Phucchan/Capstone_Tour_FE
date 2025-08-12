@@ -92,6 +92,7 @@ export class BookingSettlementComponent implements OnInit {
       nzTitle: type === 'receipt' ? 'Tạo Phiếu Thu' : 'Tạo Phiếu Chi',
       nzContent: CreateBillModalComponent,
       nzWidth: '600px',
+      nzZIndex: 1100,
       nzData: {
         bookingDetail: this.detail,
         billType:
@@ -168,6 +169,7 @@ export class BookingSettlementComponent implements OnInit {
     });
   }
 
+  // Ghi chú: Cập nhật hàm này để đồng bộ với trang danh sách
   getStatusColor(status: string): string {
     if (!status) return 'default';
 
@@ -179,6 +181,8 @@ export class BookingSettlementComponent implements OnInit {
       case 'CANCELLED':
       case 'REFUNDED':
         return 'red';
+      case 'CANCEL_REQUESTED':
+        return 'orange';
       case 'PENDING':
         return 'gold';
       default:

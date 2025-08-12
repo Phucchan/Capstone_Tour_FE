@@ -21,8 +21,7 @@
 
   <!-- Main Content Grid -->
   <div class="grid gap-6 mb-8 md:grid-cols-5">
-
-    <!-- Cột bên trái (Thông tin Tour & Lịch trình) -->
+    <!-- Cột trái (Thông tin Tour & Lịch trình) -->
     <div class="md:col-span-2 space-y-6">
       <!-- Card thông tin Tour -->
       <div class="p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
@@ -38,21 +37,21 @@
       <div class="p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
         <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">Thông tin Lịch trình</h4>
         <div class="space-y-3 text-gray-700 dark:text-gray-400">
-          <div class="flex items-center justify-between">
-            <label for="departureDate" class="text-sm"><strong>Ngày đi:</strong></label>
-            <select id="departureDate" [ngModel]="currentScheduleId" (ngModelChange)="onDepartureDateChange($event)"
-              class="block w-2/3 mt-1 text-sm form-select">
-              <option *ngFor="let schedule of booking.schedules" [value]="schedule.id">
-                {{ schedule.departureDate | formatDate }} (Còn {{ schedule.availableSeats }} chỗ)
-              </option>
-            </select>
-          </div>
+          <nz-form-item>
+            <nz-form-label><strong>Ngày đi</strong></nz-form-label>
+            <nz-form-control>
+              <nz-select [ngModel]="currentScheduleId" (ngModelChange)="onDepartureDateChange($event)">
+                <nz-option *ngFor="let schedule of booking.schedules" [nzValue]="schedule.id"
+                           [nzLabel]="(schedule.departureDate | formatDate) + ' (Còn ' + schedule.availableSeats + ' chỗ)'">
+                </nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
           <p><strong>Điều hành viên:</strong> {{ booking.operator }}</p>
           <p><strong>Số chỗ còn lại:</strong> {{ selectedScheduleSeats !== null ? selectedScheduleSeats : booking.remainingSeats }} / {{ booking.totalSeats }}</p>
         </div>
       </div>
     </div>
-
     <!-- Cột giữa (Thông tin thanh toán) -->
     <div class="md:col-span-3 space-y-6">
       <!-- Card Thanh toán -->
@@ -62,13 +61,11 @@
           <div class="flex justify-between items-center">
             <span>Trạng thái:</span>
             <div class="flex items-center gap-2">
-              <select [(ngModel)]="booking.status" class="form-select text-sm">
-                <option value="PENDING">Chờ xử lý</option>
-                <option value="CONFIRMED">Đã xác nhận</option>
-                <option value="COMPLETED">Hoàn thành</option>
-                <option value="CANCELLED">Đã hủy</option>
-              </select>
-              <button (click)="onUpdateStatus()" class="px-3 py-1 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700">Lưu</button>
+              <nz-select [(ngModel)]="booking.status" class="w-40">
+                <nz-option nzValue="PENDING" nzLabel="Chờ xử lý"></nz-option>
+                <nz-option nzValue="CONFIRMED" nzLabel="Đã xác nhận"></nz-option>
+              </nz-select>
+              <button nz-button nzType="primary" (click)="onUpdateStatus()">Lưu</button>
             </div>
           </div>
           <div class="flex justify-between items-center">
@@ -82,8 +79,8 @@
           </div>
         </div>
         <div class="mt-4 pt-4 border-t dark:border-gray-700 text-center">
-          <button (click)="openMailModal()" class="w-full px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-teal-600 border border-transparent rounded-lg active:bg-teal-600 hover:bg-teal-700 focus:outline-none focus:shadow-outline-teal">
-            Gửi xác nhận cho khách hàng
+          <button nz-button nzType="default" nzBlock (click)="openMailModal()">
+             <i nz-icon nzType="mail" nzTheme="outline"></i> Gửi xác nhận cho khách hàng
           </button>
         </div>
       </div>
@@ -94,48 +91,41 @@
       <!-- Card chỉnh sửa thông tin người đặt -->
       <div class="p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
         <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">Thông tin người đặt</h4>
-        <form [formGroup]="bookerForm" (ngSubmit)="onSaveChanges()">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Họ và tên -->
-            <div>
-              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Họ và tên</span><input type="text" formControlName="fullName" class="block w-full mt-1 text-sm form-input"></label>
-              <div *ngIf="booker['fullName'].invalid && booker['fullName'].touched" class="text-xs text-red-600 mt-1">
-                <span *ngIf="booker['fullName'].errors?.['required']">Vui lòng nhập họ và tên.</span>
-              </div>
-            </div>
-            <!-- Email -->
-            <div>
-              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Email</span><input type="email" formControlName="email" class="block w-full mt-1 text-sm form-input"></label>
-              <div *ngIf="booker['email'].invalid && booker['email'].touched" class="text-xs text-red-600 mt-1">
-                <span *ngIf="booker['email'].errors?.['required']">Vui lòng nhập email.</span>
-                <span *ngIf="booker['email'].errors?.['email']">Email không đúng định dạng.</span>
-              </div>
-            </div>
-            <!-- Số điện thoại -->
-            <div>
-              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Số điện thoại</span><input type="tel" formControlName="phone" class="block w-full mt-1 text-sm form-input"></label>
-              <div *ngIf="booker['phone'].invalid && booker['phone'].touched" class="text-xs text-red-600 mt-1">
-                <span *ngIf="booker['phone'].errors?.['required']">Vui lòng nhập số điện thoại.</span>
-                <span *ngIf="booker['phone'].errors?.['invalidPhone']">Số điện thoại không đúng định dạng Việt Nam.</span>
-              </div>
-            </div>
-            <!-- Địa chỉ -->
-            <div>
-              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Địa chỉ</span><input type="text" formControlName="address" class="block w-full mt-1 text-sm form-input"></label>
-              <div *ngIf="booker['address'].invalid && booker['address'].touched" class="text-xs text-red-600 mt-1">
-                <span *ngIf="booker['address'].errors?.['required']">Vui lòng nhập địa chỉ.</span>
-              </div>
-            </div>
-            <!-- Hạn thanh toán -->
-            <div class="md:col-span-2">
-              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Hạn thanh toán</span><input type="datetime-local" formControlName="paymentDeadline" class="block w-full mt-1 text-sm form-input"></label>
-              <div *ngIf="booker['paymentDeadline'].invalid && booker['paymentDeadline'].touched" class="text-xs text-red-600 mt-1">
-                <span *ngIf="booker['paymentDeadline'].errors?.['pastDateTime']">Hạn thanh toán không được là ngày trong quá khứ.</span>
-              </div>
-            </div>
+        <form nz-form [formGroup]="bookerForm" (ngSubmit)="onSaveChanges()">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+            <nz-form-item>
+              <nz-form-label nzRequired>Họ và tên</nz-form-label>
+              <nz-form-control nzErrorTip="Vui lòng nhập họ và tên.">
+                <input nz-input formControlName="fullName" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzRequired>Email</nz-form-label>
+              <nz-form-control nzErrorTip="Email không hợp lệ.">
+                <input nz-input formControlName="email" type="email" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzRequired>Số điện thoại</nz-form-label>
+              <nz-form-control nzErrorTip="Số điện thoại không hợp lệ.">
+                <input nz-input formControlName="phone" />
+              </nz-form-control>
+            </nz-form-item>
+             <nz-form-item>
+              <nz-form-label nzRequired>Địa chỉ</nz-form-label>
+              <nz-form-control nzErrorTip="Vui lòng nhập địa chỉ.">
+                <input nz-input formControlName="address" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item class="md:col-span-2">
+              <nz-form-label>Hạn thanh toán</nz-form-label>
+              <nz-form-control nzErrorTip="Hạn thanh toán không được là ngày trong quá khứ.">
+                <input type="datetime-local" nz-input formControlName="paymentDeadline" />
+              </nz-form-control>
+            </nz-form-item>
           </div>
           <div class="mt-4 text-right">
-            <button type="submit" [disabled]="bookerForm.invalid || bookerForm.pristine" class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            <button nz-button nzType="primary" type="submit" [disabled]="bookerForm.invalid || bookerForm.pristine">
               Lưu thay đổi
             </button>
           </div>
@@ -146,152 +136,218 @@
       <div class="p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
         <div class="flex justify-between items-center mb-4">
           <h4 class="font-semibold text-gray-800 dark:text-gray-300">Danh sách đoàn ({{booking.customers.length}} người)</h4>
-          <button (click)="openAddCustomerModal()" class="px-3 py-1 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-green-600 border border-transparent rounded-md active:bg-green-600 hover:bg-green-700">
-            Thêm &plus;
+          <button nz-button nzType="default" (click)="openAddCustomerModal()">
+            <i nz-icon nzType="plus" nzTheme="outline"></i> Thêm
           </button>
         </div>
         <div class="w-full overflow-x-auto">
-          <table class="w-full whitespace-no-wrap">
+          <nz-table [nzData]="booking.customers" [nzFrontPagination]="false" [nzShowPagination]="false">
             <thead>
-              <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
-                <th class="px-4 py-3">Họ tên</th><th class="px-4 py-3">Loại khách</th><th class="px-4 py-3">Ngày sinh</th><th class="px-4 py-3">Hành động</th>
+              <tr>
+                <th>Họ tên</th><th>Loại khách</th><th>Ngày sinh</th><th>Hành động</th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
-              <tr *ngFor="let customer of booking.customers" class="text-gray-700 dark:text-gray-400">
-                <td class="px-4 py-3">{{customer.fullName}}</td><td class="px-4 py-3">{{customer.paxType}}</td><td class="px-4 py-3">{{customer.dateOfBirth | formatDate}}</td>
-                <td class="px-4 py-3">
-                  <button (click)="openEditCustomerModal(customer)" class="px-2 py-1 text-sm font-medium text-blue-600 hover:underline">Sửa</button>
-                  <button (click)="onDeleteCustomer(customer.id)" class="px-2 py-1 text-sm font-medium text-red-600 hover:underline">Xóa</button>
+            <tbody>
+              <tr *ngFor="let customer of booking.customers">
+                <td>{{customer.fullName}}</td><td>{{customer.paxType}}</td><td>{{customer.dateOfBirth | formatDate}}</td>
+                <td>
+                  <a (click)="openEditCustomerModal(customer)">Sửa</a>
+                  <nz-divider nzType="vertical"></nz-divider>
+                  <a (click)="onDeleteCustomer(customer.id)" class="text-red-500">Xóa</a>
                 </td>
               </tr>
-              <tr *ngIf="booking.customers.length === 0"><td colspan="4" class="px-4 py-3 text-center">Chưa có khách hàng nào trong đoàn.</td></tr>
+              <tr *ngIf="booking.customers.length === 0"><td colspan="4" class="text-center">Chưa có khách hàng nào trong đoàn.</td></tr>
             </tbody>
-          </table>
+          </nz-table>
         </div>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- MODAL THÊM KHÁCH HÀNG -->
-<div *ngIf="isAddCustomerModalOpen" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black bg-opacity-50">
-  <div class="relative w-full max-w-4xl p-4 mx-auto bg-white rounded-lg shadow-xl dark:bg-gray-800">
-    <div class="flex justify-between items-center pb-3 border-b dark:border-gray-700">
-      <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200">Thêm khách hàng mới</h3>
-      <button (click)="closeAddCustomerModal()" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-      </button>
-    </div>
-    <form [formGroup]="addCustomerForm" (ngSubmit)="onSubmitAddCustomer()">
-      <div class="py-4 max-h-[60vh] overflow-y-auto">
-        <div formArrayName="customers">
-          <div *ngFor="let customer of customersArray.controls; let i=index" [formGroupName]="i" class="p-4 mb-4 border rounded-lg dark:border-gray-700">
-            <div class="flex justify-between items-center mb-2">
-              <h4 class="font-semibold">Khách hàng {{i + 1}}</h4>
-              <button *ngIf="customersArray.length > 1" (click)="removeCustomerFromAddForm(i)" type="button" class="text-red-500 hover:text-red-700">&times; Xóa</button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <!-- Họ và tên khách hàng -->
-              <div>
-                <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Họ và tên *</span><input type="text" formControlName="fullName" class="block w-full mt-1 text-sm form-input"></label>
-                <div *ngIf="getCustomerControls(i)['fullName'].invalid && getCustomerControls(i)['fullName'].touched" class="text-xs text-red-600 mt-1">
-                  <span *ngIf="getCustomerControls(i)['fullName'].errors?.['required']">Vui lòng nhập họ và tên.</span>
-                </div>
-              </div>
-              <!-- Ngày sinh khách hàng -->
-              <div>
-                <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Ngày sinh *</span><input type="date" formControlName="dateOfBirth" class="block w-full mt-1 text-sm form-input"></label>
-                <div *ngIf="getCustomerControls(i)['dateOfBirth'].invalid && getCustomerControls(i)['dateOfBirth'].touched" class="text-xs text-red-600 mt-1">
-                  <span *ngIf="getCustomerControls(i)['dateOfBirth'].errors?.['required']">Vui lòng chọn ngày sinh.</span>
-                  <span *ngIf="getCustomerControls(i)['dateOfBirth'].errors?.['futureDate']">Ngày sinh không được ở tương lai.</span>
-                </div>
-              </div>
-              <!-- Giới tính và Loại khách -->
-              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Giới tính *</span><select formControlName="gender" class="block w-full mt-1 text-sm form-select"><option value="MALE">Nam</option><option value="FEMALE">Nữ</option><option value="OTHER">Khác</option></select></label>
-              <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Loại khách *</span><select formControlName="paxType" class="block w-full mt-1 text-sm form-select"><option value="ADULT">Người lớn</option><option value="CHILD">Trẻ em</option><option value="INFANT">Trẻ nhỏ</option></select></label>
-              <div class="flex items-center mt-4 md:col-span-2"><input type="checkbox" formControlName="singleRoom" id="addSingleRoom-{{i}}" class="form-checkbox"><label for="addSingleRoom-{{i}}" class="ml-2 text-sm">Phụ thu phòng đơn</label></div>
-            </div>
-          </div>
-        </div>
-        <button (click)="addMoreCustomer()" type="button" class="mt-2 text-sm text-purple-600 hover:underline">+ Thêm khách hàng khác</button>
-      </div>
-      <div class="flex justify-end items-center pt-4 border-t dark:border-gray-700 gap-2">
-        <button type="button" (click)="closeAddCustomerModal()" class="px-4 py-2 text-sm font-medium bg-gray-100 border rounded-lg hover:bg-gray-200">Hủy</button>
-        <button type="submit" [disabled]="isSubmitting || addCustomerForm.invalid" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 border rounded-lg hover:bg-purple-700 disabled:opacity-50">
-          <span *ngIf="!isSubmitting">Thêm vào đoàn</span>
-          <span *ngIf="isSubmitting">Đang xử lý...</span>
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- MODAL SỬA KHÁCH HÀNG -->
-<div *ngIf="isEditCustomerModalOpen" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black bg-opacity-50">
-  <div class="relative w-full max-w-lg p-4 mx-auto bg-white rounded-lg shadow-xl dark:bg-gray-800">
-    <div class="flex justify-between items-center pb-3 border-b dark:border-gray-700">
-      <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200">Chỉnh sửa thông tin khách hàng</h3>
-      <button (click)="closeEditCustomerModal()" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-      </button>
-    </div>
-    <form [formGroup]="editCustomerForm" (ngSubmit)="onSubmitEditCustomer()">
-      <div class="py-4 space-y-4">
-        <!-- Họ tên -->
-        <div>
-          <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Họ và tên</span><input type="text" formControlName="fullName" class="block w-full mt-1 text-sm form-input"></label>
-          <div *ngIf="editCustomer['fullName'].invalid && editCustomer['fullName'].touched" class="text-xs text-red-600 mt-1">
-            <span *ngIf="editCustomer['fullName'].errors?.['required']">Vui lòng nhập họ và tên.</span>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Giới tính</span><select formControlName="gender" class="block w-full mt-1 text-sm form-select"><option value="MALE">Nam</option><option value="FEMALE">Nữ</option><option value="OTHER">Khác</option></select></label>
-          <!-- Ngày sinh -->
-          <div>
-            <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Ngày sinh</span><input type="date" formControlName="dateOfBirth" class="block w-full mt-1 text-sm form-input"></label>
-            <div *ngIf="editCustomer['dateOfBirth'].invalid && editCustomer['dateOfBirth'].touched" class="text-xs text-red-600 mt-1">
-              <span *ngIf="editCustomer['dateOfBirth'].errors?.['required']">Vui lòng chọn ngày sinh.</span>
-              <span *ngIf="editCustomer['dateOfBirth'].errors?.['futureDate']">Ngày sinh không được ở tương lai.</span>
-            </div>
-          </div>
-        </div>
-        <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Loại khách</span><select formControlName="paxType" class="block w-full mt-1 text-sm form-select"><option value="ADULT">Người lớn</option><option value="CHILD">Trẻ em</option><option value="INFANT">Trẻ nhỏ</option><option value="TODDLER">Em bé</option></select></label>
-        <div class="flex items-center mt-4"><input type="checkbox" formControlName="singleRoom" id="editSingleRoom" class="form-checkbox"><label for="editSingleRoom" class="ml-2 text-sm">Phòng đơn</label></div>
-      </div>
-      <div class="flex justify-end items-center pt-4 border-t dark:border-gray-700 gap-2">
-        <button type="button" (click)="closeEditCustomerModal()" class="px-4 py-2 text-sm font-medium bg-gray-100 border rounded-lg hover:bg-gray-200">Hủy</button>
-        <button type="submit" [disabled]="isSubmitting || editCustomerForm.invalid" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 border rounded-lg hover:bg-purple-700 disabled:opacity-50">
-          <span *ngIf="!isSubmitting">Lưu thay đổi</span>
-          <span *ngIf="isSubmitting">Đang lưu...</span>
-        </button>
-      </div>
-    </form>
   </div>
 </div>
 
 <!-- MODAL GỬI MAIL -->
-<div *ngIf="isMailModalOpen" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black bg-opacity-50">
-  <div class="relative w-full max-w-2xl p-4 mx-auto bg-white rounded-lg shadow-xl dark:bg-gray-800">
-    <div class="flex justify-between items-center pb-3 border-b dark:border-gray-700">
-      <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200">Soạn Email Xác Nhận</h3>
-      <button (click)="closeMailModal()" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-      </button>
-    </div>
-    <form [formGroup]="mailForm" (ngSubmit)="onSendMail()">
-      <div class="py-4 space-y-4">
-        <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Gửi đến</span><input type="email" formControlName="email" class="block w-full mt-1 text-sm bg-gray-100 dark:bg-gray-700 form-input cursor-not-allowed"></label>
-        <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Tiêu đề</span><input type="text" formControlName="subject" class="block w-full mt-1 text-sm form-input"></label>
-        <label class="block text-sm"><span class="text-gray-700 dark:text-gray-400">Nội dung</span><textarea formControlName="content" class="block w-full mt-1 text-sm form-textarea" rows="10"></textarea></label>
-      </div>
-      <div class="flex justify-end items-center pt-4 border-t dark:border-gray-700 gap-2">
-        <button type="button" (click)="closeMailModal()" class="px-4 py-2 text-sm font-medium bg-gray-100 border rounded-lg hover:bg-gray-200">Hủy</button>
-        <button type="submit" [disabled]="isSendingMail || mailForm.invalid" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 border rounded-lg hover:bg-purple-700 disabled:opacity-50">
-          <span *ngIf="!isSendingMail">Gửi Email</span>
-          <span *ngIf="isSendingMail">Đang gửi...</span>
+<nz-modal
+  [(nzVisible)]="isMailModalOpen"
+  nzTitle="Soạn Email Xác Nhận"
+  (nzOnCancel)="closeMailModal()"
+  (nzOnOk)="onSendMail()"
+  [nzOkLoading]="isSendingMail"
+  nzOkText="Gửi Email"
+  nzCancelText="Hủy"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="mailForm">
+      <nz-form-item>
+        <nz-form-label>Gửi đến</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="email" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>Tiêu đề</nz-form-label>
+        <nz-form-control nzErrorTip="Vui lòng nhập tiêu đề!">
+          <input nz-input formControlName="subject" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>Nội dung</nz-form-label>
+        <nz-form-control nzErrorTip="Vui lòng nhập nội dung!">
+          <textarea nz-input formControlName="content" [nzAutosize]="{ minRows: 10, maxRows: 15 }"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- ========================================================== -->
+<!-- MỚI: MODAL THÊM KHÁCH HÀNG -->
+<!-- ========================================================== -->
+<nz-modal
+  [(nzVisible)]="isAddCustomerModalOpen"
+  [nzWidth]="800"
+  nzTitle="Thêm khách hàng mới vào đoàn"
+  (nzOnCancel)="closeAddCustomerModal()"
+  (nzOnOk)="onSubmitAddCustomer()"
+  [nzOkLoading]="isSubmitting"
+  nzOkText="Thêm vào đoàn"
+  nzCancelText="Hủy"
+  [nzOkDisabled]="addCustomerForm.invalid"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="addCustomerForm">
+      <div class="max-h-[60vh] overflow-y-auto -mx-6 px-6 py-4">
+        <div formArrayName="customers">
+          <div *ngFor="let customer of customersArray.controls; let i=index" [formGroupName]="i"
+               class="p-4 mb-4 border rounded-lg dark:border-gray-700 relative">
+
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="font-semibold text-gray-700 dark:text-gray-200">Khách hàng {{i + 1}}</h4>
+              <button *ngIf="customersArray.length > 1" nz-button nzType="text" nzDanger
+                      (click)="removeCustomerFromAddForm(i)" type="button">
+                <i nz-icon nzType="delete" nzTheme="outline"></i> Xóa
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+              <nz-form-item>
+                <nz-form-label nzRequired>Họ và tên</nz-form-label>
+                <nz-form-control [nzErrorTip]="fullNameErrorTpl">
+                  <input nz-input formControlName="fullName" placeholder="Nguyễn Văn A" />
+                  <ng-template #fullNameErrorTpl let-control>
+                    <ng-container *ngIf="control.hasError('required')">Vui lòng nhập họ tên.</ng-container>
+                  </ng-template>
+                </nz-form-control>
+              </nz-form-item>
+
+              <nz-form-item>
+                <nz-form-label nzRequired>Ngày sinh</nz-form-label>
+                <nz-form-control [nzErrorTip]="dobErrorTpl">
+                  <input type="date" nz-input formControlName="dateOfBirth" />
+                   <ng-template #dobErrorTpl let-control>
+                    <ng-container *ngIf="control.hasError('required')">Vui lòng chọn ngày sinh.</ng-container>
+                    <ng-container *ngIf="control.hasError('noFutureDate')">Ngày sinh không hợp lệ.</ng-container>
+                  </ng-template>
+                </nz-form-control>
+              </nz-form-item>
+
+              <nz-form-item>
+                <nz-form-label nzRequired>Giới tính</nz-form-label>
+                <nz-form-control>
+                  <nz-select formControlName="gender">
+                    <nz-option nzValue="MALE" nzLabel="Nam"></nz-option>
+                    <nz-option nzValue="FEMALE" nzLabel="Nữ"></nz-option>
+                    <nz-option nzValue="OTHER" nzLabel="Khác"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+
+              <nz-form-item>
+                <nz-form-label nzRequired>Loại khách</nz-form-label>
+                <nz-form-control>
+                  <nz-select formControlName="paxType">
+                    <nz-option nzValue="ADULT" nzLabel="Người lớn"></nz-option>
+                    <nz-option nzValue="CHILD" nzLabel="Trẻ em"></nz-option>
+                    <nz-option nzValue="INFANT" nzLabel="Trẻ nhỏ"></nz-option>
+                    <nz-option nzValue="TODDLER" nzLabel="Em bé"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+
+              <div class="md:col-span-2">
+                <nz-checkbox-wrapper>
+                  <label nz-checkbox formControlName="singleRoom">Phụ thu phòng đơn</label>
+                </nz-checkbox-wrapper>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button nz-button nzType="dashed" (click)="addMoreCustomer()" type="button" class="mt-2 w-full">
+          <i nz-icon nzType="plus"></i> Thêm khách hàng khác
         </button>
       </div>
     </form>
-  </div>
-</div>
+  </ng-container>
+</nz-modal>
+
+<!-- ========================================================== -->
+<!-- MỚI: MODAL SỬA KHÁCH HÀNG -->
+<!-- ========================================================== -->
+<nz-modal
+  [(nzVisible)]="isEditCustomerModalOpen"
+  nzTitle="Chỉnh sửa thông tin khách hàng"
+  (nzOnCancel)="closeEditCustomerModal()"
+  (nzOnOk)="onSubmitEditCustomer()"
+  [nzOkLoading]="isSubmitting"
+  nzOkText="Lưu thay đổi"
+  nzCancelText="Hủy"
+  [nzOkDisabled]="editCustomerForm.invalid"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="editCustomerForm" class="py-4">
+      <nz-form-item>
+        <nz-form-label nzRequired>Họ và tên</nz-form-label>
+        <nz-form-control nzErrorTip="Vui lòng nhập họ tên.">
+          <input nz-input formControlName="fullName" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="grid grid-cols-2 gap-x-4">
+        <nz-form-item>
+          <nz-form-label nzRequired>Giới tính</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="gender">
+              <nz-option nzValue="MALE" nzLabel="Nam"></nz-option>
+              <nz-option nzValue="FEMALE" nzLabel="Nữ"></nz-option>
+              <nz-option nzValue="OTHER" nzLabel="Khác"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>Ngày sinh</nz-form-label>
+          <nz-form-control nzErrorTip="Ngày sinh không hợp lệ.">
+            <input type="date" nz-input formControlName="dateOfBirth" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Loại khách</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="paxType">
+            <nz-option nzValue="ADULT" nzLabel="Người lớn"></nz-option>
+            <nz-option nzValue="CHILD" nzLabel="Trẻ em"></nz-option>
+            <nz-option nzValue="INFANT" nzLabel="Trẻ nhỏ"></nz-option>
+            <nz-option nzValue="TODDLER" nzLabel="Em bé"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-control>
+          <label nz-checkbox formControlName="singleRoom">Phụ thu phòng đơn</label>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
