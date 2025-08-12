@@ -1,3 +1,7 @@
+/*
+  File: src/app/features/seller/models/seller-booking-detail.model.ts
+  Mô tả: Dùng cho trang chi tiết booking, chứa tất cả thông tin cần thiết.
+*/
 import { TourSchedule } from '../../../core/models/tour-schedule.model';
 import { SellerBookingCustomer } from './seller-booking-customer.model';
 
@@ -9,12 +13,12 @@ export interface SellerBookingDetail {
   address: string;
   email: string;
   phoneNumber: string;
-  paymentDeadline: string; // Giữ dạng string (ISO date)
-  createdAt: string;
+  paymentDeadline: string; // ISO Date String
+  createdAt: string; // ISO Date String
   status: string;
-  paymentMethod: string; // THÊM DÒNG NÀY
+  paymentMethod: string;
   operator: string;
-  departureDate: string;
+  departureDate: string; // ISO Date String
   tourType: string;
   themes: string[];
   durationDays: number;
@@ -26,4 +30,10 @@ export interface SellerBookingDetail {
   schedules: TourSchedule[];
   customers: SellerBookingCustomer[];
   totalAmount: number;
+
+  // các thuộc tính để tính tổng số khách
+  adults?: number;
+  children?: number;
+  infants?: number;
+  toddlers?: number;
 }
