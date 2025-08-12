@@ -18,7 +18,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { AccountantService } from '../../services/accountant.service';
 import { BookingRefund } from '../../models/booking-refund.model';
-import { PagingDTO } from '../../../../core/models/paging.model';
+import { Paging } from '../../../../core/models/paging.model';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
 
@@ -43,7 +43,7 @@ export class RefundRequestListComponent implements OnInit {
   private accountantService = inject(AccountantService);
   private router = inject(Router);
 
-  refunds: PagingDTO<BookingRefund> = {
+  refunds: Paging<BookingRefund> = {
     items: [],
     page: 0,
     size: 10,
