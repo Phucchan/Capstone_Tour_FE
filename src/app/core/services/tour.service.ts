@@ -12,7 +12,7 @@ import {
   TourDayManagerCreateRequestDTO,
   ServiceTypeShortDTO,
 } from '../models/tour.model';
-import { PagingDTO } from '../../core/models/paging.model';
+import { Paging } from '../../core/models/paging.model';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 
@@ -25,7 +25,7 @@ export class TourService {
 
   constructor(private http: HttpClient) {}
 
-  getTours(filters: any): Observable<PagingDTO<TourListItem>> {
+  getTours(filters: any): Observable<Paging<TourListItem>> {
     let params = new HttpParams()
       .set('page', filters.page.toString())
       .set('size', filters.size.toString());
@@ -34,7 +34,7 @@ export class TourService {
     if (filters.tourStatus)
       params = params.set('tourStatus', filters.tourStatus);
     return this.http
-      .get<ApiResponse<PagingDTO<TourListItem>>>(this.toursApiUrl, { params })
+      .get<ApiResponse<Paging<TourListItem>>>(this.toursApiUrl, { params })
       .pipe(map((response) => response.data));
   }
 
