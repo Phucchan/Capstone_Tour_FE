@@ -9,7 +9,7 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import { CustomOrderTourService } from '../../services/custom-order-tour.service';
+import { RequestBookingService } from '../../services/request-booking.service';
 import { ToastrService } from 'ngx-toastr';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { IconTransportPipe } from '../../../../shared/pipes/icon-transport.pipe';
@@ -21,15 +21,15 @@ import { subscribe } from 'diagnostics_channel';
 import { take } from 'rxjs';
 
 @Component({
-  selector: 'app-custom-order-tour',
+  selector: 'app-request-booking',
   standalone: true,
   imports: [CommonModule, FormsModule, NgSelectModule, IconTransportPipe, ReactiveFormsModule],
-  templateUrl: './custom-order-tour.component.html',
+  templateUrl: './request-booking.component.html',
 })
-export class CustomOrderTourComponent implements OnInit {
+export class RequestBookingComponent implements OnInit {
   bookingForm!: FormGroup;
 
-  transports = ['CAR', 'PLANE', 'TRAIN'];
+  transports = ['CAR', 'PLANE', 'TRAIN']; 
   autoFilled = false;
 
 
@@ -54,7 +54,7 @@ export class CustomOrderTourComponent implements OnInit {
   submitting = false;
 
   constructor(
-    private tourService: CustomOrderTourService,
+    private tourService: RequestBookingService,
     private toastr: ToastrService,
     private fb: FormBuilder,
     private currentUserService: CurrentUserService,
