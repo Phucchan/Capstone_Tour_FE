@@ -113,6 +113,13 @@ export const MENU_ITEMS: MenuItem[] = [
         route: '/seller/dashboard', // Chính xác
         roles: [ROLES.SELLER],
       },
+
+      {
+        icon: 'assets/icons/heroicons/outline/request-quote-svgrepo-com.svg',
+        label: 'Yêu cầu tùy chỉnh',
+        route: '/seller/requests',
+        roles: [ROLES.SELLER],
+      },
     ],
   },
 
