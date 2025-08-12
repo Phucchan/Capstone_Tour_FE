@@ -24,11 +24,11 @@
       </small>
     </div>
   </div>
-    <!-- 🔹 Mô tả điểm đến -->
+  <!-- 🔹 Mô tả điểm đến -->
   <div>
     <label class="block font-semibold mb-1">Mô tả điểm đến</label>
     <textarea formControlName="destinationDetail" class="w-full border p-2 rounded" rows="3"
-              placeholder="Ví dụ: Muốn đi biển, gần trung tâm, có hoạt động team building..."></textarea>
+      placeholder="Ví dụ: Muốn đi biển, gần trung tâm, có hoạt động team building..."></textarea>
   </div>
 
 
@@ -39,7 +39,7 @@
       <input type="date" formControlName="startDate" class="w-full border p-2 rounded" [min]="today" />
       <small class="text-red-500"
         *ngIf="bookingForm.get('startDate')?.touched && bookingForm.get('startDate')?.invalid">
-        *Thông tin bắt buộc (không nhỏ hơn hôm nay)
+        *Thông tin bắt buộc
       </small>
     </div>
 
@@ -49,7 +49,7 @@
         [min]="bookingForm.get('startDate')?.value || today" />
       <small class="text-red-500"
         *ngIf="(bookingForm.get('endDate')?.touched && bookingForm.get('endDate')?.invalid) || bookingForm.hasError('dateRange')">
-        *Thông tin bắt buộc (phải ≥ ngày đi)
+        *Thông tin bắt buộc
       </small>
     </div>
   </div>
@@ -117,22 +117,25 @@
     Tổng số hành khách: {{ getTotalGuests() }}
   </p>
 
-    <!-- 🔹 Chủ đề tour & Dịch vụ mong muốn -->
+  <!-- 🔹 Chủ đề tour & Dịch vụ mong muốn -->
   <div class="grid grid-cols-2 gap-4">
+  
     <div>
       <label class="block font-semibold mb-1">Chủ đề tour</label>
-      <input type="text" formControlName="tourTheme" class="w-full border p-2 rounded"
-             placeholder="Nghỉ dưỡng / Team building / Trăng mật ..."/>
+      <ng-select [items]="themes" bindLabel="name" bindValue="id" formControlName="tourTheme"
+        [multiple]="true" placeholder="Chọn chủ đề tour" class="w-full ">
+      </ng-select>
     </div>
+    
     <div>
       <label class="block font-semibold mb-1">Dịch vụ mong muốn</label>
       <input type="text" formControlName="desiredServices" class="w-full border p-2 rounded"
-             placeholder="Xe đưa đón, gala dinner, teambuilding, hướng dẫn viên..."/>
+        placeholder="Xe đưa đón, gala dinner, teambuilding, hướng dẫn viên..." />
     </div>
   </div>
 
   <!-- Khoảng giá -->
-  <h2 class=" font-semibold mt-6 mb-1">Khoảng giá (VND) </h2>
+  <h2 class=" font-semibold mt-6 mb-1">Ước lượng tổng chi phí (VND) </h2>
   <div class="grid grid-cols-2 gap-4">
     <div>
       <input type="text" [value]="formatCurrency(bookingForm.get('priceMax')?.value)"
@@ -145,11 +148,19 @@
 
   <!-- Thông tin liên lạc -->
   <div class="pt-4 border-t">
-    <label class="block font-semibold mb-1">Thông tin liên hệ</label>
+    <label class="block font-semibold mb-1">Thông tin liên hệ người đặt</label>
+    <!-- Nút bật/tắt readonly (tuỳ chọn) -->
+    <button type="button" class="text-sm text-blue-600 hover:underline" *ngIf="autoFilled"
+      (click)="clearContactFields()">
+      Dùng thông tin khác
+    </button>
+    <button type="button" class="text-sm text-blue-600 hover:underline" *ngIf="!autoFilled" (click)="fillCurrentUser()">
+      Tự động điền từ tài khoản
+    </button>
     <div class="grid grid-cols-2 gap-4">
       <div>
         <label>Họ tên *</label>
-        <input type="text" formControlName="customerName" class="w-full border p-2 rounded" />
+        <input type="text" formControlName="customerName"  class="w-full border p-2 rounded" />
         <small class="text-red-500"
           *ngIf="bookingForm.get('customerName')?.invalid && bookingForm.get('customerName')?.touched">
           *Thông tin bắt buộc
@@ -157,7 +168,7 @@
       </div>
       <div>
         <label>Email *</label>
-        <input type="email" formControlName="customerEmail" class="w-full border p-2 rounded" />
+        <input type="email" formControlName="customerEmail"  class="w-full border p-2 rounded" />
         <small class="text-red-500"
           *ngIf="bookingForm.get('customerEmail')?.invalid && bookingForm.get('customerEmail')?.touched">
           *Thông tin bắt buộc
@@ -165,9 +176,8 @@
       </div>
       <div>
         <label>Số điện thoại *</label>
-        <input type="tel" formControlName="customerPhone" maxlength="10"
-             inputmode="numeric"
-             pattern="[0-9]*" class="w-full border p-2 rounded" />
+        <input type="tel" formControlName="customerPhone"  maxlength="10" inputmode="numeric"
+          pattern="[0-9]*" class="w-full border p-2 rounded" />
         <small class="text-red-500"
           *ngIf="bookingForm.get('customerPhone')?.invalid && bookingForm.get('customerPhone')?.touched">
           *Thông tin bắt buộc
@@ -178,7 +188,7 @@
 
   <!-- Nút gửi -->
   <div class="text-center pt-6">
-    <button type="button" (click)="submitBooking()"  [disabled]="submitting"
+    <button type="button" (click)="submitBooking()" [disabled]="submitting"
       class="px-6 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition">
       Xác nhận và gửi
     </button>

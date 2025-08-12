@@ -15,6 +15,10 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { IconTransportPipe } from '../../../../shared/pipes/icon-transport.pipe';
 import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
 import { CustomerService } from '../../services/customer.service';
+import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
+import { subscribe } from 'diagnostics_channel';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-custom-order-tour',
@@ -26,20 +30,22 @@ export class CustomOrderTourComponent implements OnInit {
   bookingForm!: FormGroup;
 
   transports = ['CAR', 'PLANE', 'TRAIN'];
- 
+  autoFilled = false;
+
 
   hotelStandards = [
-  { label: 'Tiêu chuẩn', value: 'Standard' },
-  { label: 'Cao cấp', value: 'Deluxe' },
-  { label: 'Suite', value: 'Suite' },
-  { label: 'Gia đình', value: 'Family' }
-];
+    { label: 'Tiêu chuẩn', value: 'Standard' },
+    { label: 'Cao cấp', value: 'Deluxe' },
+    { label: 'Suite', value: 'Suite' },
+    { label: 'Gia đình', value: 'Family' }
+  ];
 
   destinations: any[] = [];
   departures: any[] = [];
+  themes: any[] = [];
 
-   userInformation: any;
-   isLoading: boolean = false;
+  userInformation: any;
+  isLoading: boolean = false;
 
   // min cho input date
   today = new Date().toISOString().slice(0, 10);
@@ -52,13 +58,15 @@ export class CustomOrderTourComponent implements OnInit {
     private toastr: ToastrService,
     private fb: FormBuilder,
     private currentUserService: CurrentUserService,
-    private customerService: CustomerService
-  ) {}
+    private customerService: CustomerService,
+    private router: Router,
+  ) { }
 
   ngOnInit(): void {
     this.buildForm();
     this.loadDestinations();
     this.loadDepartures();
+    this.loadThemes();
     this.fillCurrentUser();
   }
 
@@ -71,7 +79,7 @@ export class CustomOrderTourComponent implements OnInit {
         destinationDetail: [''],
 
         startDate: ['', Validators.required],
-        endDate: ['', Validators.required],   
+        endDate: ['', Validators.required],
 
         transport: ['', Validators.required],
 
@@ -83,8 +91,8 @@ export class CustomOrderTourComponent implements OnInit {
         hotelRooms: [1, [Validators.required, Validators.min(1)]],
         roomCategory: ['', Validators.required],
 
-        tourTheme:        [''],                              // 🔹 thêm
-        desiredServices:  [''],
+        tourTheme: [''],                              // 🔹 thêm
+        desiredServices: [''],
 
         customerName: ['', Validators.required],
         customerEmail: ['', [Validators.required, Validators.email]],
@@ -95,7 +103,7 @@ export class CustomOrderTourComponent implements OnInit {
         priceMax: [0, [Validators.required, Validators.min(0)]],
 
         status: ['PENDING'],                                 // 🔹 theo enum BE
-        reason: ['']  
+        reason: ['']
       },
       {
         validators: [this.dateRangeValidator, this.priceRangeValidator],
@@ -124,22 +132,54 @@ export class CustomOrderTourComponent implements OnInit {
   }
 
   /** Prefill thông tin KH từ user hiện tại */
-  fillCurrentUser() {
-    const user = this.currentUserService.getCurrentUser();
-    if (user) {
-      this.bookingForm.patchValue({
-        customerName: user.fullName || '',
-        customerEmail: user.email || '',
-        customerPhone: user.phone || '',
-      });
-    }
-  }
+fillCurrentUser(): void {
+  const userId = this.currentUserService.getCurrentUser()?.id;
+  if (!userId) return; // chưa đăng nhập thì thôi
+
+  this.customerService.getUserProfile(userId)
+    .pipe(take(1))
+    .subscribe({
+      next: (res) => {
+        // BE của bạn trước đây hay trả { data: {...} }
+        const user = (res && ('data' in res)) ? res.data : res;
+
+        if (!user) return;
+        this.bookingForm.patchValue({
+          customerName: user.fullName || '',
+          customerEmail: user.email || '',
+          customerPhone: user.phone || '',
+        });
+        this.autoFilled = true; // nếu bạn có dùng cờ này
+      },
+      error: (err) => {
+        console.error('Lỗi lấy thông tin user:', err);
+        // Không chặn form; user vẫn có thể tự nhập tay
+      }
+    });
+}
+
+clearContactFields(): void {
+  this.bookingForm.patchValue({
+    customerName: '',
+    customerEmail: '',
+    customerPhone: '',
+  });
+  this.autoFilled = false;
+}
+
+
 
 
   /** Gọi dữ liệu chọn điểm đến/đi */
   loadDestinations() {
     this.tourService.getDestinations().subscribe((res) => {
       this.destinations = res.data;
+    });
+  }
+
+  loadThemes() {
+    this.tourService.getThemes().subscribe((res) => {
+      this.themes = res.data;
     });
   }
 
@@ -175,79 +215,96 @@ export class CustomOrderTourComponent implements OnInit {
   }
 
   /** Submit */
-submitBooking(): void {
-  if (this.bookingForm.invalid) {
-    this.bookingForm.markAllAsTouched();
-    this.toastr.warning('Vui lòng điền đầy đủ thông tin yêu cầu');
-    return;
-  }
-
-  // ✅ kiểm tra lỗi form-level đúng cách
-  if (this.bookingForm.hasError('dateRange')) {
-    this.toastr.error('Ngày về phải lớn hơn hoặc bằng ngày đi');
-    return;
-  }
-
-  if (this.bookingForm.hasError('priceRange')) {
-    this.toastr.error('Giá tối đa phải lớn hơn hoặc bằng giá tối thiểu');
-    return;
-  }
-  const userId = this.currentUserService.getCurrentUser()?.id || 0;
-  if (!userId) {
-    this.toastr.error('Không xác định được người dùng. Vui lòng đăng nhập lại.');
-    return;
-  }
-const toYmd = (v: string | null | undefined) =>
-    v ? new Date(v).toISOString().split('T')[0] : null;
-  
-   const f = this.bookingForm.controls;
-  this.submitting = true;
-
-  const payload = {
-  
-   departureLocationId: Number(f['departureLocationId'].value),
-    destinationLocationIds: f['destinationLocationIds'].value || [],
-    destinationDetail: f['destinationDetail'].value || '',
-
-    startDate: toYmd(f['startDate'].value),
-    endDate: toYmd(f['endDate'].value),
-
-
-    transport: f['transport'].value,
-    tourTheme: f['tourTheme']?.value || '',
-    desiredServices: f['desiredServices']?.value || '',
-
-    adults: Number(f['adults'].value) || 1,
-    children: Number(f['children'].value) || 0,
-    infants: Number(f['infants'].value) || 0,
-    toddlers: Number(f['toddlers'].value) || 0,
-
-    hotelRooms: Number(f['hotelRooms'].value) || 1,
-    roomCategory: f['roomCategory'].value,
-
-    customerName: f['customerName'].value,
-    customerEmail: f['customerEmail'].value,
-    customerPhone: f['customerPhone'].value,
-
-    priceMin: Number(f['priceMin'].value) || 0,
-    priceMax: Number(f['priceMax'].value) || 0,
-
-   
-  };
-
-  this.tourService.requestBooking(payload, userId).subscribe({
-    next: () => {
-      this.toastr.success('Gửi yêu cầu thành công!');
-      this.submitting = false;
-      // (tuỳ chọn) this.bookingForm.reset(...)
-    },
-    error: (err) => {
-      console.error('Request-bookings error:', err);
-      this.toastr.error(err?.error?.message ||'Gửi yêu cầu thất bại');
-      this.submitting = false;
+  submitBooking(): void {
+    if (this.bookingForm.invalid) {
+      this.bookingForm.markAllAsTouched();
+      this.toastr.warning('Vui lòng điền đầy đủ thông tin yêu cầu');
+      return;
     }
-  });
-}
+
+    // ✅ kiểm tra lỗi form-level đúng cách
+    if (this.bookingForm.hasError('dateRange')) {
+      this.toastr.error('Ngày về phải lớn hơn hoặc bằng ngày đi');
+      return;
+    }
+
+    if (this.bookingForm.hasError('priceRange')) {
+      this.toastr.error('Giá tối đa phải lớn hơn hoặc bằng giá tối thiểu');
+      return;
+    }
+    const userId = this.currentUserService.getCurrentUser()?.id || 0;
+    if (!userId) {
+      this.toastr.error('Không xác định được người dùng. Vui lòng đăng nhập lại.');
+      return;
+    }
+    const toYmd = (v: string | null | undefined) =>
+      v ? new Date(v).toISOString().split('T')[0] : null;
+
+    const f = this.bookingForm.controls;
+    this.submitting = true;
+
+    const payload = {
+
+      departureLocationId: Number(f['departureLocationId'].value),
+      destinationLocationIds: f['destinationLocationIds'].value || [],
+      destinationDetail: f['destinationDetail'].value || '',
+
+      startDate: toYmd(f['startDate'].value),
+      endDate: toYmd(f['endDate'].value),
+
+
+      transport: f['transport'].value,
+      tourTheme: f['tourTheme']?.value || '',
+      desiredServices: f['desiredServices']?.value || '',
+
+      adults: Number(f['adults'].value) || 1,
+      children: Number(f['children'].value) || 0,
+      infants: Number(f['infants'].value) || 0,
+      toddlers: Number(f['toddlers'].value) || 0,
+
+      hotelRooms: Number(f['hotelRooms'].value) || 1,
+      roomCategory: f['roomCategory'].value,
+
+      customerName: f['customerName'].value,
+      customerEmail: f['customerEmail'].value,
+      customerPhone: f['customerPhone'].value,
+
+      priceMin: Number(f['priceMin'].value) || 0,
+      priceMax: Number(f['priceMax'].value) || 0,
+
+
+    };
+
+    this.tourService.requestBooking(payload, userId).subscribe({
+      next: () => {
+        this.submitting = false;
+        // Pop-up thông báo và điều hướng về homepage khi bấm xác nhận
+        Swal.fire({
+          icon: 'success',
+          title: 'Đặt yêu cầu thành công!',
+          text: 'Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.',
+          confirmButtonText: 'Về trang chủ',
+          allowOutsideClick: false,
+          buttonsStyling: false,
+          customClass: {
+            popup: 'rounded-lg',
+            confirmButton: 'swal-confirm-btn' // nếu bạn đã có class này
+          }
+        }).then(res => {
+          if (res.isConfirmed) {
+            this.router.navigate(['/']); // về homepage
+          }
+        });
+      },
+      // (tuỳ chọn) this.bookingForm.reset(...)
+
+      error: (err) => {
+        console.error('Request-bookings error:', err);
+        this.toastr.error(err?.error?.message || 'Gửi yêu cầu thất bại');
+        this.submitting = false;
+      }
+    });
+  }
 
 
   /** Helper lấy control trong template */

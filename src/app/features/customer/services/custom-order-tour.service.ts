@@ -17,6 +17,10 @@ export class CustomOrderTourService {
     return this.http.get(`${environment.apiUrl}/public/locations/departures`);
   }
 
+  getThemes(): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/customer/request-bookings/themes`);
+  }
+
  requestBooking(body: any, userId: number) {
   return this.http.post(
     `${environment.apiUrl}/customer/request-bookings`,
