@@ -1,3 +1,4 @@
+// src/app/features/business/pages/dashboard/dashboard.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import {
@@ -10,29 +11,31 @@ import {
 } from '@angular/forms';
 import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
 import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import {
+  catchError,
+  finalize,
+  debounceTime,
+  distinctUntilChanged,
+} from 'rxjs/operators';
 
 import { DashboardService } from '../../services/dashboard.service';
 import {
   TourRevenue,
   MonthlyRevenue,
-  BookingStats,
 } from '../../../../core/models/dashboard.model';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 
-//Tạo một custom validator function
-export const dateRangeValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+// Custom validator function (đã có sẵn trong file của bạn)
+export const dateRangeValidator: ValidatorFn = (
+  control: AbstractControl
+): ValidationErrors | null => {
   const startDate = control.get('startDate')?.value;
   const endDate = control.get('endDate')?.value;
 
-  // Chỉ validate khi cả hai ngày đều có giá trị
   if (startDate && endDate) {
     const isError = new Date(endDate) < new Date(startDate);
-    // Nếu ngày kết thúc nhỏ hơn ngày bắt đầu, trả về lỗi
     return isError ? { dateRange: true } : null;
   }
-
-  // Nếu không có lỗi, trả về null
   return null;
 };
 
@@ -62,7 +65,6 @@ export class DashboardComponent implements OnInit {
   totalBookings: number = 0;
   totalNewUsers: number = 0;
   topTours: TourRevenue[] = [];
-
   monthlyRevenueData: any[] = [];
   bookingStatsData: any[] = [];
 
@@ -73,49 +75,56 @@ export class DashboardComponent implements OnInit {
     group: ScaleType.Ordinal,
     domain: ['#3B82F6', '#10B981', '#F97316', '#EF4444', '#8B5CF6'],
   };
-
   pieChartColorScheme: Color = {
     name: 'bookingStats',
     selectable: true,
     group: ScaleType.Ordinal,
-    domain: ['#10B981', '#F97316', '#EF4444'], // Green for New, Orange for Returning, Red for Cancelled
+    domain: ['#10B981', '#F97316', '#EF4444'],
   };
 
   ngOnInit(): void {
     const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
 
     this.filterForm = this.fb.group(
       {
-        startDate: [this.formatDate(firstDayOfMonth)],
+        startDate: [this.formatDate(thirtyDaysAgo)],
         endDate: [this.formatDate(today)],
       },
       {
-        //Thêm custom validator vào form group
         validators: dateRangeValidator,
       }
     );
 
+    // Bắt đầu fetch dữ liệu lần đầu
     this.fetchDashboardData();
 
-    // Chỉ fetch lại data khi form hợp lệ
-    this.filterForm.valueChanges.subscribe(() => {
-      if (this.filterForm.valid) {
-        this.fetchDashboardData();
-      }
-    });
+    // Lắng nghe sự thay đổi của form để fetch lại dữ liệu
+    this.filterForm.valueChanges
+      .pipe(
+        debounceTime(400), // Chờ 400ms sau khi người dùng thay đổi
+        distinctUntilChanged(
+          (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
+        ) // Chỉ fetch khi giá trị thực sự thay đổi
+      )
+      .subscribe(() => {
+        if (this.filterForm.valid) {
+          this.fetchDashboardData();
+        }
+      });
   }
 
   fetchDashboardData(): void {
-    //Chỉ fetch khi form hợp lệ
     if (this.filterForm.invalid) {
+      console.log('Form is invalid, skipping fetch.');
       return;
     }
 
+    console.log('Starting to fetch dashboard data...');
     this.isLoading = true;
     this.error = null;
-    //Vô hiệu hóa form khi đang tải dữ liệu
-    this.filterForm.disable();
+    this.filterForm.disable({ emitEvent: false }); // Vô hiệu hóa form, không trigger valueChanges
 
     const { startDate, endDate } = this.filterForm.value;
 
@@ -142,46 +151,50 @@ export class DashboardComponent implements OnInit {
             of({ data: { cancelledBookings: 0, returningCustomers: 0 } })
           )
         ),
-    }).subscribe({
-      next: (results) => {
-        this.totalRevenue = results.revenue.data ?? 0;
-        this.totalBookings = results.bookings.data ?? 0;
-        this.totalNewUsers = results.newUsers.data ?? 0;
-        this.topTours = results.topTours.data ?? [];
+    })
+      .pipe(
+        finalize(() => {
+          console.log('Finalize block executed: Re-enabling form.');
+          this.isLoading = false;
+          this.filterForm.enable({ emitEvent: false }); // Bật lại form, không trigger valueChanges
+        })
+      )
+      .subscribe({
+        next: (results) => {
+          console.log('Successfully fetched data:', results);
+          this.totalRevenue = results.revenue.data ?? 0;
+          this.totalBookings = results.bookings.data ?? 0;
+          this.totalNewUsers = results.newUsers.data ?? 0;
+          this.topTours = results.topTours.data ?? [];
 
-        this.monthlyRevenueData = (results.monthlyRevenue.data ?? []).map(
-          (item: MonthlyRevenue) => ({
-            name: `Tháng ${item.month}/${item.year}`,
-            value: item.revenue,
-          })
-        );
+          this.monthlyRevenueData = (results.monthlyRevenue.data ?? []).map(
+            (item: MonthlyRevenue) => ({
+              name: `Tháng ${item.month}/${item.year}`,
+              value: item.revenue,
+            })
+          );
 
-        const stats = results.bookingStats.data ?? {
-          cancelledBookings: 0,
-          returningCustomers: 0,
-        };
-        const newCustomerBookings =
-          this.totalBookings - (stats.returningCustomers ?? 0);
+          const stats = results.bookingStats.data ?? {
+            cancelledBookings: 0,
+            returningCustomers: 0,
+          };
+          const newCustomerBookings =
+            this.totalBookings - (stats.returningCustomers ?? 0);
 
-        this.bookingStatsData = [
-          {
-            name: 'Khách hàng mới',
-            value: newCustomerBookings > 0 ? newCustomerBookings : 0,
-          },
-          { name: 'Khách quay lại', value: stats.returningCustomers ?? 0 },
-          { name: 'Booking đã hủy', value: stats.cancelledBookings ?? 0 },
-        ];
-
-        this.isLoading = false;
-        this.filterForm.enable(); // Bật lại form sau khi tải xong
-      },
-      error: (err) => {
-        this.error = 'Không thể tải dữ liệu dashboard. Vui lòng thử lại.';
-        this.isLoading = false;
-        this.filterForm.enable(); // Bật lại form nếu có lỗi
-        console.error(err);
-      },
-    });
+          this.bookingStatsData = [
+            {
+              name: 'Khách hàng mới',
+              value: newCustomerBookings > 0 ? newCustomerBookings : 0,
+            },
+            { name: 'Khách quay lại', value: stats.returningCustomers ?? 0 },
+            { name: 'Booking đã hủy', value: stats.cancelledBookings ?? 0 },
+          ];
+        },
+        error: (err) => {
+          this.error = 'Không thể tải dữ liệu dashboard. Vui lòng thử lại.';
+          console.error('An error occurred while fetching data:', err);
+        },
+      });
   }
 
   yAxisTickFormat = (val: number): string => {
