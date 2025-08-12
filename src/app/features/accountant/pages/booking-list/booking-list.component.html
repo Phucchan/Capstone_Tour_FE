@@ -1,29 +1,38 @@
-<!-- Ghi chú: Áp dụng layout container căn giữa và nền xám. -->
-<div class="bg-gray-50 p-4 sm:p-6 lg:p-8 min-h-screen">
-  <div class="container mx-auto">
+<!-- Ghi chú: Sử dụng màu nền xám nhạt cho toàn bộ trang -->
+<div class="bg-gray-50 min-h-screen">
+  <!--
+    Ghi chú: Thêm container để giới hạn chiều rộng và căn giữa nội dung.
+    - `container`: Đặt max-width theo các breakpoint.
+    - `mx-auto`: Căn giữa container theo chiều ngang.
+    - `py-8 px-4`: Thêm padding dọc và ngang.
+  -->
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Page Header -->
     <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
       <div>
         <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
-          Yêu cầu Hoàn tiền
+          Quản lý Quyết toán Booking
         </h1>
         <p class="text-sm text-gray-600 mt-1">
-          Duyệt và xử lý các yêu cầu hoàn tiền từ khách hàng.
+          Xem và quản lý tình hình tài chính của các booking.
         </p>
       </div>
     </div>
 
-    <!-- Main Content Card -->
+    <!--
+      Ghi chú:
+      - Thêm `overflow-hidden` để đảm bảo bo góc được áp dụng đúng cho bảng bên trong.
+    -->
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
       <!-- Card Header with Search -->
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 sm:p-6 border-b border-gray-200">
-        <h3 class="text-xl font-semibold text-gray-800">Danh sách Yêu cầu</h3>
+        <h3 class="text-xl font-semibold text-gray-800">Danh sách Booking</h3>
         <div class="w-full sm:w-auto sm:max-w-xs">
           <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton">
             <input
               type="text"
               nz-input
-              placeholder="Tìm kiếm..."
+              placeholder="Tìm kiếm theo tên tour..."
               [(ngModel)]="searchTerm"
               (ngModelChange)="onSearchChange($event)"
             />
@@ -39,13 +48,13 @@
       <!-- Table Wrapper -->
       <div class="overflow-x-auto">
         <nz-table
-          #refundTable
-          [nzData]="refunds.items"
+          #bookingTable
+          [nzData]="bookings.items"
           [nzFrontPagination]="false"
           [nzLoading]="isLoading"
-          [nzTotal]="refunds.total"
-          [nzPageSize]="refunds.size"
-          [nzPageIndex]="refunds.page + 1"
+          [nzTotal]="bookings.total"
+          [nzPageSize]="bookings.size"
+          [nzPageIndex]="bookings.page + 1"
           (nzPageIndexChange)="onPageChange($event)"
           [nzShowPagination]="false"
           [nzBordered]="false"
@@ -53,34 +62,36 @@
         >
           <thead>
             <tr class="bg-gray-50">
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Mã Tour</th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tên Khách Hàng</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">STT</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tên Tour</th>
               <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ngày đi</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ngày về</th>
               <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Trạng thái</th>
               <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Hành động</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let data of refundTable.data" class="border-b border-gray-200 hover:bg-gray-50">
+            <tr *ngFor="let data of bookingTable.data; let i = index" class="border-b border-gray-200 hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ (bookings.page * bookings.size) + i + 1 }}</td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-semibold text-gray-900">{{ data.tourCode }}</div>
-                <div class="text-xs text-gray-500">{{ data.tourName }}</div>
+                <div class="text-sm font-semibold text-gray-900">{{ data.tourName }}</div>
+                <div class="text-xs text-gray-500">{{ data.duration }} ngày</div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ data.customerName }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ data.startDate | formatDate }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ data.endDate | formatDate }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-center">
                 <nz-tag [nzColor]="getStatusColor(data.status)">{{ data.status }}</nz-tag>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <a (click)="viewDetail(data.bookingId)" class="text-indigo-600 hover:text-indigo-800 cursor-pointer inline-flex items-center gap-1">
-                  <i nz-icon nzType="eye" nzTheme="outline"></i>
-                  <span>Xem chi tiết</span>
+                <a (click)="viewSettlementDetail(data.bookingId)" class="text-indigo-600 hover:text-indigo-800 cursor-pointer inline-flex items-center gap-1">
+                  <i nz-icon nzType="dollar-circle" nzTheme="outline"></i>
+                  <span>Xem quyết toán</span>
                 </a>
               </td>
             </tr>
-            <!-- Empty State -->
-            <tr *ngIf="!isLoading && refunds.total === 0">
-              <td colspan="5" class="text-center py-16">
+            <!-- Trạng thái không có dữ liệu -->
+            <tr *ngIf="!isLoading && bookings.total === 0">
+              <td colspan="6" class="text-center py-16">
                 <nz-empty nzNotFoundImage="simple" nzNotFoundContent="Không có dữ liệu"></nz-empty>
               </td>
             </tr>
@@ -89,11 +100,11 @@
       </div>
 
       <!-- Pagination -->
-      <div *ngIf="refunds.total > refunds.size" class="flex justify-end p-4 sm:p-6">
+      <div *ngIf="bookings.total > bookings.size" class="flex justify-end p-4 sm:p-6">
         <app-pagination
-          [currentPage]="refunds.page + 1"
-          [totalItems]="refunds.total"
-          [pageSize]="refunds.size"
+          [currentPage]="bookings.page + 1"
+          [totalItems]="bookings.total"
+          [pageSize]="bookings.size"
           (pageChange)="onPageChange($event)"
         ></app-pagination>
       </div>

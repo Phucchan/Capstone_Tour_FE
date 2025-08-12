@@ -17,7 +17,11 @@ export class CustomOrderTourService {
     return this.http.get(`${environment.apiUrl}/public/locations/departures`);
   }
 
-  requestBooking(data: any): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/request-bookings`, data);
-  }
+ requestBooking(body: any, userId: number) {
+  return this.http.post(
+    `${environment.apiUrl}/customer/request-bookings`,
+    body,
+    { params: { userId } }          
+  );
+}
 }

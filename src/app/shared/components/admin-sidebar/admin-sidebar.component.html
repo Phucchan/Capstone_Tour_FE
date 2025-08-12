@@ -28,6 +28,7 @@
     </div>
 
     <!-- Menu Items -->
+    <!-- Component này sẽ hiển thị toàn bộ menu -->
     <app-admin-sidebar-menu></app-admin-sidebar-menu>
   </div>
 
@@ -42,7 +43,7 @@
         [svgClass]="'h-5 w-5 text-muted-foreground/50'">
       </svg-icon>
 
-      <div class="ml-3 truncate text-[10px] font-semibold tracking-wide focus:outline-hidden">
+      <div *ngIf="layoutService.showSideBar" class="ml-3 truncate text-[10px] font-semibold tracking-wide focus:outline-hidden">
         <span class="-sm-lg bg-primary/10 text-primary px-2 font-semibold">v{{ appJson.version }}</span>
       </div>
 

@@ -2,6 +2,7 @@
 export interface SellerBookingSummary {
   id: number;
   tourName: string;
+  bookingDate: string;
   departureDate: string; // Sử dụng string để dễ dàng xử lý, có thể chuyển thành Date nếu cần
   bookingCode: string;
   seats: number;

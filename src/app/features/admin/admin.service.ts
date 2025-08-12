@@ -2,8 +2,6 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-
-// Sử dụng đường dẫn tương đối để đảm bảo không có lỗi
 import { ApiResponse } from '../../core/models/api-response.model';
 import { PagingDTO } from '../../core/models/paging.model';
 import {
@@ -65,6 +63,25 @@ export class AdminService {
     return this.http.patch<ApiResponse<any>>(
       `${this.baseUrl}/users/${id}/status`,
       payload
+    );
+  }
+
+  /**
+   * Gọi API để kiểm tra xem username hoặc email đã tồn tại hay chưa.
+   * @param type Loại cần kiểm tra ('username' hoặc 'email')
+   * @param value Giá trị cần kiểm tra
+   * @returns Observable chứa object { isTaken: boolean }
+   */
+  checkUniqueness(
+    type: string,
+    value: string
+  ): Observable<{ isTaken: boolean }> {
+    const params = new HttpParams().set('type', type).set('value', value);
+    return this.http.get<{ isTaken: boolean }>(
+      `${this.baseUrl}/users/check-uniqueness`,
+      {
+        params,
+      }
     );
   }
 }

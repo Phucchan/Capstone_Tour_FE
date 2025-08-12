@@ -113,6 +113,7 @@ export class RefundRequestDetailComponent implements OnInit {
       nzTitle: 'Tạo Phiếu Hoàn Tiền',
       nzContent: CreateRefundBillModalComponent,
       nzWidth: '600px',
+      nzZIndex: 1100, // Thêm z-index để modal không bị che
       nzData: {
         bookingDetail: this.detail,
       },

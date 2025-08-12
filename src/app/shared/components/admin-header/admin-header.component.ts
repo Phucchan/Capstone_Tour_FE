@@ -1,19 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { ProfileMenuComponent } from './profile-menu/profile-menu.component';
-import { layoutService } from '../../../features/admin/layout/services/layout.service';
+import { LayoutService } from '../../../core/services/layout.service';
 
 @Component({
   selector: 'app-admin-header',
-  imports: [
-    AngularSvgIconModule,
-    ProfileMenuComponent
-  ],
+  standalone: true,
+  imports: [CommonModule, AngularSvgIconModule, ProfileMenuComponent],
   templateUrl: './admin-header.component.html',
-  styleUrl: './admin-header.component.css'
 })
 export class AdminHeaderComponent implements OnInit {
-  constructor(public layoutService: layoutService) {}
+  public layoutService = inject(LayoutService);
 
   ngOnInit(): void {}
 }

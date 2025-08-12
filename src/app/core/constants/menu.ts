@@ -67,6 +67,12 @@ export const MENU_ITEMS: MenuItem[] = [
         route: '/business/request-bookings', // <-- Sửa 'request-booking' thành 'request-bookings'
         roles: [ROLES.BUSINESS_DEPARTMENT],
       },
+      {
+        icon: 'assets/icons/heroicons/outline/location-pin-svgrepo-com.svg',
+        label: 'Quản lý Địa điểm',
+        route: '/business/locations', // Route này dùng chung với business, đã chính xác
+        roles: [ROLES.SERVICE_COORDINATOR],
+      },
     ],
   },
 
@@ -88,12 +94,6 @@ export const MENU_ITEMS: MenuItem[] = [
         icon: 'assets/icons/heroicons/outline/category-svgrepo-com.svg',
         label: 'Quản lý Loại Dịch vụ',
         route: '/coordinator/service-types', // Chính xác
-        roles: [ROLES.SERVICE_COORDINATOR],
-      },
-      {
-        icon: 'assets/icons/heroicons/outline/location-pin-svgrepo-com.svg',
-        label: 'Quản lý Địa điểm',
-        route: '/business/locations', // Route này dùng chung với business, đã chính xác
         roles: [ROLES.SERVICE_COORDINATOR],
       },
     ],
@@ -141,6 +141,12 @@ export const MENU_ITEMS: MenuItem[] = [
     separator: true,
     roles: [ROLES.ACCOUNTANT],
     items: [
+      {
+        icon: 'assets/icons/heroicons/outline/dollar-svgrepo-com.svg',
+        label: 'Quyết toán Booking',
+        route: '/accountant/bookings',
+        roles: [ROLES.ACCOUNTANT],
+      },
       {
         icon: 'assets/icons/heroicons/outline/refund-2-svgrepo-com.svg',
         label: 'Yêu cầu hoàn tiền',

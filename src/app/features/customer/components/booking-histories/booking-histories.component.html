@@ -9,6 +9,19 @@
             <option value="">Tất cả</option>
             <option *ngFor="let s of statuses" [value]="s">{{statusLabel(s)}}</option>
         </select>
+        <!-- Booking code -->
+        <label class="text text-gray-600 ml-4">Mã đơn:</label>
+        <input class="border rounded px-3 py-2" placeholder="Nhập mã đơn..." [ngModel]="searchCode()"
+            (ngModelChange)="searchCode.set($event); page.set(0); fetch();" />
+
+        <!-- Departure date -->
+        <label class="text text-gray-600 ml-4">Ngày khởi hành:</label>
+        <input type="date" class="border rounded px-3 py-2" [ngModel]="searchDate()"
+            (ngModelChange)="searchDate.set($event); page.set(0); fetch();" />
+        <!-- Reset filters -->
+        <button type="button" class="px-3 py-2 text-sm text-blue-600 border rounded  hover:bg-blue-200" (click)="resetFilters()">
+            Xóa lọc
+        </button>
     </div>
 
     <!-- states -->
@@ -24,24 +37,29 @@
             <thead class="bg-gray-100 text-left text-sm">
                 <tr>
                     <th class="px-4 py-3">Mã đơn</th>
+                    <th class="px-4 py-3">Ngày tạo</th>
                     <th class="px-4 py-3">Tên tour</th>
                     <th class="px-4 py-3">Trạng thái</th>
+                    <th class="px-4 py-3">Ngày khởi hành</th>
                     <th class="px-4 py-3">Tổng tiền</th>
-                    <th class="px-4 py-3">Ngày tạo</th>
                     <th class="px-4 py-3">Thao tác</th>
                 </tr>
             </thead>
             <tbody class="text-sm">
-                <tr *ngFor="let b of bookings()" class="border-t">
+                <tr *ngFor="let b of (clientMode()
+                        ? (bookings() | slice:(page()*size()):((page()+1)*size()))
+                        : bookings())" class="border-t">
                     <td class="px-4 py-3 font-mono">{{ b.bookingCode }}</td>
+                    <td class="px-4 py-3">{{ b.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
                     <td class="px-4 py-3">{{ b.tourName }}</td>
                     <td class="px-4 py-3">
                         <span class="px-2 py-1 rounded text-xs font-semibold" [ngClass]="statusColor(b.status)">
                             {{ statusLabel(b.status) }}
                         </span>
                     </td>
+                    <td class="px-4 py-3">{{ b.departureDate | date:'dd/MM/yyyy HH:mm' }}</td>
                     <td class="px-4 py-3">{{ b.totalAmount | currencyVnd }}</td>
-                    <td class="px-4 py-3">{{ b.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+
                     <td class="px-4 py-3 flex gap-2">
                         <button class="px-3 py-1 border rounded hover:bg-gray-50" *ngIf="canRequestCancel(b.status)"
                             [disabled]="loadingResquestCancel()" (click)="requestCancel(b)">
@@ -70,6 +88,6 @@
     </div>
 </div>
 
-<app-pagination [currentPage]="page()" [totalItems]="total()" [pageSize]="size()" [siblingCount]="2"
+<app-pagination [currentPage]="page()" [totalItems]="total()" [pageSize]="size()"
     (pageChange)="onPageChange($event)">
 </app-pagination>

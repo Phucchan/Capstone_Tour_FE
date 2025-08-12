@@ -1,7 +1,7 @@
 /*
 ----------------------------------------------------------------
--- File: src/app/features/accountant/pages/refund-request-list/refund-request-list.component.ts
--- Ghi chú: Component hiển thị danh sách yêu cầu hoàn tiền.
+-- File: src/app/features/accountant/pages/booking-list/booking-list.component.ts
+-- Ghi chú: Component hiển thị danh sách booking cần quyết toán.
 ----------------------------------------------------------------
 */
 import { Component, OnInit, inject } from '@angular/core';
@@ -15,15 +15,18 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { NzEmptyModule } from 'ng-zorro-antd/empty'; // Thêm import này
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+// Ghi chú: Thêm import cho NzEmptyModule để sửa lỗi
+import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { AccountantService } from '../../services/accountant.service';
-import { BookingRefund } from '../../models/booking-refund.model';
+import { BookingList } from '../../models/booking-list.model';
 import { PagingDTO } from '../../../../core/models/paging.model';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
 
 @Component({
-  selector: 'app-refund-request-list',
+  selector: 'app-booking-list',
   standalone: true,
   imports: [
     CommonModule,
@@ -33,17 +36,20 @@ import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
     NzButtonModule,
     NzIconModule,
     NzTagModule,
-    NzEmptyModule, // Thêm vào đây
+    NzCardModule,
+    NzToolTipModule,
+    // Ghi chú: Thêm NzEmptyModule vào đây
+    NzEmptyModule,
     PaginationComponent,
     FormatDatePipe,
   ],
-  templateUrl: './refund-request-list.component.html',
+  templateUrl: './booking-list.component.html',
 })
-export class RefundRequestListComponent implements OnInit {
+export class BookingListComponent implements OnInit {
   private accountantService = inject(AccountantService);
   private router = inject(Router);
 
-  refunds: PagingDTO<BookingRefund> = {
+  bookings: PagingDTO<BookingList> = {
     items: [],
     page: 0,
     size: 10,
@@ -55,24 +61,24 @@ export class RefundRequestListComponent implements OnInit {
   private searchSubject = new Subject<string>();
 
   ngOnInit(): void {
-    this.loadRefunds();
+    this.loadBookings();
     this.searchSubject
       .pipe(debounceTime(500), distinctUntilChanged())
       .subscribe((searchValue) => {
-        this.loadRefunds(1, searchValue);
+        this.loadBookings(1, searchValue);
       });
   }
 
-  loadRefunds(page: number = 1, search: string | null = null): void {
+  loadBookings(page: number = 1, search: string | null = null): void {
     this.isLoading = true;
     const currentPage = page - 1;
     const currentSearch = search === null ? this.searchTerm : search;
 
     this.accountantService
-      .getRefundRequests(currentSearch, currentPage, this.refunds.size)
+      .getBookings(currentSearch, currentPage, this.bookings.size)
       .subscribe({
         next: (data) => {
-          this.refunds = data;
+          this.bookings = data;
           this.isLoading = false;
         },
         error: () => {
@@ -87,21 +93,29 @@ export class RefundRequestListComponent implements OnInit {
   }
 
   onPageChange(page: number): void {
-    this.loadRefunds(page);
+    this.loadBookings(page);
   }
 
-  viewDetail(bookingId: number): void {
-    this.router.navigate(['/accountant/refunds', bookingId]);
+  viewSettlementDetail(bookingId: number): void {
+    this.router.navigate(['/accountant/bookings', bookingId, 'settlement']);
   }
 
   getStatusColor(status: string): string {
-    switch (status) {
+    if (!status) return 'default';
+
+    switch (status.toUpperCase()) {
+      case 'CONFIRMED':
+        return 'blue';
+      case 'COMPLETED':
+        return 'green';
+      case 'CANCELLED':
+      case 'REFUNDED':
+        return 'red';
+      // Ghi chú: Thêm màu cho trạng thái yêu cầu hủy
       case 'CANCEL_REQUESTED':
         return 'orange';
-      case 'CANCELLED':
-        return 'red';
-      case 'REFUNDED':
-        return 'green';
+      case 'PENDING':
+        return 'gold';
       default:
         return 'default';
     }

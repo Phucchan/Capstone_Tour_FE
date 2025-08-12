@@ -1,39 +1,47 @@
-/*
-----------------------------------------------------------------
--- File: src/app/features/accountant/components/refund-bill-view/refund-bill-view.component.html
--- Ghi chú: Giao diện hiển thị phiếu chi.
-----------------------------------------------------------------
-*/
-<nz-card nzTitle="Chi Tiết Phiếu Hoàn Tiền">
-    <nz-descriptions nzBordered [nzColumn]="{ xxl: 2, xl: 2, lg: 2, md: 2, sm: 2, xs: 1 }">
-        <nz-descriptions-item nzTitle="Mã Booking">{{ refundBill.bookingCode }}</nz-descriptions-item>
-        <nz-descriptions-item nzTitle="Ngày tạo">{{ refundBill.createdDate | formatDate }}</nz-descriptions-item>
-        <nz-descriptions-item nzTitle="Người chi">{{ refundBill.paidBy }}</nz-descriptions-item>
-        <nz-descriptions-item nzTitle="Người nhận">{{ refundBill.payTo }}</nz-descriptions-item>
-        <nz-descriptions-item nzTitle="Phương thức">{{ refundBill.paymentMethod }}</nz-descriptions-item>
-        <nz-descriptions-item nzTitle="Tổng tiền">{{ refundBill.totalAmount | currencyVnd }}</nz-descriptions-item>
-        <nz-descriptions-item nzTitle="Ghi chú" [nzSpan]="2">{{ refundBill.note }}</nz-descriptions-item>
-    </nz-descriptions>
+<!-- Ghi chú: Thay thế nz-card và nz-descriptions bằng layout tùy chỉnh. -->
+<div class="bg-white rounded-lg shadow-md">
+  <div class="p-6 border-b border-gray-200">
+    <h3 class="text-xl font-semibold text-gray-800">Chi Tiết Phiếu Hoàn Tiền</h3>
+  </div>
 
-    <h4 class="mt-4 mb-2 text-lg font-semibold">Các mục chi</h4>
-    <div class="overflow-x-auto">
-        <nz-table #billItemsTable [nzData]="refundBill.items" nzSize="small" nzBordered [nzShowPagination]="false">
-            <thead>
-                <tr>
-                    <th>Nội dung</th>
-                    <th>Số lượng</th>
-                    <th>Đơn giá</th>
-                    <th>Thành tiền</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let item of billItemsTable.data">
-                    <td>{{ item.content }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td>{{ item.unitPrice | currencyVnd }}</td>
-                    <td>{{ item.amount | currencyVnd }}</td>
-                </tr>
-            </tbody>
-        </nz-table>
+  <!-- Thông tin chính của phiếu -->
+  <dl class="divide-y divide-gray-200">
+    <div class="px-6 py-4 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Mã Booking</dt><dd class="text-sm text-gray-900 col-span-2">{{ refundBill.bookingCode }}</dd></div>
+    <div class="px-6 py-4 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Ngày tạo</dt><dd class="text-sm text-gray-900 col-span-2">{{ refundBill.createdDate | formatDate }}</dd></div>
+    <div class="px-6 py-4 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Người chi</dt><dd class="text-sm text-gray-900 col-span-2">{{ refundBill.paidBy }}</dd></div>
+    <div class="px-6 py-4 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Người nhận</dt><dd class="text-sm text-gray-900 col-span-2">{{ refundBill.payTo }}</dd></div>
+    <div class="px-6 py-4 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Phương thức</dt><dd class="text-sm text-gray-900 col-span-2">{{ refundBill.paymentMethod }}</dd></div>
+    <div class="px-6 py-4 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Ghi chú</dt><dd class="text-sm text-gray-900 col-span-2">{{ refundBill.note || 'Không có' }}</dd></div>
+    <div class="px-6 py-4 grid grid-cols-3 gap-4 bg-gray-50"><dt class="text-sm font-bold text-gray-700">Tổng tiền</dt><dd class="text-sm text-gray-900 col-span-2 font-bold">{{ refundBill.totalAmount | currencyVnd }}</dd></div>
+  </dl>
+
+  <!-- Bảng các mục chi -->
+  <div class="p-6 border-t border-gray-200">
+    <h4 class="mb-4 text-lg font-semibold text-gray-800">Các mục chi</h4>
+    <div class="overflow-x-auto border rounded-lg">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nội dung</th>
+            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Số lượng</th>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Đơn giá</th>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Thành tiền</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let item of refundBill.items" class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.content }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center">{{ item.quantity }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">{{ item.unitPrice | currencyVnd }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">{{ item.amount | currencyVnd }}</td>
+          </tr>
+           <tr *ngIf="!refundBill.items || refundBill.items.length === 0">
+            <td colspan="4" class="text-center py-10">
+              <nz-empty nzNotFoundImage="simple" nzNotFoundContent="Không có mục chi nào"></nz-empty>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-</nz-card>
+  </div>
+</div>

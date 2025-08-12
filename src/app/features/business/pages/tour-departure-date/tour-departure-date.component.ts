@@ -2,7 +2,7 @@
 
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import {
   FormBuilder,
   FormGroup,
@@ -20,7 +20,6 @@ import {
   TourSchedule,
   TourScheduleOptions,
   TourPaxOption,
-  UserBasic,
   TourScheduleCreateRequest,
 } from '../../../../core/models/tour-schedule.model';
 
@@ -32,7 +31,6 @@ import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     ReactiveFormsModule,
     NgSelectModule,
     SpinnerComponent,

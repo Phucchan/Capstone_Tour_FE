@@ -1,30 +1,49 @@
-<!-- Ghi chú: Cải thiện layout form bằng Tailwind CSS Grid. -->
+<!--
+  Ghi chú:
+  - Thay thế layout mặc định bằng Tailwind CSS Grid để kiểm soát tốt hơn.
+  - Mỗi dòng là một grid, chia làm 4 cột, label chiếm 1 và control chiếm 3.
+  - Thêm khoảng cách dọc giữa các dòng bằng `space-y-6`.
+-->
 <form nz-form [formGroup]="validateForm" class="space-y-6 py-2">
-  <!-- Row: Người nhận -->
+  <!-- Row: Người nộp/chi -->
   <div class="grid grid-cols-1 sm:grid-cols-4 gap-x-4 items-center">
-    <nz-form-label class="sm:col-span-1 sm:text-right" nzRequired>Người nhận</nz-form-label>
+    <nz-form-label class="sm:col-span-1 sm:text-right" nzRequired>
+      {{ isReceipt() ? 'Người nộp' : 'Người chi' }}
+    </nz-form-label>
     <nz-form-item class="sm:col-span-3 mb-0">
-      <nz-form-control nzErrorTip="Vui lòng nhập người nhận!">
-        <input nz-input formControlName="payTo" />
+      <nz-form-control [nzErrorTip]="paidByErrorTpl">
+        <input nz-input formControlName="paidBy" placeholder="Nhập tên..." />
       </nz-form-control>
+      <ng-template #paidByErrorTpl let-control>
+        <ng-container *ngIf="control.hasError('required')">
+          {{ isReceipt() ? 'Vui lòng nhập người nộp tiền!' : 'Vui lòng nhập người chi tiền!' }}
+        </ng-container>
+      </ng-template>
     </nz-form-item>
   </div>
 
-  <!-- Row: Người chi -->
+  <!-- Row: Nộp cho/Người nhận -->
   <div class="grid grid-cols-1 sm:grid-cols-4 gap-x-4 items-center">
-    <nz-form-label class="sm:col-span-1 sm:text-right" nzRequired>Người chi</nz-form-label>
+    <nz-form-label class="sm:col-span-1 sm:text-right" nzRequired>
+      {{ isReceipt() ? 'Nộp cho' : 'Người nhận' }}
+    </nz-form-label>
     <nz-form-item class="sm:col-span-3 mb-0">
-      <nz-form-control nzErrorTip="Vui lòng nhập người chi!">
-        <input nz-input formControlName="paidBy" />
+      <nz-form-control [nzErrorTip]="payToErrorTpl">
+        <input nz-input formControlName="payTo" placeholder="Nhập tên..." />
       </nz-form-control>
+      <ng-template #payToErrorTpl let-control>
+        <ng-container *ngIf="control.hasError('required')">
+           Vui lòng nhập người nhận tiền!
+        </ng-container>
+      </ng-template>
     </nz-form-item>
   </div>
 
-  <!-- Row: Ngày chi -->
+  <!-- Row: Ngày tạo -->
   <div class="grid grid-cols-1 sm:grid-cols-4 gap-x-4 items-center">
-    <nz-form-label class="sm:col-span-1 sm:text-right" nzRequired>Ngày chi</nz-form-label>
+    <nz-form-label class="sm:col-span-1 sm:text-right" nzRequired>Ngày tạo</nz-form-label>
     <nz-form-item class="sm:col-span-3 mb-0">
-      <nz-form-control nzErrorTip="Vui lòng chọn ngày chi!">
+      <nz-form-control nzErrorTip="Vui lòng chọn ngày!">
         <nz-date-picker formControlName="createdDate" class="w-full"></nz-date-picker>
       </nz-form-control>
     </nz-form-item>
