@@ -1,0 +1,41 @@
+<div class="p-4 md:p-6">
+  <h1 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Danh sách Yêu cầu Tour Tùy chỉnh</h1>
+
+  <nz-table
+    #requestTable
+    [nzData]="requests"
+    [nzLoading]="isLoading"
+    [nzFrontPagination]="false"
+    [nzTotal]="paging.total"
+    [nzPageIndex]="paging.page + 1"
+    [nzPageSize]="paging.size"
+    (nzPageIndexChange)="onPageIndexChange($event)"
+  >
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Chủ đề Tour</th>
+        <th>Ngày bắt đầu</th>
+        <th>Ngày kết thúc</th>
+        <th>Ngày tạo</th>
+        <th class="text-center">Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let data of requestTable.data">
+        <td>#{{ data.id }}</td>
+        <td>{{ data.tourTheme }}</td>
+        <td>{{ data.startDate | formatDate }}</td>
+        <td>{{ data.endDate | formatDate }}</td>
+        <!-- SỬA: Xóa tham số 'full' không hợp lệ khỏi pipe -->
+        <td>{{ data.createdAt | formatDate }}</td>
+        <td class="text-center">
+          <button nz-button nzType="primary" (click)="onApprove(data.id)">
+            <i nz-icon nzType="check" nzTheme="outline"></i> Duyệt
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+  <nz-empty *ngIf="!isLoading && requests.length === 0" nzNotFoundContent="Không có yêu cầu nào."></nz-empty>
+</div>

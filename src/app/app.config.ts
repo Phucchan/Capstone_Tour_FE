@@ -1,4 +1,8 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import {
+  ApplicationConfig,
+  provideZoneChangeDetection,
+  importProvidersFrom,
+} from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
@@ -15,6 +19,31 @@ import {
 } from '@angular/common/http';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { provideAngularSvgIcon } from 'angular-svg-icon';
+import { NZ_ICONS, NzIconModule } from 'ng-zorro-antd/icon';
+import {
+  DollarCircleOutline,
+  ArrowLeftOutline,
+  PlusCircleOutline,
+  MinusCircleOutline,
+  CheckSquareOutline,
+  FileAddOutline,
+  CheckCircleOutline,
+  EyeOutline,
+  SearchOutline,
+} from '@ant-design/icons-angular/icons';
+
+// Khai báo một mảng chứa tất cả các icon cần dùng
+const icons = [
+  DollarCircleOutline,
+  ArrowLeftOutline,
+  PlusCircleOutline,
+  MinusCircleOutline,
+  CheckSquareOutline,
+  FileAddOutline,
+  CheckCircleOutline,
+  EyeOutline,
+  SearchOutline
+];
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -30,5 +59,8 @@ export const appConfig: ApplicationConfig = {
       positionClass: 'toast-top-center',
       preventDuplicates: true,
     }),
+
+    importProvidersFrom(NzIconModule.forRoot(icons)),
+    { provide: NZ_ICONS, useValue: icons },
   ],
 };
