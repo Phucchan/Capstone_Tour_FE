@@ -1,12 +1,13 @@
 // src/app/features/business/models/request-booking.model.ts
 
-import { PagingDTO } from '../../../core/models/paging.model';
+import { Paging } from '../../../core/models/paging.model';
 
 // Enum cho trạng thái của yêu cầu
 export enum RequestBookingStatus {
   PENDING = 'PENDING',
   ACCEPTED = 'ACCEPTED',
   REJECTED = 'REJECTED',
+  COMPLETED = 'COMPLETED',
 }
 
 // Interface cho một item trong danh sách thông báo yêu cầu
@@ -24,9 +25,9 @@ export interface RequestBookingNotification {
 }
 
 // Interface cho dữ liệu phân trang của danh sách yêu cầu
-export type RequestBookingPage = PagingDTO<RequestBookingNotification>;
+export type RequestBookingPage = Paging<RequestBookingNotification>;
 
-// Interface cho chi tiết một yêu cầu (sẽ dùng cho trang chi tiết sau này)
+// Dùng cho trang chi tiết, khớp với RequestBookingDTO
 export interface RequestBookingDetail {
   id: number;
   userId: number | null;
@@ -37,15 +38,18 @@ export interface RequestBookingDetail {
   destinationDetail: string;
   startDate: string;
   endDate: string;
-  transport: string; // Giả sử là string, có thể là Enum nếu cần
+  transport: string;
+  tourThemeIds: number[];
+  desiredServices: string;
   adults: number;
   children: number;
   infants: number;
   toddlers: number;
   hotelRooms: number;
-  roomCategory: string; // Giả sử là string
+  roomCategory: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
   status: RequestBookingStatus;
+  reason: string | null;
 }

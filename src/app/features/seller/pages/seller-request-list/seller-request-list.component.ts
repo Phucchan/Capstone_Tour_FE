@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SellerBookingService } from '../../services/seller-booking.service';
 import { RequestBookingSummary } from '../../models/request-booking-summary.model';
-import { PagingDTO } from '../../../../core/models/paging.model';
+import { Paging } from '../../../../core/models/paging.model';
 
 // SỬA: Import đầy đủ các module cần thiết
 import { NzTableModule } from 'ng-zorro-antd/table';
@@ -35,7 +35,7 @@ export class SellerRequestListComponent implements OnInit {
   requests: RequestBookingSummary[] = [];
 
   isLoading = true;
-  paging: PagingDTO<any> = { page: 0, size: 10, total: 0, items: [] };
+  paging: Paging<any> = { page: 0, size: 10, total: 0, items: [] };
 
   ngOnInit(): void {
     this.loadRequests();

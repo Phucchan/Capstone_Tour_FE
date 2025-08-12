@@ -21,7 +21,7 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { AccountantService } from '../../services/accountant.service';
 import { BookingList } from '../../models/booking-list.model';
-import { PagingDTO } from '../../../../core/models/paging.model';
+import { Paging } from '../../../../core/models/paging.model';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
 
@@ -49,7 +49,7 @@ export class BookingListComponent implements OnInit {
   private accountantService = inject(AccountantService);
   private router = inject(Router);
 
-  bookings: PagingDTO<BookingList> = {
+  bookings: Paging<BookingList> = {
     items: [],
     page: 0,
     size: 10,

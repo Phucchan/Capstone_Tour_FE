@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { PagingDTO } from '../../../core/models/paging.model';
+import { Paging } from '../../../core/models/paging.model';
 import { ApiResponse } from '../../../core/models/api-response.model';
 import {
   PartnerDetail,
@@ -30,7 +30,7 @@ export class PartnerService {
     isDeleted?: boolean,
     sortField: string = 'deleted',
     sortDirection: string = 'asc'
-  ): Observable<ApiResponse<PagingDTO<PartnerSummary>>> {
+  ): Observable<ApiResponse<Paging<PartnerSummary>>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
@@ -44,7 +44,7 @@ export class PartnerService {
       params = params.set('isDeleted', isDeleted.toString());
     }
 
-    return this.http.get<ApiResponse<PagingDTO<PartnerSummary>>>(this.apiUrl, {
+    return this.http.get<ApiResponse<Paging<PartnerSummary>>>(this.apiUrl, {
       params,
     });
   }

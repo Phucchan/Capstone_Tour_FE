@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/models/api-response.model';
-import { PagingDTO } from '../../core/models/paging.model';
+import { Paging } from '../../core/models/paging.model';
 import {
   ChangeStatusRequest,
   UserFullInformation,
@@ -22,14 +22,14 @@ export class AdminService {
     page: number,
     size: number,
     keyword?: string
-  ): Observable<ApiResponse<PagingDTO<UserFullInformation>>> {
+  ): Observable<ApiResponse<Paging<UserFullInformation>>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
     if (keyword && keyword.trim()) {
       params = params.set('keyword', keyword);
     }
-    return this.http.get<ApiResponse<PagingDTO<UserFullInformation>>>(
+    return this.http.get<ApiResponse<Paging<UserFullInformation>>>(
       `${this.baseUrl}/users/customers`,
       { params }
     );
@@ -39,14 +39,14 @@ export class AdminService {
     page: number,
     size: number,
     keyword?: string
-  ): Observable<ApiResponse<PagingDTO<UserFullInformation>>> {
+  ): Observable<ApiResponse<Paging<UserFullInformation>>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
     if (keyword && keyword.trim()) {
       params = params.set('keyword', keyword);
     }
-    return this.http.get<ApiResponse<PagingDTO<UserFullInformation>>>(
+    return this.http.get<ApiResponse<Paging<UserFullInformation>>>(
       `${this.baseUrl}/users/staffs`,
       { params }
     );

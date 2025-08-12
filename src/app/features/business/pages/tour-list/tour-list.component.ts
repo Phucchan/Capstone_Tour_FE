@@ -13,7 +13,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 
 import { TourService } from '../../../../core/services/tour.service';
 import { TourListItem } from '../../../../core/models/tour.model';
-import { PagingDTO } from '../../../../core/models/paging.model';
+import { Paging } from '../../../../core/models/paging.model';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 
 @Component({
@@ -33,7 +33,7 @@ export class TourListComponent implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
 
-  public toursResponse$!: Observable<PagingDTO<TourListItem>>;
+  public toursResponse$!: Observable<Paging<TourListItem>>;
   public filterForm!: FormGroup;
   private page$ = new Subject<number>();
   private readonly DEFAULT_PAGE_SIZE = 10;

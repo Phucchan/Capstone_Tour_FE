@@ -7,7 +7,7 @@ import {
   LocationDTO,
   LocationRequestDTO,
 } from '../../../core/models/location.model';
-import { PagingDTO } from '../../../core/models/paging.model';
+import { Paging } from '../../../core/models/paging.model';
 
 @Injectable({
   providedIn: 'root',
@@ -29,7 +29,7 @@ export class LocationService {
     page: number,
     size: number,
     keyword?: string
-  ): Observable<GeneralResponse<PagingDTO<LocationDTO>>> {
+  ): Observable<GeneralResponse<Paging<LocationDTO>>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
@@ -38,7 +38,7 @@ export class LocationService {
       params = params.set('keyword', keyword);
     }
 
-    return this.http.get<GeneralResponse<PagingDTO<LocationDTO>>>(this.apiUrl, {
+    return this.http.get<GeneralResponse<Paging<LocationDTO>>>(this.apiUrl, {
       params,
     });
   }
