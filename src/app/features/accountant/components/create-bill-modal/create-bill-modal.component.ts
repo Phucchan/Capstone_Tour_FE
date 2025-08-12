@@ -4,7 +4,7 @@
 -- Ghi chú: Component cho modal tạo phiếu thu/chi.
 ----------------------------------------------------------------
 */
-import { Component, Input, OnInit, inject } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -37,9 +37,25 @@ import { BookingSettlement } from '../../models/booking-settlement.model';
   ],
   templateUrl: './create-bill-modal.component.html',
 })
-export class CreateBillModalComponent implements OnInit {
-  @Input() bookingDetail!: BookingSettlement;
-  @Input() billType!: PaymentType;
+export class CreateBillModalComponent {
+  // Ghi chú: Sử dụng setter cho cả 2 @Input để đảm bảo form chỉ được tạo khi có đủ dữ liệu.
+  @Input() set bookingDetail(value: BookingSettlement) {
+    this._bookingDetail = value;
+    this.tryInitializeForm();
+  }
+  get bookingDetail(): BookingSettlement {
+    return this._bookingDetail;
+  }
+  private _bookingDetail!: BookingSettlement;
+
+  @Input() set billType(value: PaymentType) {
+    this._billType = value;
+    this.tryInitializeForm();
+  }
+  get billType(): PaymentType {
+    return this._billType;
+  }
+  private _billType!: PaymentType;
 
   private fb = inject(FormBuilder);
   private accountantService = inject(AccountantService);
@@ -48,33 +64,36 @@ export class CreateBillModalComponent implements OnInit {
 
   validateForm!: FormGroup;
   paymentMethods = Object.values(PaymentMethod);
+
   isReceipt(): boolean {
-    return this.billType === PaymentType.RECEIPT;
+    return this._billType === PaymentType.RECEIPT;
   }
 
-  // Ghi chú: Sửa kiểu trả về của parserVND thành number
   formatterVND = (value: number): string =>
     value ? `${value.toLocaleString('vi-VN')} ₫` : '';
   parserVND = (value: string): number =>
     parseFloat(value.replace(' ₫', '').replace(/,/g, ''));
 
-  ngOnInit(): void {
-    const currentUser = this.currentUserService.getCurrentUser();
-    this.validateForm = this.fb.group({
-      payTo: [this.isReceipt() ? 'Công ty' : null, [Validators.required]],
-      paidBy: [
-        this.isReceipt() ? null : currentUser?.fullName || '',
-        [Validators.required],
-      ],
-      createdDate: [new Date(), [Validators.required]],
-      paymentMethod: [PaymentMethod.BANK_TRANSFER, [Validators.required]],
-      note: [null],
-      content: [
-        `Thanh toán cho booking #${this.bookingDetail.bookingCode}`,
-        [Validators.required],
-      ],
-      amount: [null, [Validators.required, Validators.min(1)]],
-    });
+  // Ghi chú: Hàm này sẽ kiểm tra và chỉ khởi tạo form khi cả 2 input đều đã sẵn sàng.
+  private tryInitializeForm(): void {
+    if (this._bookingDetail && this._billType) {
+      const currentUser = this.currentUserService.getCurrentUser();
+      this.validateForm = this.fb.group({
+        payTo: [this.isReceipt() ? 'Công ty' : null, [Validators.required]],
+        paidBy: [
+          this.isReceipt() ? null : currentUser?.fullName || '',
+          [Validators.required],
+        ],
+        createdDate: [new Date(), [Validators.required]],
+        paymentMethod: [PaymentMethod.BANK_TRANSFER, [Validators.required]],
+        note: [null],
+        content: [
+          `Thanh toán cho booking #${this.bookingDetail.bookingCode}`,
+          [Validators.required],
+        ],
+        amount: [null, [Validators.required, Validators.min(1)]],
+      });
+    }
   }
 
   async submitForm(): Promise<BookingSettlement | null> {
