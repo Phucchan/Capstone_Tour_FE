@@ -4,7 +4,6 @@
 @import "flowbite/src/themes/default";
 @import "@ng-select/ng-select/themes/default.theme.css";
 @import 'sweetalert2/dist/sweetalert2.min.css';
-@import "ng-zorro-antd/ng-zorro-antd.min.css";
 
 @plugin "flowbite/plugin";
 @source "../node_modules/flowbite";
