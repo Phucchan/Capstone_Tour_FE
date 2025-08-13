@@ -1,0 +1,33 @@
+/*
+  File: src/app/features/accountant/pages/booking-settlement/booking-settlement.component.css
+  Ghi chú: Sử dụng CSS thông thường để tùy chỉnh nz-tabset, tránh lỗi @apply.
+*/
+
+/* Sử dụng ::ng-deep để style có thể "xuyên" vào bên trong component nz-tabset */
+:host ::ng-deep .ant-tabs-nav {
+  margin-bottom: 1rem;
+  /* Tương đương mb-4 */
+}
+
+:host ::ng-deep .ant-tabs-tab {
+  font-size: 0.875rem;
+  /* Tương đương text-sm */
+  font-weight: 600;
+  /* Tương đương font-semibold */
+  color: #6b7280;
+  /* Tương đương text-gray-500 */
+  padding: 0.5rem 1rem;
+  /* Tương đương px-4 py-2 */
+}
+
+:host ::ng-deep .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #4f46e5;
+  /* Tương đương text-indigo-600 */
+}
+
+:host ::ng-deep .ant-tabs-ink-bar {
+  background-color: #4f46e5;
+  /* Tương đương bg-indigo-600 */
+  height: 0.25rem;
+  /* Tương đương h-1 */
+}

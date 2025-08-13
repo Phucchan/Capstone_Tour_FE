@@ -47,6 +47,7 @@ import { PaymentType } from '../../../../core/models/enums';
     BillTableComponent,
   ],
   templateUrl: './booking-settlement.component.html',
+
 })
 export class BookingSettlementComponent implements OnInit {
   private route = inject(ActivatedRoute);

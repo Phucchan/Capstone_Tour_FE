@@ -44,6 +44,7 @@ interface CreateBillModalData {
     NzDatePickerModule,
   ],
   templateUrl: './create-bill-modal.component.html',
+
 })
 export class CreateBillModalComponent implements OnInit {
   // *** THAY ĐỔI 2: Xóa @Input, inject NZ_MODAL_DATA để lấy dữ liệu ***
