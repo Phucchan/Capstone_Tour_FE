@@ -5,7 +5,7 @@ import { ListTourComponent } from './list-tour/list-tour.component';
 import { TourDetailComponent } from './tour-tourdetail/tour-detail.component';
 import { TourBookingComponent } from '../customer/components/tour-booking/tour-booking.component';
 import { CustomerLayoutComponent } from '../customer/components/Customer-layout/Customer-layout.component';
-import { RequestBookingComponent } from '../customer/components/custom-order-tour/request-booking.component';
+import { RequestBookingComponent } from '../customer/components/request-booking/request-booking.component';
 import { TourBookingConfirmComponent } from '../customer/components/tour-booking/tour-booking-confirm/tour-booking-confirm.component';
 import { PlanComponent } from './plan/plan.component';
 import { AuthGuard } from '../../core/guards/auth.guard';

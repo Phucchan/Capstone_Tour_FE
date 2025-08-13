@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -17,8 +17,8 @@ import { CurrentUserService } from '../../../../core/services/user-storage/curre
 import { CustomerService } from '../../services/customer.service';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
-import { subscribe } from 'diagnostics_channel';
-import { take } from 'rxjs';
+import { interval, Subscription, take } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-request-booking',
@@ -26,7 +26,7 @@ import { take } from 'rxjs';
   imports: [CommonModule, FormsModule, NgSelectModule, IconTransportPipe, ReactiveFormsModule],
   templateUrl: './request-booking.component.html',
 })
-export class RequestBookingComponent implements OnInit {
+export class RequestBookingComponent implements OnInit, OnDestroy {
   bookingForm!: FormGroup;
 
   transports = ['CAR', 'PLANE', 'TRAIN']; 
@@ -46,6 +46,11 @@ export class RequestBookingComponent implements OnInit {
 
   userInformation: any;
   isLoading: boolean = false;
+  //send code
+  sendingCode: boolean = false;
+  codeSended = false; 
+  codeCooldown: number = 0;
+  private codeTimerSub?: Subscription;
 
   // min cho input date
   today = new Date().toISOString().slice(0, 10);
@@ -61,6 +66,10 @@ export class RequestBookingComponent implements OnInit {
     private customerService: CustomerService,
     private router: Router,
   ) { }
+
+   ngOnDestroy(): void {
+    this.codeTimerSub?.unsubscribe();
+  }
 
   ngOnInit(): void {
     this.buildForm();
@@ -91,7 +100,7 @@ export class RequestBookingComponent implements OnInit {
         hotelRooms: [1, [Validators.required, Validators.min(1)]],
         roomCategory: ['', Validators.required],
 
-        tourTheme: [''],                              // 🔹 thêm
+        tourThemeIds: [[], Validators.required],                            
         desiredServices: [''],
 
         customerName: ['', Validators.required],
@@ -103,7 +112,9 @@ export class RequestBookingComponent implements OnInit {
         priceMax: [0, [Validators.required, Validators.min(0)]],
 
         status: ['PENDING'],                                 // 🔹 theo enum BE
-        reason: ['']
+        reason: [''],
+
+        verificationCode: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]], // 6 chữ số
       },
       {
         validators: [this.dateRangeValidator, this.priceRangeValidator],
@@ -213,6 +224,44 @@ clearContactFields(): void {
     }
     input.value = this.formatCurrency(parsed);
   }
+  // ========= GỬI MÃ XÁC THỰC =========
+  sendVerificationCode(): void {
+    const emailCtrl = this.bookingForm.get('customerEmail');
+    if (!emailCtrl || emailCtrl.invalid) {
+      emailCtrl?.markAsTouched();
+      this.toastr.warning('Vui lòng nhập email hợp lệ trước khi gửi mã.');
+      return;
+    }
+    if (this.codeCooldown > 0 || this.sendingCode) return;
+
+    this.sendingCode = true;
+    const email = String(emailCtrl.value).trim();
+
+    this.tourService.sendVerifyCode(email).subscribe({
+      next: () => {
+        this.toastr.success('Đã gửi mã xác thực. Vui lòng kiểm tra email.');
+        this.codeSended = true;  
+        this.startCooldown(30); // khoá gửi lại 
+        this.sendingCode = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.toastr.error(err?.error?.message || 'Gửi mã thất bại');
+        this.sendingCode = false;
+      }
+    });
+  }
+
+  startCooldown(seconds: number) {
+    this.codeCooldown = seconds;
+    this.codeTimerSub?.unsubscribe();
+    this.codeTimerSub = interval(1000).subscribe(() => {
+      this.codeCooldown--;
+      if (this.codeCooldown <= 0) {
+        this.codeTimerSub?.unsubscribe();
+      }
+    });
+  }
 
   /** Submit */
   submitBooking(): void {
@@ -232,6 +281,16 @@ clearContactFields(): void {
       this.toastr.error('Giá tối đa phải lớn hơn hoặc bằng giá tối thiểu');
       return;
     }
+     // 🔒 YÊU CẦU: phải có mã + đã gửi mã
+    if (!this.codeSended) {
+      this.toastr.warning('Vui lòng bấm "Gửi mã" để nhận mã xác thực email trước khi đặt.');
+      return;
+    }
+    if (this.f['verificationCode'].invalid) {
+      this.toastr.error('Mã xác thực không hợp lệ.');
+       this.f['verificationCode'].markAsTouched();
+      return;
+    }
     const userId = this.currentUserService.getCurrentUser()?.id || 0;
     if (!userId) {
       this.toastr.error('Không xác định được người dùng. Vui lòng đăng nhập lại.');
@@ -241,6 +300,7 @@ clearContactFields(): void {
       v ? new Date(v).toISOString().split('T')[0] : null;
 
     const f = this.bookingForm.controls;
+
     this.submitting = true;
 
     const payload = {
@@ -254,7 +314,7 @@ clearContactFields(): void {
 
 
       transport: f['transport'].value,
-      tourTheme: f['tourTheme']?.value || '',
+      tourThemeIds: f['tourThemeIds']?.value || [],
       desiredServices: f['desiredServices']?.value || '',
 
       adults: Number(f['adults'].value) || 1,
@@ -271,11 +331,15 @@ clearContactFields(): void {
 
       priceMin: Number(f['priceMin'].value) || 0,
       priceMax: Number(f['priceMax'].value) || 0,
-
+        status: 'PENDING',
+        reason: f['reason']?.value || '',
+  // ===== mã xác thực =====
+      verificationCode: f['verificationCode'].value.trim(),
 
     };
 
-    this.tourService.requestBooking(payload, userId).subscribe({
+    this.tourService.requestBooking(payload, userId).
+    subscribe({
       next: () => {
         this.submitting = false;
         // Pop-up thông báo và điều hướng về homepage khi bấm xác nhận
@@ -298,10 +362,27 @@ clearContactFields(): void {
       },
       // (tuỳ chọn) this.bookingForm.reset(...)
 
-      error: (err) => {
-        console.error('Request-bookings error:', err);
-        this.toastr.error(err?.error?.message || 'Gửi yêu cầu thất bại');
+      error: (err: HttpErrorResponse) => {
+
         this.submitting = false;
+        // ✅ RÕ RÀNG TRƯỜNG HỢP NHẬP SAI MÃ
+        if (err.status === 400) {
+      const msg = (err.error?.message || '').toLowerCase();
+      if (msg.includes('verification')) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Mã xác thực không đúng hoặc đã hết hạn',
+            text: 'Vui lòng kiểm tra lại email hoặc bấm "Gửi mã" để nhận mã mới.',
+            confirmButtonText: 'Đã hiểu',
+          });
+          return;
+        }
+        this.toastr.error(err.error?.message || 'Yêu cầu không hợp lệ');
+      return;
+    }
+
+        this.toastr.error(err?.error?.message || 'Gửi yêu cầu thất bại');
+
       }
     });
   }
