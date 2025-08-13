@@ -7,6 +7,11 @@ import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
 
+// *** THAY ĐỔI 1: Import các thành phần i18n ***
+import { registerLocaleData } from '@angular/common';
+import vi from '@angular/common/locales/vi';
+import { NZ_I18N, vi_VN } from 'ng-zorro-antd/i18n';
+
 import { routes } from './app.routes';
 import {
   provideClientHydration,
@@ -32,6 +37,9 @@ import {
   SearchOutline,
 } from '@ant-design/icons-angular/icons';
 
+// *** THAY ĐỔI 2: Đăng ký dữ liệu locale Tiếng Việt ***
+registerLocaleData(vi);
+
 // Khai báo một mảng chứa tất cả các icon cần dùng
 const icons = [
   DollarCircleOutline,
@@ -42,7 +50,7 @@ const icons = [
   FileAddOutline,
   CheckCircleOutline,
   EyeOutline,
-  SearchOutline
+  SearchOutline,
 ];
 
 export const appConfig: ApplicationConfig = {
@@ -62,5 +70,8 @@ export const appConfig: ApplicationConfig = {
 
     importProvidersFrom(NzIconModule.forRoot(icons)),
     { provide: NZ_ICONS, useValue: icons },
+
+    // *** THAY ĐỔI 3: Cung cấp locale cho ng-zorro ***
+    { provide: NZ_I18N, useValue: vi_VN },
   ],
 };
