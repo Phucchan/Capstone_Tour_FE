@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse } from '../../../core/models/api-response.model';
 import { SellerBookingSummary } from '../models/seller-booking-summary.model';
-import { PagingDTO } from '../../../core/models/paging.model';
+import { Paging } from '../../../core/models/paging.model';
 import { SellerBookingDetail } from '../models/seller-booking-detail.model';
 import { BookingRequestCustomer } from '../models/booking-request-customer.model';
 import { SellerBookingCreateRequest } from '../models/seller-booking-create-request.model';
@@ -77,11 +77,11 @@ export class SellerBookingService {
   getAvailableBookings(
     page: number,
     size: number
-  ): Observable<ApiResponse<PagingDTO<SellerBookingSummary>>> {
+  ): Observable<ApiResponse<Paging<SellerBookingSummary>>> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
-    return this.http.get<ApiResponse<PagingDTO<SellerBookingSummary>>>(
+    return this.http.get<ApiResponse<Paging<SellerBookingSummary>>>(
       `${this.bookingApiUrl}/available`,
       { params }
     );
@@ -91,12 +91,12 @@ export class SellerBookingService {
     sellerUsername: string,
     page: number,
     size: number
-  ): Observable<ApiResponse<PagingDTO<SellerBookingSummary>>> {
+  ): Observable<ApiResponse<Paging<SellerBookingSummary>>> {
     const params = new HttpParams()
       .set('sellerUsername', sellerUsername)
       .set('page', page.toString())
       .set('size', size.toString());
-    return this.http.get<ApiResponse<PagingDTO<SellerBookingSummary>>>(
+    return this.http.get<ApiResponse<Paging<SellerBookingSummary>>>(
       `${this.bookingApiUrl}/edited`,
       { params }
     );
@@ -152,12 +152,12 @@ export class SellerBookingService {
   getRequestBookings(
     page: number,
     size: number
-  ): Observable<ApiResponse<PagingDTO<RequestBookingSummary>>> {
+  ): Observable<ApiResponse<Paging<RequestBookingSummary>>> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
     // SỬA: Dùng đúng apiUrl cho request-bookings
-    return this.http.get<ApiResponse<PagingDTO<RequestBookingSummary>>>(
+    return this.http.get<ApiResponse<Paging<RequestBookingSummary>>>(
       this.requestApiUrl,
       { params }
     );

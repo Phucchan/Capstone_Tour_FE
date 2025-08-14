@@ -16,7 +16,7 @@ import { TourDetail } from '../../../core/models/tour.model';
 })
 export class RequestBookingService {
   private http = inject(HttpClient);
-  private baseApiUrl = `${environment.apiUrl}/business`;
+  private baseApiUrl = `${environment.apiUrl}/business/request-bookings`;
 
   /**
    * Lấy danh sách các yêu cầu đặt tour (phân trang)
@@ -30,10 +30,7 @@ export class RequestBookingService {
       .set('size', size.toString());
 
     return this.http
-      .get<ApiResponse<RequestBookingPage>>(
-        `${this.baseApiUrl}/request-bookings`,
-        { params }
-      )
+      .get<ApiResponse<RequestBookingPage>>(this.baseApiUrl, { params })
       .pipe(map((response) => response.data));
   }
 
@@ -44,12 +41,9 @@ export class RequestBookingService {
    */
   getRequestDetail(id: number): Observable<RequestBookingDetail> {
     return this.http
-      .get<ApiResponse<RequestBookingDetail>>(
-        `${this.baseApiUrl}/request-bookings/${id}`
-      )
+      .get<ApiResponse<RequestBookingDetail>>(`${this.baseApiUrl}/${id}`)
       .pipe(map((response) => response.data));
   }
-
   /**
    * Cập nhật trạng thái của một yêu cầu
    * @param id ID của yêu cầu
@@ -63,7 +57,17 @@ export class RequestBookingService {
     const payload = { newStatus };
     return this.http
       .patch<ApiResponse<RequestBookingDetail>>(
-        `${this.baseApiUrl}/request-bookings/${id}/status`,
+        `${this.baseApiUrl}/${id}/status`,
+        payload
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  rejectRequest(id: number, reason: string): Observable<RequestBookingDetail> {
+    const payload = { reason };
+    return this.http
+      .patch<ApiResponse<RequestBookingDetail>>(
+        `${this.baseApiUrl}/${id}/reject`,
         payload
       )
       .pipe(map((response) => response.data));

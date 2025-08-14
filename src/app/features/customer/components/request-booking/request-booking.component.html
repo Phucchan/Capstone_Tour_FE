@@ -1,5 +1,6 @@
 <form [formGroup]="bookingForm"
-  class="max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow-lg border border-gray-200 space-y-8 mt-10 ">
+  class="max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow-lg border border-gray-200 space-y-8 mt-5 ">
+  <h1 class="text-2xl text-center text-blue-700 font-semibold mb-4 mx-auto ">Yêu cầu đặt tour</h1>
   <div class="grid grid-cols-2 gap-4 ">
     <!-- Điểm khởi hành -->
     <div>
@@ -87,6 +88,10 @@
           <option value="" class="text-sm">Loại Phòng</option>
           <option *ngFor="let s of hotelStandards" [value]="s.value"> {{ s.label }}</option>
         </select>
+        <small class="text-red-500"
+          *ngIf="bookingForm.get('hotelRooms')?.invalid && bookingForm.get('hotelRooms')?.touched">
+          *Vui lòng chọn loại phòng
+        </small>
       </div>
     </div>
   </div>
@@ -119,14 +124,18 @@
 
   <!-- 🔹 Chủ đề tour & Dịch vụ mong muốn -->
   <div class="grid grid-cols-2 gap-4">
-  
+
     <div>
       <label class="block font-semibold mb-1">Chủ đề tour</label>
-      <ng-select [items]="themes" bindLabel="name" bindValue="id" formControlName="tourTheme"
-        [multiple]="true" placeholder="Chọn chủ đề tour" class="w-full ">
+      <ng-select [items]="themes" bindLabel="name" bindValue="id" formControlName="tourThemeIds" [multiple]="true"
+        placeholder="Chọn chủ đề tour" class="w-full ">
       </ng-select>
+      <small class="text-red-500"
+        *ngIf="bookingForm.get('tourThemeIds')?.invalid && bookingForm.get('tourThemeIds')?.touched">
+        *Vui lòng chọn ít nhất 1 chủ đề
+      </small>
     </div>
-    
+
     <div>
       <label class="block font-semibold mb-1">Dịch vụ mong muốn</label>
       <input type="text" formControlName="desiredServices" class="w-full border p-2 rounded"
@@ -160,7 +169,7 @@
     <div class="grid grid-cols-2 gap-4">
       <div>
         <label>Họ tên *</label>
-        <input type="text" formControlName="customerName"  class="w-full border p-2 rounded" />
+        <input type="text" formControlName="customerName" class="w-full border p-2 rounded" />
         <small class="text-red-500"
           *ngIf="bookingForm.get('customerName')?.invalid && bookingForm.get('customerName')?.touched">
           *Thông tin bắt buộc
@@ -168,28 +177,51 @@
       </div>
       <div>
         <label>Email *</label>
-        <input type="email" formControlName="customerEmail"  class="w-full border p-2 rounded" />
-        <small class="text-red-500"
-          *ngIf="bookingForm.get('customerEmail')?.invalid && bookingForm.get('customerEmail')?.touched">
-          *Thông tin bắt buộc
-        </small>
+        <div class="flex gap-2">
+          <input type="email" formControlName="customerEmail" class="w-full border p-2 rounded" />
+          <small class="text-red-500"
+            *ngIf="bookingForm.get('customerEmail')?.invalid && bookingForm.get('customerEmail')?.touched">
+            *Thông tin bắt buộc
+          </small>
+          <button type="button" 
+          class="whitespace-nowrap flex gap-2 items-center border border-blue-500 bg-blue-500 text-white  rounded-md text-sm  transition-colors duration-200 hover:bg-blue-700 flex-1"
+            (click)="sendVerificationCode()" [disabled]="sendingCode || codeCooldown>0 || f['customerEmail'].invalid">
+            <ng-container *ngIf="codeCooldown === 0; else cdTpl">Gửi mã</ng-container>
+            <ng-template #cdTpl>{{ codeCooldown }}s</ng-template>
+          </button>
+        </div>
+        <div class="text-xs text-gray-500 mt-1">Mã xác thực sẽ được gửi tới email này.</div>
       </div>
+      <small class="text-red-500" *ngIf="f['customerEmail'].touched && f['customerEmail'].invalid">*Email không hợp
+        lệ</small>
+
+    </div>
+    <div class="grid grid-cols-2 gap-4">
       <div>
         <label>Số điện thoại *</label>
-        <input type="tel" formControlName="customerPhone"  maxlength="10" inputmode="numeric"
-          pattern="[0-9]*" class="w-full border p-2 rounded" />
+        <input type="tel" formControlName="customerPhone" maxlength="10" inputmode="numeric" pattern="[0-9]*"
+          class="w-full border p-2 rounded" />
         <small class="text-red-500"
           *ngIf="bookingForm.get('customerPhone')?.invalid && bookingForm.get('customerPhone')?.touched">
           *Thông tin bắt buộc
         </small>
       </div>
+      <!-- Ô nhập mã xác thực -->
+      <div>
+        <label>Mã xác thực *</label>
+        <input type="text" formControlName="verificationCode" class="w-full border p-2 rounded"
+          placeholder="Nhập mã vừa nhận qua email" />
+        <small class="text-red-500" *ngIf="f['verificationCode'].touched && f['verificationCode'].invalid">*Vui lòng
+          nhập mã</small>
+      </div>
     </div>
   </div>
+
 
   <!-- Nút gửi -->
   <div class="text-center pt-6">
     <button type="button" (click)="submitBooking()" [disabled]="submitting"
-      class="px-6 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition">
+      class="px-6 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-700 transition">
       Xác nhận và gửi
     </button>
   </div>

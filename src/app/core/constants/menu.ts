@@ -64,7 +64,7 @@ export const MENU_ITEMS: MenuItem[] = [
       {
         icon: 'assets/icons/heroicons/outline/request-quote-svgrepo-com.svg',
         label: 'Yêu cầu đặt Tour',
-        route: '/business/request-bookings', // <-- Sửa 'request-booking' thành 'request-bookings'
+        route: '/business/request-bookings', // Khớp với routing
         roles: [ROLES.BUSINESS_DEPARTMENT],
       },
       {

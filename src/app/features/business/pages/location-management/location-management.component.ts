@@ -7,7 +7,7 @@ import { LocationDTO } from '../../../../core/models/location.model';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { LocationFormComponent } from '../../components/location-form/location-form.component';
-import { PagingDTO } from '../../../../core/models/paging.model';
+import { Paging } from '../../../../core/models/paging.model';
 
 
 @Component({
@@ -51,11 +51,11 @@ export class LocationManagementComponent implements OnInit {
         next: (response: any) => {
           console.log('API Response Received:', response);
 
-          let pagedData: PagingDTO<LocationDTO> | null = null;
+          let pagedData: Paging<LocationDTO> | null = null;
 
           // Kiểm tra cả 2 cấu trúc response có thể có
 
-          // 1: Interceptor đã "mở gói", response chính là PagingDTO
+          // 1: Interceptor đã "mở gói", response chính là Paging
           // Ta kiểm tra bằng cách xem response có trực tiếp chứa mảng 'items' không.
           if (response && Array.isArray(response.items)) {
             pagedData = response;

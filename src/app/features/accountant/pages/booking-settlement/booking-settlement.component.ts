@@ -1,7 +1,7 @@
 /*
 ----------------------------------------------------------------
 -- File: src/app/features/accountant/pages/booking-settlement/booking-settlement.component.ts
--- Ghi chú: Component trang chi tiết quyết toán booking.
+-- Ghi chú: Component trang chi tiết quyết toán booking. (Đã cập nhật)
 ----------------------------------------------------------------
 */
 import { Component, OnInit, inject } from '@angular/core';
@@ -47,6 +47,7 @@ import { PaymentType } from '../../../../core/models/enums';
     BillTableComponent,
   ],
   templateUrl: './booking-settlement.component.html',
+
 })
 export class BookingSettlementComponent implements OnInit {
   private route = inject(ActivatedRoute);
@@ -68,7 +69,7 @@ export class BookingSettlementComponent implements OnInit {
             this.isLoading = true;
             return this.accountantService.getBookingSettlement(+id);
           }
-          this.router.navigate(['/accountant/bookings']);
+          this.router.navigate(['/accountant/booking-list']);
           return EMPTY;
         })
       )
@@ -80,7 +81,7 @@ export class BookingSettlementComponent implements OnInit {
         error: () => {
           this.isLoading = false;
           this.messageService.error('Không thể tải chi tiết quyết toán.');
-          this.router.navigate(['/accountant/bookings']);
+          this.router.navigate(['/accountant/booking-list']);
         },
       });
   }
@@ -169,7 +170,6 @@ export class BookingSettlementComponent implements OnInit {
     });
   }
 
-  // Ghi chú: Cập nhật hàm này để đồng bộ với trang danh sách
   getStatusColor(status: string): string {
     if (!status) return 'default';
 

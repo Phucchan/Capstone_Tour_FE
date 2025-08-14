@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { SellerBookingService } from '../../services/seller-booking.service';
 import { SellerBookingSummary } from '../../models/seller-booking-summary.model';
-import { PagingDTO } from '../../../../core/models/paging.model';
+import { Paging } from '../../../../core/models/paging.model';
 import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
@@ -27,8 +27,8 @@ export class SellerDashboardComponent implements OnInit {
   private currentUserService = inject(CurrentUserService);
   private router = inject(Router);
 
-  availableBookings: PagingDTO<SellerBookingSummary> | null = null;
-  editedBookings: PagingDTO<SellerBookingSummary> | null = null;
+  availableBookings: Paging<SellerBookingSummary> | null = null;
+  editedBookings: Paging<SellerBookingSummary> | null = null;
 
   isLoadingAvailable = true;
   isLoadingEdited = true;

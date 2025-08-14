@@ -7,7 +7,7 @@ import { Router, RouterModule } from '@angular/router';
 import { CurrencyVndPipe } from '../../../shared/pipes/currency-vnd.pipe';
 import { IconTransportPipe } from '../../../shared/pipes/icon-transport.pipe';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
-import { CustomOrderTourService } from '../../customer/services/custom-order-tour.service';
+import { RequestBookingService } from '../../customer/services/request-booking.service';
 import { NgSelectModule } from '@ng-select/ng-select';
 
 
@@ -38,7 +38,7 @@ export class HomepageComponent implements OnInit {
 
   constructor(
     private homepageService: HomepageService,
-    private customOrderTourService: CustomOrderTourService,
+    private requestBookingService: RequestBookingService,
     @Inject(PLATFORM_ID) private platformId: Object,
     private router: Router
   ) { }
@@ -112,12 +112,13 @@ export class HomepageComponent implements OnInit {
 
   }
 
-  goToTourDiscountBooking(tourId: number, scheduleId: number): void {
-    this.router.navigate(['/tour-booking', tourId, scheduleId]);
+  goToTourDiscountDetail(tourId: number): void {
+    this.router.navigate(['/tours', tourId]);
+
   }
 
   getDestinations(): void {
-    this.customOrderTourService.getDestinations().subscribe({
+    this.requestBookingService.getDestinations().subscribe({
       next: (response) => {
         this.destinationList = response.data.map((d: any) => ({
             id: +d.id,

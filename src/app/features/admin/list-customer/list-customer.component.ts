@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { AdminService } from '../admin.service';
 import { UserFullInformation } from '../models/user.model';
 // SỬA LỖI: Dùng đường dẫn tương đối
-import { PagingDTO } from '../../../core/models/paging.model';
+import { Paging } from '../../../core/models/paging.model';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { AvatarComponent } from '../../../shared/components/avatar/avatar.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
@@ -25,7 +25,7 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
 })
 export class ListCustomerComponent implements OnInit {
   customers: UserFullInformation[] = [];
-  paging: PagingDTO<UserFullInformation> | null = null;
+  paging: Paging<UserFullInformation> | null = null;
   isLoading = false;
   currentPage = 0;
   pageSize = 10;

@@ -1,0 +1,67 @@
+<div class="p-4 md:p-6">
+  <h2 class="text-2xl text-blue-700 font-bold mb-4">Lịch sử yêu cầu đặt tour </h2>
+
+  <!-- Ô tìm kiếm -->
+  <div class="flex flex-wrap items-center gap-3 mb-4">
+    <label class="text text-gray-600">Trạng thái:</label>
+    <select class="border rounded px-3 py-2"
+            [ngModel]="selectedStatus()"
+            (ngModelChange)="selectedStatus.set($event); page.set(0); fetch()">
+      <option value="">Tất cả</option>
+      <option *ngFor="let s of statuses" [value]="s.value">{{ s.label }}</option>
+    </select>
+
+    <label class="text text-gray-600 ml-4">Tìm kiếm:</label>
+    <input class="border rounded px-3 py-2"
+           placeholder="Chủ đề"
+           [ngModel]="searchText()"
+           (ngModelChange)="searchText.set($event); page.set(0); fetch()"/>
+
+    <label class="text text-gray-600 ml-4">Ngày đi:</label>
+    <input type="date" class="border rounded px-3 py-2"
+           [ngModel]="searchDate()"
+           (ngModelChange)="searchDate.set($event); page.set(0); fetch()"/>
+
+    <button type="button"
+            class="px-3 py-2 text-sm text-blue-600 border rounded hover:bg-blue-200"
+            (click)="resetFilters()">
+      Xóa lọc
+    </button>
+  </div>
+
+  <div *ngIf="loading()" class="text-gray-500 py-6">Đang tải...</div>
+  <div *ngIf="!loading() && errorMsg()" class="text-red-500 py-6">{{ errorMsg() }}</div>
+  <div *ngIf="!loading() && !errorMsg() && rows().length === 0" class="text-gray-500 py-6">
+    Chưa có yêu cầu nào.
+  </div>
+
+  <div *ngIf="!loading() && rows().length > 0" class="overflow-x-auto">
+    <table class="min-w-full border rounded-md overflow-hidden">
+      <thead class="bg-gray-100 text-left text-sm">
+        <tr>
+          <th class="px-4 py-3">Chủ đề tour</th>
+          <th class="px-4 py-3">Ngày đi</th>
+          <th class="px-4 py-3">Ngày về</th>
+          <th class="px-4 py-3">Ngày tạo</th>
+          <th class="px-4 py-3">Trạng thái</th>
+          
+        </tr>
+      </thead>
+      <tbody class="text">
+        <tr *ngFor="let req of rows()" class="border-t">
+          <td class="px-4 py-3">{{ req.tourTheme }}</td>
+          <td class="px-4 py-3">{{ req.startDate | date:'dd/MM/yyyy' }}</td>
+          <td class="px-4 py-3">{{ req.endDate | date:'dd/MM/yyyy' }}</td>
+          <td class="px-4 py-3">{{ req.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td class="px-4 py-3">
+             <span class="px-2 py-1 rounded text-sm font-semibold"
+             [ngClass]="statusColor(req.status)">{{ statusLabel(req.status) }}</span>
+            </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <app-pagination [currentPage]="page()" [totalItems]="total()" [pageSize]="size()"
+                  (pageChange)="onPageChange($event)"></app-pagination>
+</div>

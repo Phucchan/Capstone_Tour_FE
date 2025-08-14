@@ -1,4 +1,5 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
@@ -19,7 +20,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     : req;
 
   return next(clonedRequest).pipe(
-    catchError((error) => {
+    catchError((error:  HttpErrorResponse) => {
       let errorMessage = 'An unexpected error occurred. Please try again later.';
 
       if (error.error && typeof error.error === 'object') {
@@ -39,7 +40,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         console.error('Server error:', errorMessage);
       }
 
-      return throwError(() => new Error(errorMessage));
+      return throwError(() => error );
     })
   );
 };

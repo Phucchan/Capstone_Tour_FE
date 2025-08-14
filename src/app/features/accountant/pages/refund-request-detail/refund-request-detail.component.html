@@ -10,7 +10,7 @@
     <div *ngIf="!isLoading && detail">
       <!-- Page Header -->
       <div class="mb-6">
-        <a routerLink="/accountant/refunds" class="text-sm text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-2 mb-4">
+        <a routerLink="/accountant/refund-request-list" class="text-sm text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-2 mb-4 font-semibold">
           <i nz-icon nzType="arrow-left"></i>
           Quay lại danh sách
         </a>
@@ -30,20 +30,20 @@
       </div>
 
       <!-- Grid Layout -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Left Column -->
-        <div class="lg:col-span-2 flex flex-col gap-6">
+        <div class="lg:col-span-2 flex flex-col gap-8">
           <!-- Booking Info Card -->
           <div class="bg-white rounded-lg shadow-md">
             <div class="p-6 border-b border-gray-200">
               <h3 class="text-xl font-semibold text-gray-800">Thông tin Booking</h3>
             </div>
             <dl class="divide-y divide-gray-200">
-              <div class="px-6 py-4 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Mã Tour</dt><dd class="text-sm text-gray-900 col-span-2 font-semibold">{{ detail.tourCode }}</dd></div>
-              <div class="px-6 py-4 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Tên Tour</dt><dd class="text-sm text-gray-900 col-span-2">{{ detail.tourName }}</dd></div>
-              <div class="px-6 py-4 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Tên khách hàng</dt><dd class="text-sm text-gray-900 col-span-2">{{ detail.customerName }}</dd></div>
-              <div class="px-6 py-4 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Ngày đi</dt><dd class="text-sm text-gray-900 col-span-2">{{ detail.startDate | formatDate }}</dd></div>
-              <div class="px-6 py-4 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Trạng thái</dt><dd class="text-sm text-gray-900 col-span-2"><nz-tag [nzColor]="getStatusColor(detail.status)">{{ detail.status }}</nz-tag></dd></div>
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Mã Tour</dt><dd class="text-sm text-gray-900 sm:col-span-2 font-semibold">{{ detail.tourCode }}</dd></div>
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Tên Tour</dt><dd class="text-sm text-gray-900 sm:col-span-2">{{ detail.tourName }}</dd></div>
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Tên khách hàng</dt><dd class="text-sm text-gray-900 sm:col-span-2">{{ detail.customerName }}</dd></div>
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Ngày đi</dt><dd class="text-sm text-gray-900 sm:col-span-2">{{ detail.startDate | formatDate }}</dd></div>
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Trạng thái</dt><dd class="text-sm text-gray-900 sm:col-span-2"><nz-tag [nzColor]="getStatusColor(detail.status)">{{ detail.status }}</nz-tag></dd></div>
             </dl>
           </div>
 
@@ -53,9 +53,9 @@
               <h3 class="text-xl font-semibold text-gray-800">Thông tin Tài chính</h3>
             </div>
             <dl class="divide-y divide-gray-200">
-              <div class="px-6 py-4 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Tổng tiền tour</dt><dd class="text-sm text-gray-900 col-span-2">{{ detail.totalAmount | currencyVnd }}</dd></div>
-              <div class="px-6 py-4 grid grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Đã thanh toán</dt><dd class="text-sm text-gray-900 col-span-2">{{ detail.paidAmount | currencyVnd }}</dd></div>
-              <div class="px-6 py-4 grid grid-cols-3 gap-4"><dt class="text-sm font-bold text-red-600">Số tiền hoàn lại</dt><dd class="text-sm text-red-600 col-span-2 font-bold">{{ detail.refundAmount | currencyVnd }}</dd></div>
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Tổng tiền tour</dt><dd class="text-sm text-gray-900 sm:col-span-2">{{ detail.totalAmount | currencyVnd }}</dd></div>
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Đã thanh toán</dt><dd class="text-sm text-green-600 sm:col-span-2 font-semibold">{{ detail.paidAmount | currencyVnd }}</dd></div>
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-red-50"><dt class="text-sm font-bold text-red-600">Số tiền hoàn lại</dt><dd class="text-lg text-red-600 sm:col-span-2 font-bold">{{ detail.refundAmount | currencyVnd }}</dd></div>
             </dl>
           </div>
         </div>
@@ -68,16 +68,16 @@
               <h3 class="text-xl font-semibold text-gray-800">Thông tin Nhận tiền</h3>
             </div>
             <dl class="divide-y divide-gray-200">
-              <div class="px-6 py-4"><dt class="text-sm font-medium text-gray-500 mb-1">Ngân hàng</dt><dd class="text-sm text-gray-900">{{ detail.bankName || 'Chưa có' }}</dd></div>
-              <div class="px-6 py-4"><dt class="text-sm font-medium text-gray-500 mb-1">Chủ tài khoản</dt><dd class="text-sm text-gray-900">{{ detail.bankAccountHolder || 'Chưa có' }}</dd></div>
-              <div class="px-6 py-4"><dt class="text-sm font-medium text-gray-500 mb-1">Số tài khoản</dt><dd class="text-sm text-gray-900">{{ detail.bankAccountNumber || 'Chưa có' }}</dd></div>
+              <div class="px-6 py-4"><dt class="text-sm font-medium text-gray-500 mb-1">Ngân hàng</dt><dd class="text-sm text-gray-900">{{ detail.bankName || 'Chưa có thông tin' }}</dd></div>
+              <div class="px-6 py-4"><dt class="text-sm font-medium text-gray-500 mb-1">Chủ tài khoản</dt><dd class="text-sm text-gray-900">{{ detail.bankAccountHolder || 'Chưa có thông tin' }}</dd></div>
+              <div class="px-6 py-4"><dt class="text-sm font-medium text-gray-500 mb-1">Số tài khoản</dt><dd class="text-sm text-gray-900">{{ detail.bankAccountNumber || 'Chưa có thông tin' }}</dd></div>
             </dl>
           </div>
         </div>
       </div>
 
       <!-- Refund Bill View -->
-      <div *ngIf="detail.refundBill" class="mt-6">
+      <div *ngIf="detail.refundBill" class="mt-8">
           <app-refund-bill-view [refundBill]="detail.refundBill"></app-refund-bill-view>
       </div>
     </div>
