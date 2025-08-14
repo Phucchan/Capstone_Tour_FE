@@ -18,6 +18,7 @@ export class ListTourService {
     date?: string;
     page: number;
     size: number;
+    name?: string;
     sortField?: string;
     sortDirection?: string;
   }): Observable<any> {
@@ -28,11 +29,7 @@ export class ListTourService {
       { params: cleanQuery }
     );
   }
-  // getDiscountTours(page = 0, size = 12): Observable<any> {
-  //   return this.http.get<any>(`${environment.apiUrl}/public/tours/discounts`, {
-  //     params: { page, size }
-  //   });
-  // }
+ 
 
   getDiscountTours(page = 0, size = 12, sort?: string): Observable<any> {
   const params: any = {
