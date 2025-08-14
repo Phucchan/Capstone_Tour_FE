@@ -1,8 +1,8 @@
 <app-skeleton [isLoading]="isLoading" [showHeader]="true" [showImageSection]="true" [showPriceBox]="true"
   [showCalendar]="true" [showSchedule]="true" [showImportantInfo]="true" [showOtherTours]="true">
 </app-skeleton>
- 
- 
+
+
 <div *ngIf="!isLoading">
    <div *ngIf="locationInfo" class ="text-center mb-8 mt-10">
     <!-- Tiêu đề và mô tả -->
@@ -13,7 +13,7 @@
       {{ locationInfo.description }}
     </div>
   </div>
- 
+
   <div class="flex gap-6 max-w-[70%] m-auto mt-10">
     <!-- Bộ lọc bên trái -->
     <aside class="w-[300px] bg-gray-100 p-4 rounded shadow-md text-sm h-fit sticky top-20">
@@ -174,3 +174,4 @@
       </div>
     </div>
   </div>
+</div>

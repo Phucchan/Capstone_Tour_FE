@@ -46,7 +46,7 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ schedule.departureDate | date:'dd/MM/yyyy' }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ schedule.coordinator?.fullName || 'N/A' }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ formatPaxOption(schedule.tourPax!) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">{{ schedule.tourPax?.sellingPrice | currencyVnd }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">{{ schedule.price | currencyVnd }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
                 <a href="#" class="text-red-600 hover:text-red-900">Xóa</a>
               </td>
