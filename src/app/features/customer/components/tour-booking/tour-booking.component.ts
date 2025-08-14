@@ -138,10 +138,10 @@ export class TourBookingComponent implements OnInit {
     const adultsArray = this.adultsFormArray;
     const childrenArray = this.childrenFormArray;
 
-    const adultPrice = this.tourSchedule?.price;
+    const adultPrice = this.tourSchedule?.finalPrice ;
     const childrenPrice = this.childrenPrice;
     const toddlersPrice = this.toddlersPrice;
-    const infantsPrice = this.tourSchedule?.price! * 0.5;
+    const infantsPrice = this.tourSchedule?.finalPrice! * 0.5;
 
     const adultTotal = adultsArray.controls.length * adultPrice!;
     const childrenTotal = childrenArray.controls.length * childrenPrice;
@@ -332,8 +332,21 @@ export class TourBookingComponent implements OnInit {
         this.tourSchedule = this.tourDetails?.schedules?.find(
           (schedule: any) => schedule.id === this.scheduleId
         );
-        this.childrenPrice = this.tourSchedule?.price! * 0.75;
-        this.infantsPrice = this.tourSchedule?.price! * 0.5;
+        const base = Number(this.tourSchedule?.price) || 0;                     // CHANGE
+        const discount = Number(this.tourSchedule?.discountPercent) || 0;       // CHANGE
+        const finalPrice = discount > 0                                         // CHANGE
+        ? Math.round((base * (100 - discount)) / 100)                          // CHANGE
+        : base; 
+
+         // Gắn vào schedule để dùng mọi nơi
+    this.tourSchedule = {                                                   // CHANGE
+        ...this.tourSchedule,                                                 // CHANGE
+        finalPrice,                                                           // CHANGE
+        hasDiscount: discount > 0,                                            // CHANGE
+      }; 
+
+        this.childrenPrice = this.tourSchedule?.finalPrice! * 0.75;
+        this.infantsPrice = this.tourSchedule?.finalPrice! * 0.5;
 
         this.calculateTotal();
 

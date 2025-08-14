@@ -180,7 +180,7 @@ body { margin: 0; font-family: "Helvetica Neue", sans-serif; }
 .fc .fc-daygrid-day-frame {
   background-color: #faf9f7;
   border-radius: 5%;
-  width: 60%;
+  width: 65%;
   aspect-ratio: 1/1;
   margin: auto;
 }
@@ -207,6 +207,11 @@ body { margin: 0; font-family: "Helvetica Neue", sans-serif; }
 .fc .fc-scroller-liquid-absolute, .fc .fc-scroller {
   overflow:  hidden !important;
 }
+
+
+/* CHANGE: style cho event trên calendar khi có giảm giá */
+/* CHANGE: event gọn, trung tính, không nền rực rỡ */
+
 
 input {
   border: 1px solid #D1D5DB

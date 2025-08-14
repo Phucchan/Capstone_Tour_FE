@@ -441,6 +441,7 @@
                             {{tourDetails?.tourThemeName}}
                         </span>
                     </p>
+                    <p *ngIf="tourSchedule?.hasDiscount" class="text-sm text-center rounded-full bg-red-500 text-white font-semibold mb-2 w-[40px]">-{{ tourSchedule?.discountPercent }}%</p> <!-- CHANGE -->
                     <p class="text-gray-500 italic">🆔 Mã tour: {{ tourDetails?.code }}</p>
                     <p class="text-gray-500">
                         🎟️ Ngày đi: {{tourSchedule?.departureDate | date: 'dd/MM/yyyy'}}
@@ -454,7 +455,7 @@
                 <p class="font-semibold flex justify-between text-xl mb-4"><span>👥 Khách hàng</span> <span
                         class="text-red-600">{{total | currencyVnd}}</span></p>
                 <p class="flex justify-between mb-2"><span>🧑 Người lớn: </span> <span>{{numberAdults}} x
-                        {{tourSchedule?.price |currencyVnd}}</span></p>
+                        {{tourSchedule?.finalPrice  |currencyVnd}}</span></p>
                 @if(numberChildren > 0) {
                 <p class="flex justify-between mb-2">
                     <span>👶 Trẻ em:</span> <span>{{numberChildren}} x {{childrenPrice |currencyVnd}}</span>
