@@ -1,6 +1,13 @@
 // src/app/features/business/components/location-form/location-form.component.ts
-
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -8,26 +15,26 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs';
+import { LocationDTO } from '../../../../core/models/location.model';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { LocationService } from '../../services/location.service';
-import {
-  LocationDTO,
-  LocationRequestDTO,
-  GeneralResponse,
-} from '../../../../core/models/location.model';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-location-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, SpinnerComponent],
   templateUrl: './location-form.component.html',
 })
-export class LocationFormComponent implements OnInit {
+export class LocationFormComponent implements OnInit, OnChanges {
   @Input() locationToEdit: LocationDTO | null = null;
   @Output() formSaved = new EventEmitter<boolean>();
+  @Output() formCancelled = new EventEmitter<void>();
 
   locationForm: FormGroup;
   isSubmitting = false;
+  imagePreview: string | ArrayBuffer | null = null;
+  private selectedFile: File | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -36,68 +43,95 @@ export class LocationFormComponent implements OnInit {
     this.locationForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       description: ['', [Validators.required]],
-      image: ['', [Validators.required]],
+      // Trường image không còn là control nữa, ta sẽ quản lý file riêng
     });
   }
 
   ngOnInit(): void {
-    // Nếu có dữ liệu truyền vào (chế độ sửa), điền vào form
-    if (this.locationToEdit) {
-      this.locationForm.patchValue(this.locationToEdit);
+    this.updateForm();
+  }
+
+  // Cập nhật form khi input locationToEdit thay đổi
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['locationToEdit']) {
+      this.updateForm();
     }
   }
 
-  /**
-   * Xử lý khi người dùng nhấn nút "Lưu".
-   */
+  updateForm(): void {
+    this.selectedFile = null;
+    this.imagePreview = null;
+    if (this.locationToEdit) {
+      this.locationForm.patchValue({
+        name: this.locationToEdit.name,
+        description: this.locationToEdit.description,
+      });
+      this.imagePreview = this.locationToEdit.image;
+    } else {
+      this.locationForm.reset();
+    }
+  }
+
+  get f() {
+    return this.locationForm.controls;
+  }
+
+  onFileChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      // Kiểm tra kích thước file (ví dụ: 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Kích thước file quá lớn, vui lòng chọn file dưới 5MB.');
+        input.value = ''; // Xóa file đã chọn
+        return;
+      }
+      this.selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreview = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
   onSubmit(): void {
     if (this.locationForm.invalid) {
       this.locationForm.markAllAsTouched();
       return;
     }
-
-    this.isSubmitting = true;
-    const formData: LocationRequestDTO = this.locationForm.value;
-
-    let saveObservable: Observable<GeneralResponse<LocationDTO>>;
-
-    // Kiểm tra xem đang ở chế độ sửa hay thêm mới
-    if (this.locationToEdit) {
-      // Chế độ SỬA: gọi API update
-      saveObservable = this.locationService.updateLocation(
-        this.locationToEdit.id,
-        formData
-      );
-    } else {
-      // Chế độ THÊM MỚI: gọi API create
-      saveObservable = this.locationService.createLocation(formData);
+    // Khi thêm mới, file là bắt buộc
+    if (!this.locationToEdit && !this.selectedFile) {
+      alert('Vui lòng chọn ảnh đại diện.');
+      return;
     }
 
-    // Subscribe vào observable đã được chọn
-    saveObservable.subscribe({
-      next: (response) => {
-        if (response.statusCode === 200) {
-          console.log(
-            `Location ${
-              this.locationToEdit ? 'updated' : 'created'
-            } successfully!`
-          );
-          this.formSaved.emit(true); // Gửi sự kiện thành công
-        } else {
-          console.error(`Failed to save location:`, response.message);
-          this.formSaved.emit(false); // Gửi sự kiện thất bại
-        }
-        this.isSubmitting = false;
+    this.isSubmitting = true;
+    const formData = new FormData();
+    formData.append('name', this.f['name'].value);
+    formData.append('description', this.f['description'].value);
+
+    if (this.selectedFile) {
+      formData.append('file', this.selectedFile, this.selectedFile.name);
+    }
+
+    const apiCall = this.locationToEdit
+      ? this.locationService.updateLocation(this.locationToEdit.id, formData)
+      : this.locationService.createLocation(formData);
+
+    apiCall.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
+      next: () => {
+        this.formSaved.emit(true);
       },
       error: (err) => {
         console.error('API error:', err);
-        this.isSubmitting = false;
-        this.formSaved.emit(false); // Gửi sự kiện thất bại
+        alert(`Lỗi: ${err.error?.message || 'Không thể lưu địa điểm.'}`);
+        this.formSaved.emit(false);
       },
     });
   }
 
-  get f() {
-    return this.locationForm.controls;
+  cancel(): void {
+    this.formCancelled.emit();
   }
 }
