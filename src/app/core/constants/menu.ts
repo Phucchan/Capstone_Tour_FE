@@ -96,6 +96,12 @@ export const MENU_ITEMS: MenuItem[] = [
         route: '/coordinator/service-types', // Chính xác
         roles: [ROLES.SERVICE_COORDINATOR],
       },
+      {
+        icon: 'assets/icons/heroicons/outline/ticket.svg', // Có thể chọn icon khác phù hợp hơn
+        label: 'Phê duyệt Dịch vụ',
+        route: '/coordinator/service-approval', // Trỏ đến route mới
+        roles: [ROLES.SERVICE_COORDINATOR],
+      },
     ],
   },
 
