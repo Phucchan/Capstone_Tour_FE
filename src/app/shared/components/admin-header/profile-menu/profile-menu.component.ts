@@ -45,7 +45,7 @@ export class ProfileMenuComponent implements OnInit {
 
   constructor(
     private userStorageService: UserStorageService,
-    private router : Router
+    private router : Router,
   ) {}
 
   ngOnInit(): void {
