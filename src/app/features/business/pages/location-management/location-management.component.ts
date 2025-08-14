@@ -1,5 +1,4 @@
 // src/app/features/business/pages/location-management/location-management.component.ts
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LocationService } from '../../services/location.service';
@@ -7,8 +6,8 @@ import { LocationDTO } from '../../../../core/models/location.model';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { LocationFormComponent } from '../../components/location-form/location-form.component';
-import { Paging } from '../../../../core/models/paging.model';
-
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-location-management',
@@ -23,66 +22,42 @@ import { Paging } from '../../../../core/models/paging.model';
 })
 export class LocationManagementComponent implements OnInit {
   locations: LocationDTO[] = [];
-  isLoading = false;
+  isLoading = true;
 
-  currentPage = 0;
+  currentPage = 1;
   pageSize = 10;
   totalItems = 0;
 
-  // Biến để quản lý modal
   isModalVisible = false;
-
-  // Biến để lưu trữ địa điểm đang được chỉnh sửa (sẽ dùng sau)
   selectedLocation: LocationDTO | null = null;
+
+  private searchSubject = new Subject<string>();
+  private currentKeyword = '';
 
   constructor(private locationService: LocationService) {}
 
   ngOnInit(): void {
-    this.loadLocations();
+    this.loadLocations(this.currentPage);
+
+    this.searchSubject
+      .pipe(debounceTime(400), distinctUntilChanged())
+      .subscribe((keyword) => {
+        this.currentKeyword = keyword;
+        this.loadLocations(1, keyword);
+      });
   }
 
-  loadLocations(): void {
+  loadLocations(page: number, keyword?: string): void {
     this.isLoading = true;
-    this.locations = [];
-
+    this.currentPage = page;
     this.locationService
-      .getLocations(this.currentPage, this.pageSize)
+      .getLocations(page - 1, this.pageSize, keyword)
       .subscribe({
-        next: (response: any) => {
-          console.log('API Response Received:', response);
-
-          let pagedData: Paging<LocationDTO> | null = null;
-
-          // Kiểm tra cả 2 cấu trúc response có thể có
-
-          // 1: Interceptor đã "mở gói", response chính là Paging
-          // Ta kiểm tra bằng cách xem response có trực tiếp chứa mảng 'items' không.
-          if (response && Array.isArray(response.items)) {
-            pagedData = response;
+        next: (response) => {
+          if (response.status === 200 && response.data) {
+            this.locations = response.data.items;
+            this.totalItems = response.data.total;
           }
-          // 2: Response là GeneralResponse đầy đủ (chưa bị mở gói)
-          else if (
-            response &&
-            response.data &&
-            Array.isArray(response.data.items)
-          ) {
-            pagedData = response.data;
-          }
-
-          // Nếu tìm thấy dữ liệu phân trang hợp lệ
-          if (pagedData) {
-            this.locations = pagedData.items;
-            this.totalItems = pagedData.total;
-            // Đồng bộ lại trang hiện tại với dữ liệu từ API để đảm bảo chính xác
-            this.currentPage = pagedData.page;
-          } else {
-            // Ghi lại lỗi nếu cấu trúc không đúng như mong đợi
-            console.error(
-              'Failed to fetch locations: Invalid data structure received from API.',
-              response
-            );
-          }
-
           this.isLoading = false;
         },
         error: (err) => {
@@ -92,48 +67,35 @@ export class LocationManagementComponent implements OnInit {
       });
   }
 
-  /**
-   * Hàm được gọi khi người dùng thay đổi trang.
-   * @param page - Số trang mới (được cho là 1-indexed từ component con)
-   */
+  onSearch(event: Event): void {
+    const keyword = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(keyword);
+  }
+
   onPageChange(page: number): void {
-    // Gán trực tiếp giá trị mới và gọi API
-    // API của chúng ta là 0-indexed, nên ta trừ đi 1
-    this.currentPage = page - 1;
-    this.loadLocations();
+    this.loadLocations(page, this.currentKeyword);
   }
-  /**
-   * Mở modal để thêm địa điểm mới.
-   */
+
   openAddModal(): void {
-    this.selectedLocation = null; // Đảm bảo không có location nào được chọn
+    this.selectedLocation = null;
     this.isModalVisible = true;
   }
 
-  /**
-   * Mở modal để chỉnh sửa một địa điểm đã có.
-   * @param location - Đối tượng địa điểm được chọn từ bảng.
-   */
   openEditModal(location: LocationDTO): void {
-    this.selectedLocation = location;
+    this.selectedLocation = { ...location };
     this.isModalVisible = true;
   }
 
-  /**
-   * Đóng modal.
-   */
   closeModal(): void {
     this.isModalVisible = false;
+    this.selectedLocation = null;
   }
 
-  /**
-   * Xử lý sau khi form được lưu thành công.
-   * @param success - Biến boolean cho biết thao tác có thành công hay không.
-   */
   onFormSaved(success: boolean): void {
     if (success) {
-      this.closeModal(); // Đóng modal
-      this.loadLocations(); // Tải lại danh sách để cập nhật
+      this.closeModal();
+      // Tải lại trang hiện tại để thấy thay đổi
+      this.loadLocations(this.currentPage, this.currentKeyword);
     }
   }
 }
