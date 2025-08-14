@@ -10,14 +10,14 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { finalize, forkJoin, map } from 'rxjs';
 
 // Models và Services cần thiết
-import { LocationShort, ServiceTypeShort } from '../../models/partner.model';
-import { PartnerService } from '../../services/partner.service';
-import { ServiceTypeService } from '../../services/service-type.service';
-import { LocationService } from '../../../business/services/location.service';
+import { LocationShort, ServiceTypeShort } from '../../../models/partner.model';
+import { PartnerService } from '../../../services/partner.service';
+import { ServiceTypeService } from '../../../services/service-type.service';
+import { LocationService } from '../../../../business/services/location.service';
 
 // Components dùng chung
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
-import { LocationDTO } from '../../../../core/models/location.model';
+import { SpinnerComponent } from '../../../../../shared/components/spinner/spinner.component';
+import { LocationDTO } from '../../../../../core/models/location.model';
 
 @Component({
   selector: 'app-add-service-provider',

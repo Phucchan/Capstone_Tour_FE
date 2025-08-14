@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs';
 
-import { ServiceTypeService } from '../services/service-type.service';
-import { ServiceType } from '../models/service-type.model';
-import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
+import { ServiceTypeService } from '../../services/service-type.service';
+import { ServiceType } from '../../models/service-type.model';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import {
   FormBuilder,
   FormGroup,
