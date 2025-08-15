@@ -17,12 +17,17 @@ export class CustomerService {
     });
   }
   updateProfile(userId: number, data: any): Observable<UserProfile> {
-  return this.http.put<{ data: UserProfile }>(
-    `${environment.apiUrl}/customer/profile`,
-    data,
-    { params: { userId } }
-  ).pipe(map(res => res.data));
-}
+    const params = new HttpParams().set('userId', userId.toString());
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        formData.append(key, value as any);
+      }
+    });
+    return this.http
+      .put<{ data: UserProfile }>(`${environment.apiUrl}/customer/profile`, formData, { params })
+      .pipe(map((res) => res.data));
+  }
   getProfile(): Observable<UserProfile> {
     return this.http.get<{ data: UserProfile }>(`${environment.apiUrl}/customer/profile`)
       .pipe(map(res => res.data));
