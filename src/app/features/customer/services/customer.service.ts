@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { map, Observable, switchMap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { UserProfile } from '../components/customer-sidebar/customer-sidebar.component';
 
@@ -26,6 +26,18 @@ export class CustomerService {
   getProfile(): Observable<UserProfile> {
     return this.http.get<{ data: UserProfile }>(`${environment.apiUrl}/customer/profile`)
       .pipe(map(res => res.data));
+  }
+  uploadAvatar(file: File): Observable<string> {
+    const params = new HttpParams().set('fileName', file.name);
+    return this.http
+      .get<{ url: string }>(`${environment.apiUrl}/s3/presigned-url`, { params })
+      .pipe(
+        switchMap((res) =>
+          this.http
+            .put(res.url, file, { headers: { 'Content-Type': file.type } })
+            .pipe(map(() => res.url.split('?')[0]))
+        )
+      );
   }
 
   changePassword(userId: number, body: { currentPassword: string, newPassword: string, rePassword: string }) {

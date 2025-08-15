@@ -101,7 +101,7 @@ export class CustomerProfileComponent {
             timer: 1500
           });
         });
-       
+
       },
       error: () => {
         Swal.fire({
@@ -135,4 +135,3 @@ export interface UserProfile {
   points: number;
 }
 
- 
