@@ -74,6 +74,22 @@
                           " class="text-red-500 text-sm">
                             Thông tin bắt buộc
                         </p>
+                        <!-- CHANGE: SEND CODE + VERIFY INPUT -->
+                        <div class="mt-2 flex items-center gap-2">
+                            <button type="button" (click)="sendVerificationCode()"
+                                [disabled]="sendingCode || codeCooldown>0 || bookingForm.get('email')?.invalid"
+                                class="px-3 py-2 rounded border border-blue-500 text-blue-600 hover:bg-blue-50 disabled:opacity-50">
+                                {{ codeCooldown>0 ? ('Gửi lại (' + codeCooldown + 's)') : (sendingCode ? 'Đang gửi...' :
+                                'Gửi mã') }}
+                            </button>
+
+                            <input formControlName="verificationCode" maxlength="6" inputmode="numeric"
+                                placeholder="Mã 6 chữ số" class="flex-1 border p-2 rounded" />
+                        </div>
+                        <p *ngIf="bookingForm.get('verificationCode')?.invalid && bookingForm.get('verificationCode')?.touched"
+                            class="text-red-500 text-sm mt-1">
+                            Vui lòng nhập mã 6 chữ số.
+                        </p>
                     </div>
                     <div>
                         <label class="block font-semibold">Địa chỉ</label>

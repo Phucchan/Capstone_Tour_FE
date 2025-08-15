@@ -184,10 +184,9 @@
             *Thông tin bắt buộc
           </small>
           <button type="button" 
-          class="whitespace-nowrap flex gap-2 items-center border border-blue-500 bg-blue-500 text-white  rounded-md text-sm  transition-colors duration-200 hover:bg-blue-700 flex-1"
+          class="whitespace-nowrap flex gap-2 items-center border border-blue-500  text-blue-600 rounded-md text-sm  transition-colors duration-200 hover:bg-blue-50 flex-1"
             (click)="sendVerificationCode()" [disabled]="sendingCode || codeCooldown>0 || f['customerEmail'].invalid">
-            <ng-container *ngIf="codeCooldown === 0; else cdTpl">Gửi mã</ng-container>
-            <ng-template #cdTpl>{{ codeCooldown }}s</ng-template>
+            {{ codeCooldown>0 ? ('Gửi lại (' + codeCooldown + 's)') : (sendingCode ? 'Đang gửi...' : 'Gửi mã') }}
           </button>
         </div>
         <div class="text-xs text-gray-500 mt-1">Mã xác thực sẽ được gửi tới email này.</div>

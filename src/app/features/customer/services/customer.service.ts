@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { map, Observable, switchMap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { UserProfile } from '../components/customer-sidebar/customer-sidebar.component';
 
@@ -17,15 +17,32 @@ export class CustomerService {
     });
   }
   updateProfile(userId: number, data: any): Observable<UserProfile> {
-  return this.http.put<{ data: UserProfile }>(
-    `${environment.apiUrl}/customer/profile`,
-    data,
-    { params: { userId } }
-  ).pipe(map(res => res.data));
-}
+    const params = new HttpParams().set('userId', userId.toString());
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        formData.append(key, value as any);
+      }
+    });
+    return this.http
+      .put<{ data: UserProfile }>(`${environment.apiUrl}/customer/profile`, formData, { params })
+      .pipe(map((res) => res.data));
+  }
   getProfile(): Observable<UserProfile> {
     return this.http.get<{ data: UserProfile }>(`${environment.apiUrl}/customer/profile`)
       .pipe(map(res => res.data));
+  }
+  uploadAvatar(file: File): Observable<string> {
+    const params = new HttpParams().set('fileName', file.name);
+    return this.http
+      .get<{ url: string }>(`${environment.apiUrl}/s3/presigned-url`, { params })
+      .pipe(
+        switchMap((res) =>
+          this.http
+            .put(res.url, file, { headers: { 'Content-Type': file.type } })
+            .pipe(map(() => res.url.split('?')[0]))
+        )
+      );
   }
 
   changePassword(userId: number, body: { currentPassword: string, newPassword: string, rePassword: string }) {

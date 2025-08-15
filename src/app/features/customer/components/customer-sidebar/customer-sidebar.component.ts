@@ -20,16 +20,16 @@ export interface UserProfile {
 @Component({
   selector: 'app-customer-sidebar',
   standalone: true,
-  imports: [CommonModule, 
+  imports: [CommonModule,
     RouterModule],
   templateUrl: './customer-sidebar.component.html',
   styleUrl: './customer-sidebar.component.css'
 })
 export class CustomerSidebarComponent implements OnInit {
-  
+
   @Output() photoUploaded = new EventEmitter<File>();
   @Input() currentUser: any;
- 
+
 
    constructor(
     private userStorageService: UserStorageService,
@@ -38,7 +38,7 @@ export class CustomerSidebarComponent implements OnInit {
     private currentUserService: CurrentUserService,
     private elRef: ElementRef,
   ) {}
-  
+
   onLogout() {
     if (!this.currentUser && !this.currentUser.id) {
       console.error('No user is currently logged in.');

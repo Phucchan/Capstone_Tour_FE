@@ -18,7 +18,7 @@ export class RequestBookingService {
   }
 
   getThemes(): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/customer/request-bookings/themes`);
+    return this.http.get(`${environment.apiUrl}/public/request-bookings/themes`);
   }
   
   getCustomerRequestBookings(userId: number, params?: { page?: number; size?: number; search?: string }) {
@@ -28,18 +28,18 @@ export class RequestBookingService {
     if (params?.search) httpParams.search = params.search;
 
     return this.http.get<any>(
-      `${environment.apiUrl}/customer/${userId}/request-bookings`, {
+      `${environment.apiUrl}/public/${userId}/request-bookings`, {
          params: httpParams });
   }
   sendVerifyCode(email: string): Observable<any> {
     return this.http.post(
-      `${environment.apiUrl}/customer/request-bookings/send-code`, null, 
+      `${environment.apiUrl}/public/request-bookings/send-code`, null, 
       { params: { email } });
   }
 
  requestBooking(body: any, userId: number) {
   return this.http.post<ApiResp>(
-    `${environment.apiUrl}/customer/request-bookings`,
+    `${environment.apiUrl}/public/request-bookings`,
     body,
     { params: { userId } }
   ).pipe(
