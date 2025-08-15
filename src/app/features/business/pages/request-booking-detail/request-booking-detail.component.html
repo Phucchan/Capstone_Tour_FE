@@ -21,62 +21,76 @@
         <div>
           <span class="text-sm font-medium text-gray-600">Trạng thái:</span>
           <span class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium" [ngClass]="getStatusClass(request.status)">
-            {{ request.status }}
+            {{ getStatusText(request.status) }}
           </span>
         </div>
         <!-- Action Buttons -->
         <div *ngIf="request.status === RequestBookingStatus.PENDING" class="flex space-x-3">
-          <button (click)="updateStatus(request.id, 'REJECTED')" type="button" class="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+          <button (click)="updateStatus(request.id, 'REJECTED')" type="button" class="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500">
             Từ chối
           </button>
-          <button (click)="updateStatus(request.id, 'ACCEPTED')" type="button" class="rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">
+          <button (click)="updateStatus(request.id, 'ACCEPTED')" type="button" class="rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500">
             Chấp nhận
           </button>
         </div>
         <div *ngIf="request.status === RequestBookingStatus.ACCEPTED">
-           <button (click)="createTour(request.id)" type="button" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-            Tạo Tour từ Yêu cầu này
+           <button (click)="createTour(request.id)" type="button" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
+            Tạo Tour từ Yêu cầu
           </button>
         </div>
       </div>
     </div>
 
     <!-- Details Grid -->
-    <div class="mt-6 border-t border-gray-100">
-      <dl class="divide-y divide-gray-100">
-        <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+    <div class="mt-6 border-t border-gray-200">
+      <dl class="divide-y divide-gray-200">
+        <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
           <dt class="text-sm font-medium leading-6 text-gray-900">Thông tin liên hệ</dt>
           <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
             <p><strong>Email:</strong> {{ request.customerEmail }}</p>
             <p><strong>Điện thoại:</strong> {{ request.customerPhone }}</p>
           </dd>
         </div>
-        <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+        <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
           <dt class="text-sm font-medium leading-6 text-gray-900">Hành trình</dt>
           <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
             <p><strong>Ngày đi:</strong> {{ request.startDate | date:'dd/MM/yyyy' }}</p>
             <p><strong>Ngày về:</strong> {{ request.endDate | date:'dd/MM/yyyy' }}</p>
-            <p><strong>Phương tiện:</strong> {{ request.transport || 'Chưa xác định' }}</p>
           </dd>
         </div>
-        <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+        <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
           <dt class="text-sm font-medium leading-6 text-gray-900">Số lượng khách</dt>
           <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
             <p><strong>Người lớn:</strong> {{ request.adults }}</p>
             <p><strong>Trẻ em:</strong> {{ request.children }}</p>
             <p><strong>Trẻ nhỏ:</strong> {{ request.infants }}</p>
+            <p><strong>Em bé:</strong> {{ request.toddlers }}</p>
           </dd>
         </div>
-        <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-          <dt class="text-sm font-medium leading-6 text-gray-900">Ngân sách dự kiến</dt>
+        <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+          <dt class="text-sm font-medium leading-6 text-gray-900">Lưu trú & Vận chuyển</dt>
           <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+            <p><strong>Số phòng:</strong> {{ request.hotelRooms }}</p>
+            <p><strong>Loại phòng:</strong> {{ request.roomCategory }}</p>
+            <p><strong>Phương tiện:</strong> {{ request.transport }}</p>
+          </dd>
+        </div>
+        <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+          <dt class="text-sm font-medium leading-6 text-gray-900">Ngân sách dự kiến</dt>
+          <dd class="mt-1 text-sm font-medium leading-6 text-green-700 sm:col-span-2 sm:mt-0">
              {{ request.priceMin | currency:'VND':'symbol':'1.0-0' }} - {{ request.priceMax | currency:'VND':'symbol':'1.0-0' }}
           </dd>
         </div>
-        <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+        <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
           <dt class="text-sm font-medium leading-6 text-gray-900">Yêu cầu chi tiết</dt>
           <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 whitespace-pre-wrap">
-            {{ request.destinationDetail || 'Không có yêu cầu đặc biệt.' }}
+            {{ request.desiredServices || 'Không có yêu cầu đặc biệt.' }}
+          </dd>
+        </div>
+        <div *ngIf="request.reason" class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 bg-red-50">
+          <dt class="text-sm font-medium text-red-700">Lý do từ chối</dt>
+          <dd class="mt-1 text-sm text-red-900 sm:col-span-2 sm:mt-0 whitespace-pre-wrap">
+            {{ request.reason }}
           </dd>
         </div>
       </dl>
@@ -85,7 +99,7 @@
 
   <ng-template #loading>
     <div class="text-center p-10">
-      <p class="text-gray-500">Đang tải chi tiết yêu cầu...</p>
+      <app-spinner></app-spinner>
     </div>
   </ng-template>
 </div>
