@@ -116,7 +116,9 @@ export class HomepageComponent implements OnInit {
     this.router.navigate(['/tours', tourId]);
 
   }
-
+  goToBlogDetail(blogId: number): void {
+    this.router.navigate(['/blogs', blogId]);
+  }
   getDestinations(): void {
     this.requestBookingService.getDestinations().subscribe({
       next: (response) => {
