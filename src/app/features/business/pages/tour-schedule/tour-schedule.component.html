@@ -1,72 +1,88 @@
-<div class="container mx-auto p-4 md:p-6 lg:p-8">
+<div class="container mx-auto p-4 sm:p-6 lg:p-8">
   <!-- Header -->
   <ng-container *ngIf="tourDetail$ | async as tour">
-    <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 border-b pb-4">
-      <div>
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Xây dựng Lịch trình</h1>
-        <p class="text-lg text-blue-600 font-semibold">{{ tour.name }}</p>
-      </div>
-      <button (click)="openAddModal()" class="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>
-        Thêm ngày mới
-      </button>
-    </header>
+    <nz-page-header [nzTitle]="'Xây dựng Lịch trình'" [nzSubtitle]="tour.name" (nzBack)="goBack()">
+      <nz-page-header-extra>
+        <a [routerLink]="['/business/tours', tourId]" nz-button>Về trang chi tiết</a>
+        <button nz-button nzType="primary" (click)="openAddModal()">
+          <span nz-icon nzType="plus"></span>
+          Thêm ngày mới
+        </button>
+      </nz-page-header-extra>
+    </nz-page-header>
   </ng-container>
 
   <!-- Loading Spinner -->
-  <div *ngIf="isLoading" class="text-center py-20">
-    <p class="text-gray-500">Đang tải lịch trình...</p>
-  </div>
-
-  <!-- Content -->
-  <div *ngIf="!isLoading">
+  <nz-spin [nzSpinning]="isLoading">
+    <!-- Content -->
     <ng-container *ngIf="tourDays$ | async as days">
       <!-- Trường hợp chưa có ngày nào -->
-      <div *ngIf="days.length === 0" class="text-center py-16 bg-gray-50 rounded-lg">
-        <p class="text-gray-500">Chưa có ngày nào trong lịch trình.</p>
-        <p class="text-gray-400 text-sm mt-1">Hãy bắt đầu bằng cách nhấn nút "Thêm ngày mới".</p>
+      <div *ngIf="days.length === 0" class="mt-4">
+        <nz-empty nzNotFoundContent="Chưa có ngày nào trong lịch trình. Hãy bắt đầu bằng cách nhấn nút 'Thêm ngày mới'." />
       </div>
 
       <!-- Hiển thị danh sách các ngày -->
-      <div *ngIf="days.length > 0" class="space-y-4">
-        <div *ngFor="let day of days" class="bg-white p-4 rounded-lg shadow-md border border-gray-200 flex items-start justify-between">
-          <!-- Thông tin chính -->
-          <div class="flex-grow">
-            <h3 class="text-xl font-bold text-gray-900">Ngày {{ day.dayNumber }}</h3>
-            <p class="text-md text-gray-700 mt-1">{{ day.title || "Chưa có tiêu đề" }}</p>
-            <div class="mt-2" *ngIf="day.location">
-              <span class="text-sm font-medium text-gray-500">📍 {{ day.location.name }}</span>
+      <div *ngIf="days.length > 0" class="mt-4 space-y-4">
+        <nz-card *ngFor="let day of days" [nzActions]="[actionEdit, actionDelete]">
+          <ng-template #actionEdit>
+            <button nz-button nzType="text" (click)="openEditModal(day)">
+              <span nz-icon nzType="edit"></span> Sửa
+            </button>
+          </ng-template>
+          <ng-template #actionDelete>
+            <button nz-button nzType="text" nzDanger nz-popconfirm nzPopconfirmTitle="Bạn có chắc chắn muốn xóa ngày này?" (nzOnConfirm)="handleDelete(day)">
+              <span nz-icon nzType="delete"></span> Xóa
+            </button>
+          </ng-template>
+
+          <nz-card-meta
+            [nzTitle]="titleTemplate"
+            [nzDescription]="descriptionTemplate"
+          ></nz-card-meta>
+
+          <ng-template #titleTemplate>
+            <div class="flex items-center">
+              <span class="font-bold text-lg">Ngày {{ day.dayNumber }}: {{ day.title || "Chưa có tiêu đề" }}</span>
+              <span *ngIf="day.location" class="ml-4 text-sm font-normal text-gray-500">
+                <span nz-icon nzType="environment" nzTheme="outline"></span>
+                {{ day.location.name }}
+              </span>
             </div>
-            <!-- Danh sách dịch vụ CỤ THỂ -->
+          </ng-template>
+
+          <ng-template #descriptionTemplate>
             <div class="mt-3" *ngIf="day.services && day.services.length > 0">
               <span class="text-sm font-semibold text-gray-600">Dịch vụ:</span>
               <div class="flex flex-wrap gap-2 mt-1">
-                <span *ngFor="let service of day.services" class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                <nz-tag *ngFor="let service of day.services" nzColor="green">
                   {{ service.name }}
-                </span>
+                </nz-tag>
               </div>
             </div>
-          </div>
-          <!-- Nút Sửa và Xóa -->
-          <div class="flex-shrink-0 ml-4 space-x-2">
-            <button (click)="openEditModal(day)" title="Sửa" class="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-gray-100 transition">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
-            </button>
-            <button (click)="handleDelete(day)" title="Xóa" class="p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-gray-100 transition">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
-            </button>
-          </div>
-        </div>
+          </ng-template>
+        </nz-card>
       </div>
     </ng-container>
-  </div>
+  </nz-spin>
 </div>
 
-<!-- FORM MODAL -->
-<app-tour-day-form
-  [isVisible]="isModalOpen"
-  [dayData]="currentDayToEdit"
-  [tourId]="tourId"
-  (formSaved)="handleFormSave()"
-  (close)="closeModal()"
-></app-tour-day-form>
+<!-- Modal chứa Form Component -->
+<nz-modal
+  [(nzVisible)]="isModalOpen"
+  [nzTitle]="modalTitle"
+  (nzOnCancel)="closeModal()"
+  [nzFooter]="null"
+  [nzWidth]="'700px'"
+  [nzMaskClosable]="false"
+>
+  <ng-container *nzModalContent>
+    <!-- Component form được đặt bên trong modal -->
+    <app-tour-day-form
+      *ngIf="isModalOpen"
+      [dayData]="currentDayToEdit"
+      [tourId]="tourId"
+      (formSaved)="handleFormSave()"
+      (close)="closeModal()"
+    ></app-tour-day-form>
+  </ng-container>
+</nz-modal>

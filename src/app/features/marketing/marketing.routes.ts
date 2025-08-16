@@ -8,7 +8,7 @@ import { Routes } from '@angular/router';
 import { BlogListComponent } from './pages/blog-list/blog-list.component';
 import { BlogFormComponent } from './pages/blog-form/blog-form.component';
 
-export const MARKETING_BLOG_ROUTES: Routes = [
+export const MARKETING_ROUTES: Routes = [
   {
     path: '',
     component: BlogListComponent,

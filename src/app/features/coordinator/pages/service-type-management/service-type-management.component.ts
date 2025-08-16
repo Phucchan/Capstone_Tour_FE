@@ -1,10 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs';
-
-import { ServiceTypeService } from '../../services/service-type.service';
-import { ServiceType } from '../../models/service-type.model';
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import {
   FormBuilder,
   FormGroup,
@@ -12,10 +8,45 @@ import {
   Validators,
 } from '@angular/forms';
 
+// --- [THÊM MỚI] Imports cho các module của NG-ZORRO ---
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
+import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzSpaceModule } from 'ng-zorro-antd/space';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+
+// --- Imports từ project của bạn ---
+import { ServiceTypeService } from '../../services/service-type.service';
+import { ServiceType } from '../../models/service-type.model';
+
 @Component({
   selector: 'app-service-type-management',
   standalone: true,
-  imports: [CommonModule, SpinnerComponent, ReactiveFormsModule],
+  // --- [CẬP NHẬT] Thêm các module của NG-ZORRO ---
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    NzTableModule,
+    NzButtonModule,
+    NzIconModule,
+    NzPageHeaderModule,
+    NzBreadCrumbModule,
+    NzModalModule,
+    NzFormModule,
+    NzInputModule,
+    NzPopconfirmModule,
+    NzSpaceModule,
+    NzTagModule,
+    NzToolTipModule,
+  ],
   templateUrl: './service-type-management.component.html',
 })
 export class ServiceTypeManagementComponent implements OnInit {
@@ -23,8 +54,8 @@ export class ServiceTypeManagementComponent implements OnInit {
   isLoading = true;
   errorMessage: string | null = null;
 
-  // Thuộc tính cho modal form
-  showModal = false;
+  // Thuộc tính cho modal
+  isModalVisible = false;
   isEditMode = false;
   isSubmitting = false;
   currentServiceTypeId: number | null = null;
@@ -32,7 +63,8 @@ export class ServiceTypeManagementComponent implements OnInit {
 
   constructor(
     private serviceTypeService: ServiceTypeService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private message: NzMessageService
   ) {
     this.serviceTypeForm = this.fb.group({
       code: ['', Validators.required],
@@ -55,22 +87,26 @@ export class ServiceTypeManagementComponent implements OnInit {
             this.serviceTypes = res.data;
           } else {
             this.errorMessage = res.message;
+            this.message.error(res.message || 'Tải dữ liệu thất bại!');
           }
         },
-        error: (err) =>
-          (this.errorMessage = err.error?.message || 'Lỗi tải dữ liệu'),
+        error: (err) => {
+          this.errorMessage = err.error?.message || 'Lỗi tải dữ liệu';
+          // [SỬA LỖI] Kiểm tra this.errorMessage trước khi truyền vào message.error
+          if (this.errorMessage) {
+            this.message.error(this.errorMessage);
+          }
+        },
       });
   }
 
-  // Mở modal để thêm mới
   openAddModal(): void {
     this.isEditMode = false;
     this.serviceTypeForm.reset();
     this.currentServiceTypeId = null;
-    this.showModal = true;
+    this.isModalVisible = true;
   }
 
-  // Mở modal để chỉnh sửa
   openEditModal(serviceType: ServiceType): void {
     this.isEditMode = true;
     this.serviceTypeForm.setValue({
@@ -78,17 +114,20 @@ export class ServiceTypeManagementComponent implements OnInit {
       name: serviceType.name,
     });
     this.currentServiceTypeId = serviceType.id;
-    this.showModal = true;
+    this.isModalVisible = true;
   }
 
-  // Đóng modal
-  closeModal(): void {
-    this.showModal = false;
+  handleCancel(): void {
+    this.isModalVisible = false;
   }
 
-  // Xử lý submit form
   onSubmit(): void {
     if (this.serviceTypeForm.invalid) {
+      // Đánh dấu tất cả các trường là dirty để hiển thị lỗi
+      for (const i in this.serviceTypeForm.controls) {
+        this.serviceTypeForm.controls[i].markAsDirty();
+        this.serviceTypeForm.controls[i].updateValueAndValidity();
+      }
       return;
     }
     this.isSubmitting = true;
@@ -103,33 +142,35 @@ export class ServiceTypeManagementComponent implements OnInit {
 
     action$.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
       next: () => {
-        alert(this.isEditMode ? 'Cập nhật thành công!' : 'Tạo mới thành công!');
+        this.message.success(
+          this.isEditMode ? 'Cập nhật thành công!' : 'Tạo mới thành công!'
+        );
         this.loadServiceTypes();
-        this.closeModal();
+        this.isModalVisible = false;
       },
       error: (err) => {
-        alert(err.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
+        this.message.error(
+          err.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.'
+        );
       },
     });
   }
 
-  // Thay đổi trạng thái
-
   toggleStatus(serviceType: ServiceType): void {
     const newStatus = !serviceType.deleted;
-    const confirmation = confirm(
-      `Bạn có chắc muốn ${
-        newStatus ? 'vô hiệu hóa' : 'kích hoạt'
-      } loại dịch vụ "${serviceType.name}" không?`
-    );
+    const actionText = newStatus ? 'Vô hiệu hóa' : 'Kích hoạt';
 
-    if (confirmation) {
-      this.serviceTypeService
-        .changeStatus(serviceType.id, { deleted: newStatus })
-        .subscribe({
-          next: () => this.loadServiceTypes(),
-          error: (err) => alert(`Cập nhật thất bại: ${err.error?.message}`),
-        });
-    }
+    this.serviceTypeService
+      .changeStatus(serviceType.id, { deleted: newStatus })
+      .subscribe({
+        next: () => {
+          this.message.success(
+            `${actionText} loại dịch vụ "${serviceType.name}" thành công!`
+          );
+          this.loadServiceTypes();
+        },
+        error: (err) =>
+          this.message.error(err.error?.message || 'Cập nhật thất bại!'),
+      });
   }
 }

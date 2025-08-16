@@ -1,126 +1,106 @@
-<!-- Ghi chú: Giao diện form được thiết kế lại với bố cục Card, chia section rõ ràng và các nút bấm đồng bộ. -->
-<div class="p-4 sm:p-6 bg-gray-50 min-h-full">
+<!--
+ * FILE: src/app/features/admin/post-staff-detail/post-staff-detail.component.html
+ * MÔ TẢ:
+ * - Giao diện form đã được viết lại hoàn toàn bằng các component của NG-ZORRO.
+-->
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <!-- Nút quay lại -->
   <div class="mb-4">
-      <a (click)="goBack()" class="inline-flex items-center gap-2 text-gray-600 hover:text-primary-600 font-medium cursor-pointer">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-        </svg>
-        Quay lại danh sách
-      </a>
+    <a (click)="goBack()" class="text-sm text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-2 font-semibold cursor-pointer">
+      <i nz-icon nzType="arrow-left"></i>
+      Quay lại danh sách
+    </a>
   </div>
 
   <!-- Form trong Card -->
   <div class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-lg shadow-md">
-    <h1 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-4">Tạo tài khoản Nhân viên mới</h1>
+    <h1 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-4">
+      Tạo tài khoản Nhân viên mới
+    </h1>
 
-    <form [formGroup]="staffForm" (ngSubmit)="onSubmit()" novalidate class="space-y-8">
-
+    <form nz-form [formGroup]="staffForm" (ngSubmit)="onSubmit()" nzLayout="vertical">
       <!-- Section: Thông tin cá nhân -->
-      <div>
-        <h2 class="text-lg font-semibold text-gray-800 mb-4">Thông tin cá nhân</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Full Name -->
-          <div>
-            <label for="fullName" class="block mb-2 text-sm font-medium text-gray-700">Họ và tên</label>
-            <input type="text" id="fullName" formControlName="fullName"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 transition"
-              required>
-            <div *ngIf="f['fullName'].touched && f['fullName'].invalid" class="text-red-600 text-sm mt-1">
-              <span *ngIf="f['fullName'].errors?.['required']">Họ và tên là bắt buộc.</span>
-            </div>
-          </div>
-          <!-- Phone -->
-          <div>
-            <label for="phone" class="block mb-2 text-sm font-medium text-gray-700">Số điện thoại</label>
-            <input type="tel" id="phone" formControlName="phone"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 transition"
-              required>
-            <div *ngIf="f['phone'].touched && f['phone'].invalid" class="text-red-600 text-sm mt-1">
-              <span *ngIf="f['phone'].errors?.['required']">Số điện thoại là bắt buộc.</span>
-              <span *ngIf="f['phone'].errors?.['invalidPhone']">Số điện thoại không hợp lệ.</span>
-            </div>
-          </div>
-        </div>
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">Thông tin cá nhân</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+        <!-- Full Name -->
+        <nz-form-item>
+          <nz-form-label nzRequired>Họ và tên</nz-form-label>
+          <nz-form-control nzErrorTip="Vui lòng nhập họ và tên!">
+            <input nz-input formControlName="fullName" placeholder="Nguyễn Văn A" />
+          </nz-form-control>
+        </nz-form-item>
+        <!-- Phone -->
+        <nz-form-item>
+          <nz-form-label nzRequired>Số điện thoại</nz-form-label>
+          <nz-form-control nzErrorTip="Số điện thoại không hợp lệ!">
+            <input nz-input formControlName="phone" placeholder="09xxxxxxxx" />
+          </nz-form-control>
+        </nz-form-item>
       </div>
 
       <!-- Section: Thông tin tài khoản -->
-      <div>
-        <h2 class="text-lg font-semibold text-gray-800 mb-4">Thông tin tài khoản</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Username -->
-          <div>
-            <label for="username" class="block mb-2 text-sm font-medium text-gray-700">Tên đăng nhập</label>
-            <input type="text" id="username" formControlName="username"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 transition"
-              required>
-            <div *ngIf="f['username'].touched && f['username'].invalid" class="text-red-600 text-sm mt-1">
-              <span *ngIf="f['username'].errors?.['required']">Tên đăng nhập là bắt buộc.</span>
-              <span *ngIf="f['username'].errors?.['pattern']">Từ 8-30 ký tự, chỉ gồm chữ, số, gạch dưới, gạch ngang.</span>
-              <span *ngIf="f['username'].errors?.['usernameTaken']">Tên đăng nhập đã tồn tại.</span>
-            </div>
-            <div *ngIf="f['username'].pending" class="text-sm text-gray-500 mt-1">Đang kiểm tra...</div>
-          </div>
-          <!-- Email -->
-          <div>
-            <label for="email" class="block mb-2 text-sm font-medium text-gray-700">Email</label>
-            <input type="email" id="email" formControlName="email"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 transition"
-              required>
-            <div *ngIf="f['email'].touched && f['email'].invalid" class="text-red-600 text-sm mt-1">
-              <span *ngIf="f['email'].errors?.['required']">Email là bắt buộc.</span>
-              <span *ngIf="f['email'].errors?.['email']">Email không đúng định dạng.</span>
-              <span *ngIf="f['email'].errors?.['emailTaken']">Email đã tồn tại.</span>
-            </div>
-            <div *ngIf="f['email'].pending" class="text-sm text-gray-500 mt-1">Đang kiểm tra...</div>
-          </div>
-          <!-- Password -->
-          <div class="md:col-span-2 relative">
-            <label for="password" class="block mb-2 text-sm font-medium text-gray-700">Mật khẩu</label>
-            <input [type]="hidePassword ? 'password' : 'text'" id="password" formControlName="password"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 pr-10 transition"
-              required>
-            <button type="button" (click)="togglePasswordVisibility()" class="absolute inset-y-0 right-0 top-7 flex items-center px-3 text-gray-600 hover:text-gray-800">
-              <svg *ngIf="hidePassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.774 3.162 10.065 7.498a10.522 10.522 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243l-4.243-4.243" />
-              </svg>
-              <svg *ngIf="!hidePassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
-            <div *ngIf="f['password'].touched && f['password'].invalid" class="text-red-600 text-sm mt-1">
-              <span *ngIf="f['password'].errors?.['required']">Mật khẩu là bắt buộc.</span>
-              <span *ngIf="f['password'].errors?.['strongPassword']">Phải có ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.</span>
-            </div>
-          </div>
-        </div>
+      <h2 class="text-lg font-semibold text-gray-800 mt-6 mb-4">Thông tin tài khoản</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+        <!-- Username -->
+        <nz-form-item>
+          <nz-form-label nzRequired>Tên đăng nhập</nz-form-label>
+          <nz-form-control [nzErrorTip]="usernameErrorTpl" [nzValidatingTip]="'Đang kiểm tra...'">
+            <input nz-input formControlName="username" placeholder="8-30 ký tự, không dấu..." />
+          </nz-form-control>
+          <ng-template #usernameErrorTpl let-control>
+            <ng-container *ngIf="control.hasError('required')">Tên đăng nhập là bắt buộc.</ng-container>
+            <ng-container *ngIf="control.hasError('pattern')">Từ 8-30 ký tự, chỉ gồm chữ, số, gạch dưới, gạch ngang.</ng-container>
+            <ng-container *ngIf="control.hasError('usernameTaken')">Tên đăng nhập đã tồn tại.</ng-container>
+          </ng-template>
+        </nz-form-item>
+        <!-- Email -->
+        <nz-form-item>
+          <nz-form-label nzRequired>Email</nz-form-label>
+          <nz-form-control [nzErrorTip]="emailErrorTpl" [nzValidatingTip]="'Đang kiểm tra...'">
+            <input nz-input formControlName="email" placeholder="example@email.com" />
+          </nz-form-control>
+          <ng-template #emailErrorTpl let-control>
+            <ng-container *ngIf="control.hasError('required')">Email là bắt buộc.</ng-container>
+            <ng-container *ngIf="control.hasError('email')">Email không đúng định dạng.</ng-container>
+            <ng-container *ngIf="control.hasError('emailTaken')">Email đã tồn tại.</ng-container>
+          </ng-template>
+        </nz-form-item>
       </div>
+      <!-- Password -->
+      <nz-form-item>
+        <nz-form-label nzRequired>Mật khẩu</nz-form-label>
+        <nz-form-control [nzErrorTip]="passwordErrorTpl">
+          <nz-input-group [nzSuffix]="suffixTemplate">
+            <input [type]="hidePassword ? 'password' : 'text'" nz-input formControlName="password" placeholder="Ít nhất 8 ký tự, gồm chữ hoa, thường, số, ký tự đặc biệt" />
+          </nz-input-group>
+          <ng-template #suffixTemplate>
+            <i nz-icon [nzType]="hidePassword ? 'eye-invisible' : 'eye'" (click)="hidePassword = !hidePassword"></i>
+          </ng-template>
+        </nz-form-control>
+        <ng-template #passwordErrorTpl let-control>
+            <ng-container *ngIf="control.hasError('required')">Mật khẩu là bắt buộc.</ng-container>
+            <ng-container *ngIf="control.hasError('strongPassword')">Phải có ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.</ng-container>
+        </ng-template>
+      </nz-form-item>
 
       <!-- Section: Phân quyền -->
-      <div>
-        <h2 class="text-lg font-semibold text-gray-800 mb-4">Phân quyền</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          <div *ngFor="let role of availableRoles" class="flex items-center">
-            <input type="checkbox" [value]="role" (change)="onRoleChange($event)"
-              class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500">
-            <label class="ml-2 text-sm font-medium text-gray-900">{{role}}</label>
+      <h2 class="text-lg font-semibold text-gray-800 mt-6 mb-4">Phân quyền</h2>
+      <nz-form-item>
+        <nz-form-control nzErrorTip="Vui lòng chọn ít nhất một vai trò.">
+          <div formArrayName="roleNames" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <div *ngFor="let role of availableRoles" class="flex items-center">
+              <input type="checkbox" [value]="role" (change)="onRoleChange($event)" class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500">
+              <label class="ml-2 text-sm font-medium text-gray-900">{{role}}</label>
+            </div>
           </div>
-        </div>
-        <div *ngIf="staffForm.get('roleNames')?.touched && staffForm.get('roleNames')?.invalid"
-          class="text-red-600 text-sm mt-1">
-          Vui lòng chọn ít nhất một vai trò.
-        </div>
-      </div>
+        </nz-form-control>
+      </nz-form-item>
 
       <!-- Actions -->
       <div class="mt-8 flex justify-end gap-3 border-t pt-6">
-        <button type="button" (click)="goBack()" class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-colors">
-          Hủy
-        </button>
-        <button type="submit" [disabled]="isSubmitting || staffForm.invalid || staffForm.pending" class="px-6 py-2.5 text-sm font-medium text-white bg-primary-600 rounded-lg shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:bg-primary-300 disabled:cursor-not-allowed transition-colors">
-          <span *ngIf="isSubmitting">Đang lưu...</span>
-          <span *ngIf="!isSubmitting">Lưu nhân viên</span>
+        <button (click)="goBack()" nz-button type="button">Hủy</button>
+        <button nz-button nzType="primary" type="submit" [nzLoading]="isSubmitting" [disabled]="staffForm.invalid || staffForm.pending">
+          Lưu nhân viên
         </button>
       </div>
     </form>

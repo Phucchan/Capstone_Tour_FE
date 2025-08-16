@@ -1,99 +1,93 @@
-<div class="fixed inset-0 bg-gray-600 bg-opacity-50 z-40" *ngIf="isVisible"></div>
-<div
-  class="fixed top-0 right-0 h-full w-full max-w-lg bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out"
-  [class.translate-x-0]="isVisible"
-  [class.translate-x-full]="!isVisible"
->
-  <div class="flex flex-col h-full">
-    <!-- Header -->
-    <div class="flex items-center justify-between p-4 border-b">
-      <h2 class="text-lg font-semibold text-gray-800">{{ formTitle }}</h2>
-      <button (click)="onClose()" class="text-gray-500 hover:text-gray-800">&times;</button>
+<div class="p-6">
+  <nz-spin [nzSpinning]="isLoading">
+    <form nz-form [formGroup]="dayForm" nzLayout="vertical">
+      <!-- Title -->
+      <nz-form-item>
+        <nz-form-label nzRequired>Tiêu đề</nz-form-label>
+        <nz-form-control nzErrorTip="Vui lòng nhập tiêu đề">
+          <input nz-input formControlName="title" placeholder="Ví dụ: Tham quan Vịnh Hạ Long" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <!-- Description -->
+      <nz-form-item>
+        <nz-form-label>Mô tả</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="description" [nzAutosize]="{ minRows: 3, maxRows: 5 }"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <!-- Location -->
+      <nz-form-item>
+        <nz-form-label>Địa điểm chính trong ngày</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="locationId" nzShowSearch nzAllowClear nzPlaceHolder="Chọn địa điểm">
+            <nz-option *ngFor="let loc of locations$ | async" [nzLabel]="loc.name" [nzValue]="loc.id"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+
+    <!-- Services Management (Only in Edit mode) -->
+    <div *ngIf="dayData">
+      <nz-divider nzText="Quản lý dịch vụ" nzOrientation="left"></nz-divider>
+      <div nz-row [nzGutter]="16">
+        <!-- Service Type Selector -->
+        <div nz-col nzSpan="12">
+          <nz-select
+            [(ngModel)]="selectedServiceType"
+            (ngModelChange)="onServiceTypeChange($event)"
+            nzAllowClear
+            nzPlaceHolder="1. Chọn loại dịch vụ"
+            class="w-full"
+          >
+            <nz-option *ngFor="let type of serviceTypes" [nzLabel]="type.name" [nzValue]="type.id"></nz-option>
+          </nz-select>
+        </div>
+        <!-- Partner Service Selector -->
+        <div nz-col nzSpan="12">
+          <nz-input-group [nzAddOnAfter]="addButton">
+            <nz-select
+              [(ngModel)]="selectedPartnerService"
+              [nzLoading]="isServiceLoading"
+              [nzDisabled]="!selectedServiceType"
+              nzShowSearch
+              nzAllowClear
+              nzPlaceHolder="2. Chọn dịch vụ cụ thể"
+              class="w-full"
+            >
+              <nz-option *ngFor="let service of filteredPartnerServices" [nzLabel]="service.name + ' (' + service.partnerName + ')'" [nzValue]="service.id"></nz-option>
+            </nz-select>
+          </nz-input-group>
+          <ng-template #addButton>
+            <button nz-button nzType="primary" (click)="addSelectedService()" [disabled]="!selectedPartnerService">
+              <span nz-icon nzType="plus"></span>
+            </button>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Selected Services List -->
+      <div class="mt-4">
+        <nz-list [nzDataSource]="selectedServicesList" nzItemLayout="horizontal" [nzRenderItem]="item">
+          <ng-template #item let-service>
+            <nz-list-item [nzActions]="[removeAction]">
+              <ng-template #removeAction>
+                <a (click)="removeService(service.id)" class="text-red-500">Xóa</a>
+              </ng-template>
+              <nz-list-item-meta [nzTitle]="service.name" [nzDescription]="service.partnerName"></nz-list-item-meta>
+            </nz-list-item>
+          </ng-template>
+        </nz-list>
+      </div>
     </div>
+  </nz-spin>
+</div>
 
-    <!-- Form Content -->
-    <div class="p-6 overflow-y-auto flex-grow">
-      <form [formGroup]="dayForm" class="space-y-6">
-        <!-- Title, Description, Location (giữ nguyên) -->
-        <div>
-          <label for="title" class="block text-sm font-medium text-gray-700">Tiêu đề</label>
-          <input type="text" id="title" formControlName="title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
-        </div>
-        <div>
-          <label for="description" class="block text-sm font-medium text-gray-700">Mô tả</label>
-          <textarea id="description" formControlName="description" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
-        </div>
-        <div>
-          <label for="location" class="block text-sm font-medium text-gray-700">Địa điểm chính trong ngày</label>
-          <ng-select [items]="locations$ | async" bindLabel="name" bindValue="id" formControlName="locationId" placeholder="Chọn địa điểm"></ng-select>
-        </div>
-
-        <!-- Services Management (Chỉ hiển thị ở chế độ Sửa) -->
-        <div *ngIf="dayData" class="space-y-4 rounded-md border p-4">
-            <h3 class="font-medium text-gray-800">Quản lý dịch vụ</h3>
-
-            <!-- Step 1: Service Type Selector -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">1. Chọn loại dịch vụ</label>
-                    <ng-select [items]="serviceTypes"
-                               bindLabel="name"
-                               [clearable]="true"
-                               [(ngModel)]="selectedServiceType"
-                               [ngModelOptions]="{standalone: true}"
-                               (change)="onServiceTypeChange($event)"
-                               placeholder="Chọn loại dịch vụ">
-                    </ng-select>
-                </div>
-
-                <!-- Step 2: Partner Service Selector -->
-                <div *ngIf="selectedServiceType">
-                    <label class="block text-sm font-medium text-gray-700">2. Chọn dịch vụ cụ thể</label>
-                    <div class="flex items-end gap-2">
-                        <div class="flex-grow">
-                            <ng-select [items]="filteredPartnerServices"
-                                       bindLabel="name"
-                                       bindValue="id"
-                                       [(ngModel)]="selectedPartnerService"
-                                       [ngModelOptions]="{standalone: true}"
-                                       placeholder="Chọn dịch vụ chi tiết">
-                                <ng-template ng-option-tmp let-item="item">
-                                    <div>{{item.name}}</div>
-                                    <small class="text-gray-500">{{item.partnerName}}</small>
-                                </ng-template>
-                            </ng-select>
-                        </div>
-                        <button type="button" (click)="addSelectedService()" [disabled]="!selectedPartnerService || isLoading" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm disabled:bg-blue-300">Thêm</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Selected Services List -->
-            <div class="space-y-2 mt-4" *ngIf="selectedServicesList.length > 0">
-                <p class="text-sm font-medium text-gray-700">Các dịch vụ đã thêm:</p>
-                <ul class="max-h-48 overflow-y-auto space-y-2">
-                    <li *ngFor="let service of selectedServicesList" class="flex items-center justify-between p-2 bg-gray-100 rounded-md">
-                        <div>
-                            <p class="text-sm font-medium text-gray-900">{{service.name}}</p>
-                            <p class="text-xs text-gray-500">{{service.partnerName}}</p>
-                        </div>
-                        <button type="button" (click)="removeService(service.id)" [disabled]="isLoading" class="text-red-500 hover:text-red-700">&times;</button>
-                    </li>
-                </ul>
-            </div>
-             <div *ngIf="selectedServicesList.length === 0" class="text-center text-sm text-gray-500 py-4">
-                Chưa có dịch vụ nào được thêm cho ngày này.
-            </div>
-        </div>
-      </form>
-    </div>
-
-    <!-- Footer -->
-    <div class="p-4 border-t flex justify-end gap-3">
-      <button (click)="onClose()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Đóng</button>
-      <button (click)="onSave()" [disabled]="dayForm.invalid || isLoading" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-indigo-300">
-        {{ isLoading ? 'Đang lưu...' : 'Lưu thông tin ngày' }}
-      </button>
-    </div>
-  </div>
+<!-- Footer with actions -->
+<div class="absolute bottom-0 right-0 w-full p-4 border-t bg-white flex justify-end gap-2">
+  <button nz-button (click)="onClose()">Đóng</button>
+  <button nz-button nzType="primary" (click)="onSave()" [nzLoading]="isLoading" [disabled]="dayForm.invalid">
+    Lưu thông tin
+  </button>
 </div>

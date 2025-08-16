@@ -1,4 +1,3 @@
-// src/app/features/business/components/location-form/location-form.component.ts
 import {
   Component,
   EventEmitter,
@@ -7,6 +6,7 @@ import {
   Output,
   OnChanges,
   SimpleChanges,
+  inject,
 } from '@angular/core';
 import {
   FormBuilder,
@@ -15,35 +15,57 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { LocationDTO } from '../../../../core/models/location.model';
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
-import { LocationService } from '../../services/location.service';
 import { finalize } from 'rxjs/operators';
+
+import { LocationDTO } from '../../../../core/models/location.model';
+import { LocationService } from '../../services/location.service';
+
+// NG-ZORRO Imports
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzUploadFile, NzUploadModule } from 'ng-zorro-antd/upload';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 
 @Component({
   selector: 'app-location-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SpinnerComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    // --- NG-ZORRO ---
+    NzFormModule,
+    NzInputModule,
+    NzButtonModule,
+    NzUploadModule,
+    NzIconModule,
+  ],
   templateUrl: './location-form.component.html',
 })
 export class LocationFormComponent implements OnInit, OnChanges {
+  // --- Inputs & Outputs ---
   @Input() locationToEdit: LocationDTO | null = null;
   @Output() formSaved = new EventEmitter<boolean>();
   @Output() formCancelled = new EventEmitter<void>();
 
+  // --- Injections ---
+  private fb = inject(FormBuilder);
+  private locationService = inject(LocationService);
+  private message = inject(NzMessageService);
+
+  // --- State ---
   locationForm: FormGroup;
   isSubmitting = false;
   imagePreview: string | ArrayBuffer | null = null;
-  private selectedFile: File | null = null;
+  fileList: NzUploadFile[] = [];
+  // FIX: Changed from private to public to be accessible in the template
+  public selectedFile: File | null = null;
 
-  constructor(
-    private fb: FormBuilder,
-    private locationService: LocationService
-  ) {
+  constructor() {
     this.locationForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       description: ['', [Validators.required]],
-      // Trường image không còn là control nữa, ta sẽ quản lý file riêng
     });
   }
 
@@ -51,7 +73,6 @@ export class LocationFormComponent implements OnInit, OnChanges {
     this.updateForm();
   }
 
-  // Cập nhật form khi input locationToEdit thay đổi
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['locationToEdit']) {
       this.updateForm();
@@ -61,55 +82,74 @@ export class LocationFormComponent implements OnInit, OnChanges {
   updateForm(): void {
     this.selectedFile = null;
     this.imagePreview = null;
+    this.fileList = [];
     if (this.locationToEdit) {
       this.locationForm.patchValue({
         name: this.locationToEdit.name,
         description: this.locationToEdit.description,
       });
-      this.imagePreview = this.locationToEdit.image;
+      if (this.locationToEdit.image) {
+        this.imagePreview = this.locationToEdit.image;
+        this.fileList = [
+          {
+            uid: '-1',
+            name: 'image.png',
+            status: 'done',
+            url: this.locationToEdit.image,
+          },
+        ];
+      }
     } else {
       this.locationForm.reset();
     }
   }
 
-  get f() {
-    return this.locationForm.controls;
-  }
-
-  onFileChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      // Kiểm tra kích thước file (ví dụ: 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Kích thước file quá lớn, vui lòng chọn file dưới 5MB.');
-        input.value = ''; // Xóa file đã chọn
-        return;
-      }
-      this.selectedFile = file;
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreview = reader.result;
-      };
-      reader.readAsDataURL(file);
+  beforeUpload = (file: NzUploadFile): boolean => {
+    const isJpgOrPng =
+      file.type === 'image/jpeg' ||
+      file.type === 'image/png' ||
+      file.type === 'image/webp';
+    if (!isJpgOrPng) {
+      this.message.error('Chỉ có thể tải lên file JPG/PNG/WEBP!');
+      return false;
     }
-  }
+    const isLt5M = file.size! / 1024 / 1024 < 5;
+    if (!isLt5M) {
+      this.message.error('Ảnh phải nhỏ hơn 5MB!');
+      return false;
+    }
+
+    this.selectedFile = file as unknown as File;
+    const reader = new FileReader();
+    // FIX: Handle potential null value from e.target
+    reader.onload = (e) => (this.imagePreview = e.target?.result ?? null);
+    reader.readAsDataURL(this.selectedFile);
+
+    return false;
+  };
 
   onSubmit(): void {
     if (this.locationForm.invalid) {
-      this.locationForm.markAllAsTouched();
+      Object.values(this.locationForm.controls).forEach((control) => {
+        if (control.invalid) {
+          control.markAsDirty();
+          control.updateValueAndValidity({ onlySelf: true });
+        }
+      });
       return;
     }
-    // Khi thêm mới, file là bắt buộc
     if (!this.locationToEdit && !this.selectedFile) {
-      alert('Vui lòng chọn ảnh đại diện.');
+      this.message.error('Vui lòng chọn ảnh đại diện.');
       return;
     }
 
     this.isSubmitting = true;
     const formData = new FormData();
-    formData.append('name', this.f['name'].value);
-    formData.append('description', this.f['description'].value);
+    formData.append('name', this.locationForm.controls['name'].value);
+    formData.append(
+      'description',
+      this.locationForm.controls['description'].value
+    );
 
     if (this.selectedFile) {
       formData.append('file', this.selectedFile, this.selectedFile.name);
@@ -121,11 +161,12 @@ export class LocationFormComponent implements OnInit, OnChanges {
 
     apiCall.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
       next: () => {
+        this.message.success('Lưu địa điểm thành công!');
         this.formSaved.emit(true);
       },
       error: (err) => {
         console.error('API error:', err);
-        alert(`Lỗi: ${err.error?.message || 'Không thể lưu địa điểm.'}`);
+        this.message.error(err.error?.message || 'Không thể lưu địa điểm.');
         this.formSaved.emit(false);
       },
     });

@@ -1,73 +1,88 @@
-<!-- Container chính của trang -->
-<div class="p-4 sm:p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
+<!--
+  FILE: src/app/features/coordinator/pages/service-approval/service-approval.component.html
+  MÔ TẢ: Giao diện đã được chuyển đổi sang sử dụng các component của NG-ZORRO.
+-->
 
-  <!-- Header -->
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Phê duyệt Dịch vụ</h1>
-  </div>
+<!-- 1. Breadcrumb -->
+<nz-breadcrumb>
+  <nz-breadcrumb-item>Điều phối viên</nz-breadcrumb-item>
+  <nz-breadcrumb-item>Phê duyệt Dịch vụ</nz-breadcrumb-item>
+</nz-breadcrumb>
 
-  <!-- Card chứa nội dung -->
-  <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
-    <!-- Thanh công cụ: Tìm kiếm -->
-    <div class="flex items-center justify-end p-4" [formGroup]="filterForm">
-      <div class="w-full md:w-1/2 lg:w-1/3">
-        <div class="relative w-full">
-          <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-            </svg>
-          </div>
-          <input type="text" formControlName="keyword" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5" placeholder="Tìm theo tên dịch vụ...">
-        </div>
+<!-- 2. Page Header -->
+<nz-page-header class="site-page-header" nzTitle="Phê duyệt Dịch vụ"
+  [nzSubtitle]="totalItems > 0 ? 'Có tổng cộng ' + totalItems + ' dịch vụ đang chờ' : ''">
+</nz-page-header>
+
+<!-- 3. Card chứa nội dung chính -->
+<div class="p-6 bg-white rounded-lg shadow-md">
+  <!-- Bộ lọc -->
+  <form nz-form [formGroup]="filterForm" class="mb-6">
+    <div nz-row nzJustify="end">
+      <div nz-col [nzSpan]="8">
+        <nz-form-item>
+          <nz-form-control>
+            <nz-input-group nzPrefixIcon="search">
+              <input nz-input formControlName="keyword" placeholder="Tìm theo tên dịch vụ..." />
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
       </div>
     </div>
+  </form>
 
-    <!-- Vùng hiển thị -->
-    <div class="relative">
-      <app-spinner *ngIf="isLoading"></app-spinner>
+  <!-- 4. Bảng dữ liệu -->
+  <nz-table #basicTable [nzData]="services" [nzLoading]="isLoading" [nzTotal]="totalItems"
+    [(nzPageIndex)]="currentPage" [(nzPageSize)]="pageSize" (nzPageIndexChange)="loadPendingServices()"
+    (nzPageSizeChange)="loadPendingServices(true)" nzShowSizeChanger [nzFrontPagination]="false" nzBordered>
+    <thead>
+      <tr>
+        <th>Tên Dịch vụ</th>
+        <th>Đối tác</th>
+        <th>Loại Dịch vụ</th>
+        <th nzAlign="right">Giá Net (VND)</th>
+        <th nzAlign="right">Giá Bán (VND)</th>
+        <th nzWidth="12%" nzAlign="center">Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let service of basicTable.data">
+        <td>{{ service.name }}</td>
+        <td>{{ service.partnerName }}</td>
+        <td>{{ service.serviceTypeName }}</td>
+        <td nzAlign="right">{{ service.nettPrice | number }}</td>
+        <td nzAlign="right">{{ service.sellingPrice | number }}</td>
+        <td nzAlign="center">
+          <nz-space>
+            <!-- Nút Duyệt -->
+            <button nz-button nzType="primary" nzSize="small"
+              nz-popconfirm nzPopconfirmTitle="Bạn chắc chắn muốn DUYỆT dịch vụ này?"
+              (nzOnConfirm)="approveService(service.id)">
+              Duyệt
+            </button>
+            <!-- Nút Từ chối -->
+            <button nz-button nzDanger nzType="default" nzSize="small"
+              nz-popconfirm nzPopconfirmTitle="Bạn chắc chắn muốn TỪ CHỐI dịch vụ này?"
+              (nzOnConfirm)="rejectService(service.id)">
+              Từ chối
+            </button>
+          </nz-space>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
 
-      <!-- Bảng dữ liệu -->
-      <div class="overflow-x-auto" *ngIf="!isLoading && services.length > 0">
-        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-            <tr>
-              <th scope="col" class="px-4 py-3">Tên Dịch vụ</th>
-              <th scope="col" class="px-4 py-3">Đối tác</th>
-              <th scope="col" class="px-4 py-3">Loại Dịch vụ</th>
-              <th scope="col" class="px-4 py-3 text-right">Giá Net (VND)</th>
-              <th scope="col" class="px-4 py-3 text-right">Giá Bán (VND)</th>
-              <th scope="col" class="px-4 py-3 text-center">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let service of services" class="border-b dark:border-gray-700">
-              <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ service.name }}</td>
-              <td class="px-4 py-3">{{ service.partnerName }}</td>
-              <td class="px-4 py-3">{{ service.serviceTypeName }}</td>
-              <td class="px-4 py-3 text-right">{{ service.nettPrice | number }}</td>
-              <td class="px-4 py-3 text-right">{{ service.sellingPrice | number }}</td>
-              <td class="px-4 py-3 text-center space-x-2">
-                <button (click)="approveService(service.id)" class="px-3 py-1 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">Duyệt</button>
-                <button (click)="rejectService(service.id)" class="px-3 py-1 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700">Từ chối</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Thông báo khi không có dữ liệu -->
-      <div *ngIf="!isLoading && services.length === 0" class="text-center py-10">
-        <p class="text-gray-500">{{ errorMessage ? errorMessage : 'Không có dịch vụ nào đang chờ phê duyệt.' }}</p>
-      </div>
-    </div>
-
-    <!-- Phân trang -->
-    <app-pagination
-      *ngIf="!isLoading && totalItems > 0"
-      [currentPage]="currentPage"
-      [totalItems]="totalItems"
-      [pageSize]="pageSize"
-      (pageChange)="onPageChange($event)">
-    </app-pagination>
-  </div>
+  <!--
+    [SỬA LỖI] Giao diện khi không có dữ liệu.
+    - Xóa binding [nzContent] không hợp lệ.
+    - Đặt nội dung hiển thị trực tiếp bên trong thẻ <nz-empty>.
+  -->
+  <nz-empty *ngIf="!isLoading && (services.length === 0 || errorMessage)">
+      <ng-container *ngIf="errorMessage; else noDataTpl">
+        <p class="text-red-500">{{ errorMessage }}</p>
+      </ng-container>
+      <ng-template #noDataTpl>
+        <span>Không có dịch vụ nào đang chờ phê duyệt.</span>
+      </ng-template>
+  </nz-empty>
 </div>

@@ -69,7 +69,7 @@ export class BookingSettlementComponent implements OnInit {
             this.isLoading = true;
             return this.accountantService.getBookingSettlement(+id);
           }
-          this.router.navigate(['/accountant/booking-list']);
+          this.router.navigate(['/accountant/bookings']);
           return EMPTY;
         })
       )
@@ -81,7 +81,7 @@ export class BookingSettlementComponent implements OnInit {
         error: () => {
           this.isLoading = false;
           this.messageService.error('Không thể tải chi tiết quyết toán.');
-          this.router.navigate(['/accountant/booking-list']);
+          this.router.navigate(['/accountant/bookings']);
         },
       });
   }

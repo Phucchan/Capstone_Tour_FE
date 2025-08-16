@@ -1,7 +1,7 @@
 /* src/assets/styles/admin-theme.css */
 
-/* File này định nghĩa các biến CSS (CSS Variables) để đồng bộ hóa
-  giao diện cho toàn bộ các trang quản lý.
+/* [THAY ĐỔI] Xóa ký tự '~' để sử dụng cú pháp import chuẩn
+   mà trình biên dịch Angular hiện đại có thể tự động nhận diện.
 */
 
 :root {

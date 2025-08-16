@@ -1,94 +1,71 @@
-<!-- src/app/features/business/pages/location-management/location-management.component.html -->
-<div class="p-4 sm:p-6 lg:p-8">
-  <!-- Header -->
-  <div class="sm:flex sm:items-center sm:justify-between">
-    <div class="sm:flex-auto">
-      <h1 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">Quản Lý Địa Điểm</h1>
-      <p class="mt-2 text-sm text-gray-500">Thêm, sửa và quản lý các địa điểm du lịch của bạn.</p>
+<!--
+ * FILE: src/app/features/business/pages/location-management/location-management.component.html
+ * MÔ TẢ:
+ * - Giao diện đã được viết lại hoàn toàn bằng NG-ZORRO.
+ * - Modal giờ đây được quản lý bởi NzModalService.
+-->
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Quản Lý Địa Điểm</h1>
+      <p class="text-sm text-gray-600 mt-1">Thêm, sửa và quản lý các địa điểm du lịch của bạn.</p>
     </div>
-    <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-      <button (click)="openAddModal()" type="button" class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-        Thêm địa điểm
-      </button>
-    </div>
+    <button (click)="openLocationModal()" nz-button nzType="primary">
+      <i nz-icon nzType="plus-circle" nzTheme="outline"></i>
+      Thêm địa điểm
+    </button>
   </div>
 
-  <!-- Search Bar -->
-  <div class="mt-6">
-    <input (input)="onSearch($event)" type="text" placeholder="Tìm kiếm theo tên địa điểm..." class="block w-full max-w-md rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm">
-  </div>
-
-  <!-- Table -->
-  <div class="mt-8 flow-root">
-    <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-      <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-        <div class="relative overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300">
-            <thead class="bg-gray-50">
-              <tr>
-                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Địa điểm</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Mô tả</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Trạng thái</th>
-                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6"><span class="sr-only">Edit</span></th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 bg-white" *ngIf="!isLoading">
-              <tr *ngFor="let location of locations">
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                  <div class="flex items-center">
-                    <div class="h-11 w-11 flex-shrink-0">
-                      <img class="h-11 w-11 rounded-md object-cover" [src]="location.image || 'https://placehold.co/44x44/E2E8F0/4A5568?text=N/A'" alt="Ảnh của {{location.name}}">
-                    </div>
-                    <div class="ml-4">
-                      <div class="font-medium text-gray-900">{{ location.name }}</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-4 text-sm text-gray-500">
-                  <p class="truncate w-80">{{ location.description }}</p>
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                  <span [ngClass]="!location.deleted ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" class="inline-flex rounded-full px-2 text-xs font-semibold leading-5">
-                    {{ !location.deleted ? 'Hoạt động' : 'Đã ẩn' }}
-                  </span>
-                </td>
-                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                  <button (click)="openEditModal(location)" class="text-indigo-600 hover:text-indigo-900">Sửa</button>
-                </td>
-              </tr>
-              <tr *ngIf="!isLoading && locations.length === 0">
-                <td colspan="4" class="text-center py-12 text-gray-500">Không tìm thấy địa điểm nào.</td>
-              </tr>
-            </tbody>
-          </table>
-          <app-spinner *ngIf="isLoading"></app-spinner>
-          <app-pagination *ngIf="!isLoading && totalItems > pageSize" [currentPage]="currentPage" [totalItems]="totalItems" [pageSize]="pageSize" (pageChange)="onPageChange($event)"></app-pagination>
-        </div>
+  <!-- Main Content Card -->
+  <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <!-- Card Header with Search -->
+    <div class="p-4 sm:p-6 border-b border-gray-200">
+      <div class="w-full sm:w-auto sm:max-w-xs">
+        <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton">
+          <input type="text" nz-input placeholder="Tìm kiếm theo tên địa điểm..." [(ngModel)]="keyword" (ngModelChange)="onSearchChange($event)" />
+        </nz-input-group>
+        <ng-template #suffixIconButton>
+          <button nz-button nzType="primary" nzSearch><i nz-icon nzType="search"></i></button>
+        </ng-template>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Modal -->
-<div *ngIf="isModalVisible" class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-  <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-  <div class="fixed inset-0 z-10 overflow-y-auto">
-    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-      <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
-        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-          <div class="flex justify-between items-center pb-4 mb-4 rounded-t border-b">
-            <h3 class="text-lg font-semibold text-gray-900" id="modal-title">
-              {{ selectedLocation ? 'Chỉnh sửa Địa điểm' : 'Thêm Địa điểm mới' }}
-            </h3>
-            <button (click)="closeModal()" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-            </button>
-          </div>
-          <div class="mt-6">
-            <app-location-form [locationToEdit]="selectedLocation" (formSaved)="onFormSaved($event)" (formCancelled)="closeModal()"></app-location-form>
-          </div>
-        </div>
-      </div>
+    <!-- Table Wrapper -->
+    <div class="overflow-x-auto">
+      <nz-table #locationTable [nzData]="locations" [nzFrontPagination]="false" [nzLoading]="isLoading" [nzTotal]="totalItems" [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" (nzQueryParams)="onQueryParamsChange($event)" nzShowSizeChanger="false">
+        <thead>
+          <tr>
+            <th class="w-2/5">Địa điểm</th>
+            <th class="w-2/5">Mô tả</th>
+            <th class="text-center">Trạng thái</th>
+            <th class="text-center">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let location of locationTable.data">
+            <td>
+              <div class="flex items-center">
+                <nz-avatar [nzSize]="44" nzShape="square" [nzSrc]="location.image || 'https://placehold.co/44x44/E2E8F0/4A5568?text=N/A'"></nz-avatar>
+                <div class="ml-4">
+                  <div class="font-semibold text-gray-900">{{ location.name }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <p class="truncate w-80 text-gray-600">{{ location.description }}</p>
+            </td>
+            <td class="text-center">
+              <nz-tag [nzColor]="!location.deleted ? 'green' : 'red'">
+                {{ !location.deleted ? 'Hoạt động' : 'Đã ẩn' }}
+              </nz-tag>
+            </td>
+            <td class="text-center">
+              <a (click)="openLocationModal(location)">Sửa</a>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
     </div>
   </div>
 </div>

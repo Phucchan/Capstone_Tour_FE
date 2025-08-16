@@ -1,17 +1,17 @@
-// src/app/features/business/pages/tour-form/tour-form.component.ts
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
   Validators,
+  FormsModule,
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Observable, Subscription, of, forkJoin } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
-import { NgSelectModule } from '@ng-select/ng-select';
+import { Observable, of } from 'rxjs';
+import { map, switchMap, tap, finalize } from 'rxjs/operators';
 
+// Core Services & Models
 import { TourService } from '../../../../core/services/tour.service';
 import { RequestBookingService } from '../../services/request-booking.service';
 import {
@@ -19,7 +19,22 @@ import {
   TourDetail,
 } from '../../../../core/models/tour.model';
 import { RequestBookingDetail } from '../../models/request-booking.model';
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+
+// NG-ZORRO Imports
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
+import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzUploadFile, NzUploadModule } from 'ng-zorro-antd/upload';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzRadioModule } from 'ng-zorro-antd/radio';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzAlertModule } from 'ng-zorro-antd/alert';
 
 @Component({
   selector: 'app-tour-form',
@@ -27,34 +42,53 @@ import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    NgSelectModule,
     RouterLink,
-    SpinnerComponent,
+    FormsModule,
+    // --- NG-ZORRO ---
+    NzFormModule,
+    NzInputModule,
+    NzSelectModule,
+    NzButtonModule,
+    NzPageHeaderModule,
+    NzGridModule,
+    NzCardModule,
+    NzSpinModule,
+    NzUploadModule,
+    NzRadioModule,
+    NzInputNumberModule,
+    NzIconModule,
+    NzAlertModule,
   ],
   templateUrl: './tour-form.component.html',
 })
-export class TourFormComponent implements OnInit, OnDestroy {
+export class TourFormComponent implements OnInit {
+  // --- Injections ---
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private tourService = inject(TourService);
   private requestBookingService = inject(RequestBookingService);
+  private message = inject(NzMessageService);
 
-  public tourForm!: FormGroup;
-  public pageTitle = 'Tạo Tour mới';
-  public isEditMode = false;
-  public tourId: number | null = null;
-  public tourOptions$!: Observable<TourOptionsData>;
-  private destinationSub!: Subscription;
-  public durationDays = 0;
+  // --- State ---
+  tourForm!: FormGroup;
+  pageTitle = 'Tạo Tour mới';
+  isEditMode = false;
+  isLoading = true;
+  isSubmitting = false;
+  tourId: number | null = null;
+  tourOptions$!: Observable<TourOptionsData>;
+  durationDays = 0;
 
-  public selectedFile: File | null = null;
-  public imagePreview: string | ArrayBuffer | null = null;
+  // --- File Upload State ---
+  selectedFile: File | null = null;
+  imagePreview: string | ArrayBuffer | null = null;
+  fileList: NzUploadFile[] = [];
 
-  // --- Thuộc tính mới cho giao diện đối chiếu ---
-  public isCustomRequestMode = false;
-  public requestBookingId: number | null = null;
-  public requestBookingDetail$: Observable<RequestBookingDetail> | null = null;
+  // --- Custom Request Mode State ---
+  isCustomRequestMode = false;
+  requestBookingId: number | null = null;
+  requestBookingDetail$: Observable<RequestBookingDetail> | null = null;
 
   constructor() {
     this.buildForm();
@@ -66,36 +100,40 @@ export class TourFormComponent implements OnInit, OnDestroy {
       const tourTypeParam = queryParams.get('tourType');
 
       if (requestBookingIdParam && tourTypeParam === 'CUSTOM') {
-        this.isCustomRequestMode = true;
-        this.requestBookingId = +requestBookingIdParam;
-        this.pageTitle = 'Tạo Tour theo Yêu cầu';
-        // Lấy chi tiết yêu cầu để hiển thị
-        this.requestBookingDetail$ =
-          this.requestBookingService.getRequestDetail(this.requestBookingId);
-        // Tải các lựa chọn (địa điểm, chủ đề)
-        this.tourOptions$ = this.tourService.getTourOptions();
-        // Điền sẵn và khóa loại tour
-        this.tourForm.get('tourType')?.setValue('CUSTOM');
-        this.tourForm.get('tourType')?.disable();
+        this.setupCustomRequestMode(+requestBookingIdParam);
       } else {
-        this.initializeNormalMode();
+        this.setupNormalMode();
       }
     });
 
-    this.destinationSub = this.tourForm
+    this.tourForm
       .get('destinationLocationIds')!
       .valueChanges.subscribe((ids: number[]) => {
         this.durationDays = ids ? ids.length : 0;
       });
   }
 
-  private initializeNormalMode(): void {
+  private setupCustomRequestMode(reqId: number): void {
+    this.isCustomRequestMode = true;
+    this.requestBookingId = reqId;
+    this.pageTitle = 'Tạo Tour theo Yêu cầu';
+    this.requestBookingDetail$ = this.requestBookingService.getRequestDetail(
+      this.requestBookingId
+    );
+    this.tourOptions$ = this.tourService.getTourOptions();
+    this.tourForm.patchValue({ tourType: 'CUSTOM' });
+    this.tourForm.get('tourType')?.disable();
+    this.isLoading = false;
+  }
+
+  private setupNormalMode(): void {
     const data$ = this.route.paramMap.pipe(
       switchMap((params) => {
         const id = params.get('id');
         if (id) {
           this.isEditMode = true;
           this.tourId = +id;
+          this.pageTitle = 'Chi tiết & Cập nhật Tour';
           return this.tourService.getTourById(this.tourId);
         }
         this.isEditMode = false;
@@ -106,17 +144,16 @@ export class TourFormComponent implements OnInit, OnDestroy {
       })
     );
 
-    data$.subscribe((data) => {
-      this.tourOptions$ = of(data.options);
-      if (this.isEditMode && data.detail) {
-        this.pageTitle = 'Chi tiết & Cập nhật Tour';
-        this.patchFormWithTourData(data.detail);
-      }
+    data$.subscribe({
+      next: (data) => {
+        this.tourOptions$ = of(data.options);
+        if (this.isEditMode && data.detail) {
+          this.patchFormWithTourData(data.detail);
+        }
+        this.isLoading = false;
+      },
+      error: () => (this.isLoading = false),
     });
-  }
-
-  ngOnDestroy(): void {
-    this.destinationSub?.unsubscribe();
   }
 
   private buildForm(): void {
@@ -145,26 +182,38 @@ export class TourFormComponent implements OnInit, OnDestroy {
     });
     if (tour.thumbnailUrl) {
       this.imagePreview = tour.thumbnailUrl;
+      this.fileList = [
+        {
+          uid: '-1',
+          name: 'thumbnail.png',
+          status: 'done',
+          url: tour.thumbnailUrl,
+        },
+      ];
     }
   }
 
-  public onFileSelect(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      this.selectedFile = input.files[0];
-      const reader = new FileReader();
-      reader.onload = () => (this.imagePreview = reader.result);
-      reader.readAsDataURL(this.selectedFile);
-    }
-  }
+  beforeUpload = (file: NzUploadFile): boolean => {
+    this.selectedFile = file as unknown as File;
+    const reader = new FileReader();
+    reader.onload = (e) => (this.imagePreview = e.target?.result ?? null);
+    reader.readAsDataURL(this.selectedFile);
+    return false;
+  };
 
-  public onSubmit(): void {
+  onSubmit(): void {
     if (this.tourForm.invalid) {
-      alert('Vui lòng điền đầy đủ các thông tin bắt buộc.');
-      this.tourForm.markAllAsTouched();
+      Object.values(this.tourForm.controls).forEach((control) => {
+        if (control.invalid) {
+          control.markAsDirty();
+          control.updateValueAndValidity({ onlySelf: true });
+        }
+      });
+      this.message.error('Vui lòng điền đầy đủ các thông tin bắt buộc.');
       return;
     }
 
+    this.isSubmitting = true;
     const formData = new FormData();
     const formValue = this.tourForm.getRawValue();
 
@@ -186,7 +235,6 @@ export class TourFormComponent implements OnInit, OnDestroy {
       tourThemeIds: formValue.tourThemeIds,
     };
 
-    // Nếu là tạo tour từ yêu cầu, thêm requestBookingId
     if (this.isCustomRequestMode && this.requestBookingId) {
       tourData.requestBookingId = this.requestBookingId;
     }
@@ -201,23 +249,25 @@ export class TourFormComponent implements OnInit, OnDestroy {
         ? this.tourService.updateTourWithFile(this.tourId, formData)
         : this.tourService.createTourWithFile(formData);
 
-    apiCall.subscribe({
-      next: (createdTour) => {
-        alert(
+    apiCall.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
+      next: (createdTour: TourDetail) => {
+        this.message.success(
           this.isEditMode
             ? 'Cập nhật tour thành công!'
             : `Tạo tour thành công! Mã tour: ${createdTour.code}`
         );
+        // FIX: Corrected navigation path
         this.router.navigate(['/business/tours', createdTour.id, 'schedule']);
       },
       error: (err) => {
         console.error('Lỗi khi lưu tour:', err);
-        alert('Có lỗi xảy ra khi lưu tour.');
+        this.message.error('Có lỗi xảy ra khi lưu tour.');
       },
     });
   }
 
-  public goBack(): void {
+  goBack(): void {
+    // FIX: Corrected navigation path
     this.router.navigate(['/business/tours']);
   }
 }

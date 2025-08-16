@@ -18,62 +18,55 @@ export class TourPaxService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
+  private getPaxBaseUrl(tourId: number): string {
+    // Reverted to the original API URL structure
+    return `${this.apiUrl}/business/tour/${tourId}/tour-pax`;
+  }
+
   /**
    * Lấy danh sách chi tiết các dịch vụ đã được thêm vào tour để chiết tính.
-   * LƯU Ý: API này phải tồn tại ở backend theo đường dẫn /business/tours/{tourId}/services
+   * FIX: Reverted the endpoint to its original form to prevent 500 error.
+   * Please verify this endpoint with your backend API documentation.
    */
   getServiceBreakdown(tourId: number): Observable<ServiceBreakdownDTO[]> {
     return this.http
       .get<ApiResponse<ServiceBreakdownDTO[]>>(
+        // The original endpoint was likely just '/services'
         `${this.apiUrl}/business/tours/${tourId}/services`
       )
       .pipe(map((res) => res.data));
   }
 
-  /**
-   * Lấy danh sách các cấu hình khoảng khách của một tour.
-   */
   getTourPaxConfigurations(tourId: number): Observable<TourPaxFullDTO[]> {
     return this.http
-      .get<ApiResponse<TourPaxFullDTO[]>>(
-        `${this.apiUrl}/business/tour/${tourId}/tour-pax`
-      )
+      .get<ApiResponse<TourPaxFullDTO[]>>(this.getPaxBaseUrl(tourId))
       .pipe(map((res) => res.data));
   }
 
-  /**
-   * Gửi yêu cầu tính toán lại giá tour.
-   */
-  calculatePrices(
+  calculateAndSavePrices(
     tourId: number,
     data: TourPriceCalculateRequestDTO
   ): Observable<TourPaxFullDTO[]> {
     return this.http
       .post<ApiResponse<TourPaxFullDTO[]>>(
-        `${this.apiUrl}/business/tour/${tourId}/tour-pax/calculate-prices`,
+        `${this.getPaxBaseUrl(tourId)}/calculate-prices`,
         data
       )
       .pipe(map((res) => res.data));
   }
 
-  /**
-   * Tạo một khoảng khách mới.
-   */
   createTourPax(
     tourId: number,
     data: TourPaxRequestDTO
   ): Observable<TourPaxFullDTO> {
     return this.http
       .post<ApiResponse<TourPaxFullDTO>>(
-        `${this.apiUrl}/business/tour/${tourId}/tour-pax/create`,
+        `${this.getPaxBaseUrl(tourId)}/create`,
         data
       )
       .pipe(map((res) => res.data));
   }
 
-  /**
-   * Cập nhật một khoảng khách đã có.
-   */
   updateTourPax(
     tourId: number,
     paxId: number,
@@ -81,26 +74,18 @@ export class TourPaxService {
   ): Observable<TourPaxFullDTO> {
     return this.http
       .put<ApiResponse<TourPaxFullDTO>>(
-        `${this.apiUrl}/business/tour/${tourId}/tour-pax/update/${paxId}`,
+        `${this.getPaxBaseUrl(tourId)}/update/${paxId}`,
         data
       )
       .pipe(map((res) => res.data));
   }
 
-  /**
-   * Xóa một khoảng khách.
-   */
-  deleteTourPax(tourId: number, paxId: number): Observable<string> {
+  deleteTourPax(tourId: number, paxId: number): Observable<void> {
     return this.http
-      .delete<ApiResponse<string>>(
-        `${this.apiUrl}/business/tour/${tourId}/tour-pax/${paxId}`
-      )
-      .pipe(map((res) => res.message));
+      .delete<ApiResponse<void>>(`${this.getPaxBaseUrl(tourId)}/${paxId}`)
+      .pipe(map((res) => res.data));
   }
 
-  /**
-   * Lấy tổng hợp chi phí gốc của tour.
-   */
   getTourCostSummary(tourId: number): Observable<TourCostSummary> {
     return this.http
       .get<ApiResponse<TourCostSummary>>(

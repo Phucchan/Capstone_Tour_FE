@@ -1,12 +1,30 @@
+/*
+ * FILE: src/app/features/admin/list-staff/list-staff.component.ts
+ * MÔ TẢ:
+ * - Đã thêm các module NG-ZORRO cần thiết.
+ * - Cập nhật logic tìm kiếm để sử dụng debounceTime.
+ * - Thay thế confirm() và alert() bằng NzMessageService và NzModalService.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
-import { AdminService } from '../admin.service';
+// --- [THAY ĐỔI] Import các module của NG-ZORRO ---
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzEmptyModule } from 'ng-zorro-antd/empty';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzMessageService } from 'ng-zorro-antd/message';
+
+import { AdminService } from '../services/admin.service';
 import { UserFullInformation } from '../models/user.model';
 import { Paging } from '../../../core/models/paging.model';
-import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { AvatarComponent } from '../../../shared/components/avatar/avatar.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { StatusVietnamesePipe } from '../../../shared/pipes/status-vietnamese.pipe';
@@ -18,31 +36,50 @@ import { StatusVietnamesePipe } from '../../../shared/pipes/status-vietnamese.pi
     CommonModule,
     FormsModule,
     RouterModule,
-    SpinnerComponent,
     AvatarComponent,
     PaginationComponent,
     StatusVietnamesePipe,
+    // --- [THAY ĐỔI] Thêm các module NG-ZORRO vào imports ---
+    NzTableModule,
+    NzInputModule,
+    NzButtonModule,
+    NzIconModule,
+    NzTagModule,
+    NzEmptyModule,
+    NzPopconfirmModule,
   ],
   templateUrl: './list-staff.component.html',
 })
 export class ListStaffComponent implements OnInit {
   staffs: UserFullInformation[] = [];
   paging: Paging<UserFullInformation> | null = null;
-  isLoading = false;
-  currentPage = 0;
-  pageSize = 10;
+  isLoading = true;
   keyword = '';
 
-  constructor(private adminService: AdminService) {}
+  private searchSubject = new Subject<string>();
+
+  constructor(
+    private adminService: AdminService,
+    private message: NzMessageService
+  ) {}
 
   ngOnInit(): void {
     this.loadStaff();
+
+    this.searchSubject
+      .pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe((searchValue) => {
+        this.loadStaff(1, searchValue);
+      });
   }
 
-  loadStaff(): void {
+  loadStaff(page: number = 1, search: string | null = null): void {
     this.isLoading = true;
+    const currentPage = page - 1;
+    const currentSearch = search === null ? this.keyword : search;
+
     this.adminService
-      .getStaff(this.currentPage, this.pageSize, this.keyword)
+      .getStaff(currentPage, this.paging?.size ?? 10, currentSearch)
       .subscribe({
         next: (response) => {
           if (response.data) {
@@ -53,49 +90,40 @@ export class ListStaffComponent implements OnInit {
         },
         error: (err) => {
           console.error('Failed to load staff', err);
-          alert('Tải danh sách nhân viên thất bại!');
+          this.message.error('Tải danh sách nhân viên thất bại!');
           this.isLoading = false;
         },
       });
   }
 
   onPageChange(page: number): void {
-    this.currentPage = page;
-    this.loadStaff();
+    this.loadStaff(page);
   }
 
-  onSearch(): void {
-    this.currentPage = 0;
-    this.loadStaff();
+  onSearchChange(value: string): void {
+    this.keyword = value;
+    this.searchSubject.next(value);
   }
 
-  // Sử dụng confirm() và alert() của trình duyệt thay cho Popconfirm và Message
   toggleStatus(staff: UserFullInformation): void {
     const action = staff.deleted ? 'Mở khóa' : 'Khóa';
-    const confirmation = confirm(
-      `Bạn có chắc chắn muốn ${action.toLowerCase()} tài khoản "${
-        staff.fullName
-      }" không?`
-    );
+    const newStatus = staff.deleted ? 'ACTIVE' : 'INACTIVE';
 
-    if (confirmation) {
-      const newStatus = staff.deleted ? 'ACTIVE' : 'INACTIVE';
-      this.adminService.changeUserStatus(staff.id, { newStatus }).subscribe({
-        next: () => {
-          alert(`${action} tài khoản thành công!`);
-          this.loadStaff(); // Tải lại danh sách
-        },
-        error: (err) => {
-          console.error(`Failed to change status for staff ${staff.id}`, err);
-          alert(
-            `Đã có lỗi xảy ra, không thể ${action.toLowerCase()} tài khoản.`
-          );
-        },
-      });
-    }
+    this.adminService.changeUserStatus(staff.id, { newStatus }).subscribe({
+      next: () => {
+        this.message.success(`${action} tài khoản thành công!`);
+        this.loadStaff(this.paging ? this.paging.page + 1 : 1);
+      },
+      error: (err) => {
+        console.error(`Failed to change status for staff ${staff.id}`, err);
+        this.message.error(
+          `Đã có lỗi xảy ra, không thể ${action.toLowerCase()} tài khoản.`
+        );
+      },
+    });
   }
 
-  getStatus(deleted: boolean): string {
-    return deleted ? 'INACTIVE' : 'ACTIVE';
+  getStatusColor(deleted: boolean): string {
+    return deleted ? 'red' : 'green';
   }
 }

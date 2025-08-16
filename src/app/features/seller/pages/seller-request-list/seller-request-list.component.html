@@ -1,24 +1,34 @@
-<div class="p-4 md:p-6">
-  <h1 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Danh sách Yêu cầu Tour Đặt riêng</h1>
+<!--
+  FILE: src/app/features/seller/pages/seller-request-list/seller-request-list.component.html
+  MÔ TẢ: Giao diện đã được cải thiện bố cục và đồng bộ với các component của NG-ZORRO.
+-->
 
-  <nz-table
-    #requestTable
-    [nzData]="requests"
-    [nzLoading]="isLoading"
-    [nzFrontPagination]="false"
-    [nzTotal]="paging.total"
-    [nzPageIndex]="paging.page + 1"
-    [nzPageSize]="paging.size"
-    (nzPageIndexChange)="onPageIndexChange($event)"
-  >
+<!-- 1. Breadcrumb -->
+<nz-breadcrumb>
+  <nz-breadcrumb-item>
+    <a routerLink="/seller/dashboard">Quản lý Booking</a>
+  </nz-breadcrumb-item>
+  <nz-breadcrumb-item>Yêu cầu Tour Đặt riêng</nz-breadcrumb-item>
+</nz-breadcrumb>
+
+<!-- 2. Page Header -->
+<nz-page-header class="site-page-header" nzTitle="Danh sách Yêu cầu Tour Đặt riêng"
+  [nzSubtitle]="paging.total > 0 ? 'Có tổng cộng ' + paging.total + ' yêu cầu' : ''">
+</nz-page-header>
+
+<!-- 3. Card chứa bảng dữ liệu -->
+<div class="p-6 bg-white rounded-lg shadow-md">
+  <nz-table #requestTable [nzData]="requests" [nzLoading]="isLoading" [nzFrontPagination]="false"
+    [nzTotal]="paging.total" [nzPageIndex]="paging.page + 1" [nzPageSize]="paging.size"
+    (nzPageIndexChange)="onPageIndexChange($event)" nzBordered>
     <thead>
       <tr>
-        <th>ID</th>
+        <th nzWidth="10%">Mã Yêu cầu</th>
         <th>Chủ đề Tour</th>
         <th>Ngày bắt đầu</th>
         <th>Ngày kết thúc</th>
         <th>Ngày tạo</th>
-        <th class="text-center">Hành động</th>
+        <th nzWidth="15%" nzAlign="center">Hành động</th>
       </tr>
     </thead>
     <tbody>
@@ -27,15 +37,20 @@
         <td>{{ data.tourTheme }}</td>
         <td>{{ data.startDate | formatDate }}</td>
         <td>{{ data.endDate | formatDate }}</td>
-        <!-- SỬA: Xóa tham số 'full' không hợp lệ khỏi pipe -->
         <td>{{ data.createdAt | formatDate }}</td>
-        <td class="text-center">
-          <button nz-button nzType="primary" (click)="onApprove(data.id)">
-            <i nz-icon nzType="check" nzTheme="outline"></i> Duyệt
+        <td nzAlign="center">
+          <!-- Sử dụng nz-popconfirm để xác nhận hành động -->
+          <button nz-button nzType="primary" nz-popconfirm
+            nzPopconfirmTitle="Bạn có chắc muốn duyệt yêu cầu này?"
+            nzPopconfirmSubTitle="Hành động này sẽ chuyển yêu cầu cho bộ phận kinh doanh."
+            (nzOnConfirm)="onApprove(data.id)">
+            <span nz-icon nzType="check"></span>
+            Duyệt
           </button>
         </td>
       </tr>
     </tbody>
   </nz-table>
+  <!-- Giao diện khi không có dữ liệu -->
   <nz-empty *ngIf="!isLoading && requests.length === 0" nzNotFoundContent="Không có yêu cầu nào."></nz-empty>
 </div>

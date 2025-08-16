@@ -1,57 +1,78 @@
-// src/app/features/business/pages/location-management/location-management.component.ts
-import { Component, OnInit } from '@angular/core';
+/*
+ * FILE: src/app/features/business/pages/location-management/location-management.component.ts
+ * MÔ TẢ:
+ * - Thêm các module NG-ZORRO cần thiết.
+ * - Thay thế modal tự quản lý bằng NzModalService để hiển thị form.
+ */
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LocationService } from '../../services/location.service';
-import { LocationDTO } from '../../../../core/models/location.model';
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
-import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
-import { LocationFormComponent } from '../../components/location-form/location-form.component';
+import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+
+// --- [THAY ĐỔI] Import các module của NG-ZORRO ---
+import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzEmptyModule } from 'ng-zorro-antd/empty';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzAvatarModule } from 'ng-zorro-antd/avatar';
+
+import { LocationService } from '../../services/location.service';
+import { LocationDTO } from '../../../../core/models/location.model';
+import { LocationFormComponent } from '../../components/location-form/location-form.component';
 
 @Component({
   selector: 'app-location-management',
   standalone: true,
   imports: [
     CommonModule,
-    SpinnerComponent,
-    PaginationComponent,
+    FormsModule,
     LocationFormComponent,
+    // --- [THAY ĐỔI] Thêm các module NG-ZORRO ---
+    NzTableModule,
+    NzButtonModule,
+    NzInputModule,
+    NzIconModule,
+    NzTagModule,
+    NzEmptyModule,
+    NzAvatarModule,
   ],
   templateUrl: './location-management.component.html',
 })
 export class LocationManagementComponent implements OnInit {
   locations: LocationDTO[] = [];
   isLoading = true;
-
-  currentPage = 1;
-  pageSize = 10;
   totalItems = 0;
-
-  isModalVisible = false;
-  selectedLocation: LocationDTO | null = null;
+  pageSize = 10;
+  pageIndex = 1;
+  keyword = '';
 
   private searchSubject = new Subject<string>();
-  private currentKeyword = '';
 
-  constructor(private locationService: LocationService) {}
+  private locationService = inject(LocationService);
+  private modalService = inject(NzModalService);
+  private message = inject(NzMessageService);
 
   ngOnInit(): void {
-    this.loadLocations(this.currentPage);
+    this.loadLocations();
 
     this.searchSubject
-      .pipe(debounceTime(400), distinctUntilChanged())
-      .subscribe((keyword) => {
-        this.currentKeyword = keyword;
-        this.loadLocations(1, keyword);
+      .pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe((searchValue) => {
+        this.keyword = searchValue;
+        this.loadLocations(1);
       });
   }
 
-  loadLocations(page: number, keyword?: string): void {
+  loadLocations(pageIndex: number = this.pageIndex): void {
     this.isLoading = true;
-    this.currentPage = page;
+    this.pageIndex = pageIndex;
     this.locationService
-      .getLocations(page - 1, this.pageSize, keyword)
+      .getLocations(pageIndex - 1, this.pageSize, this.keyword)
       .subscribe({
         next: (response) => {
           if (response.status === 200 && response.data) {
@@ -62,40 +83,47 @@ export class LocationManagementComponent implements OnInit {
         },
         error: (err) => {
           console.error('An error occurred:', err);
+          this.message.error('Tải danh sách địa điểm thất bại!');
           this.isLoading = false;
         },
       });
   }
 
-  onSearch(event: Event): void {
-    const keyword = (event.target as HTMLInputElement).value;
-    this.searchSubject.next(keyword);
+  onSearchChange(value: string): void {
+    this.searchSubject.next(value);
   }
 
-  onPageChange(page: number): void {
-    this.loadLocations(page, this.currentKeyword);
+  onQueryParamsChange(params: NzTableQueryParams): void {
+    const { pageIndex } = params;
+    this.loadLocations(pageIndex);
   }
 
-  openAddModal(): void {
-    this.selectedLocation = null;
-    this.isModalVisible = true;
-  }
+  openLocationModal(location?: LocationDTO): void {
+    const isEditMode = !!location;
+    const modalTitle = isEditMode ? 'Chỉnh sửa Địa điểm' : 'Thêm Địa điểm mới';
 
-  openEditModal(location: LocationDTO): void {
-    this.selectedLocation = { ...location };
-    this.isModalVisible = true;
-  }
+    const modalRef = this.modalService.create({
+      nzTitle: modalTitle,
+      nzContent: LocationFormComponent,
+      // [SỬA LỖI] Xóa thuộc tính 'nzComponentParams' không hợp lệ.
+      // Dữ liệu sẽ được truyền vào ở bước dưới.
+      nzFooter: null, // Form sẽ tự có nút bấm
+      nzWidth: '600px',
+    });
 
-  closeModal(): void {
-    this.isModalVisible = false;
-    this.selectedLocation = null;
-  }
-
-  onFormSaved(success: boolean): void {
-    if (success) {
-      this.closeModal();
-      // Tải lại trang hiện tại để thấy thay đổi
-      this.loadLocations(this.currentPage, this.currentKeyword);
+    // [SỬA LỖI] Gán dữ liệu vào @Input của component sau khi modal được tạo.
+    if (modalRef.componentInstance) {
+      modalRef.componentInstance.locationToEdit = location
+        ? { ...location }
+        : null;
     }
+
+    // Lắng nghe sự kiện khi form được lưu
+    modalRef.componentInstance?.formSaved.subscribe((success: boolean) => {
+      if (success) {
+        modalRef.close();
+        this.loadLocations(); // Tải lại dữ liệu
+      }
+    });
   }
 }

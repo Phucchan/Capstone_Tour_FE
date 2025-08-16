@@ -1,14 +1,24 @@
-// File: src/app/features/seller/pages/seller-dashboard/seller-dashboard.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { finalize } from 'rxjs';
+
+// --- [THÊM MỚI] Imports cho các module của NG-ZORRO ---
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzTabsModule } from 'ng-zorro-antd/tabs';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
+
+// --- Imports từ project của bạn ---
 import { SellerBookingService } from '../../services/seller-booking.service';
 import { SellerBookingSummary } from '../../models/seller-booking-summary.model';
 import { Paging } from '../../../../core/models/paging.model';
 import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
-import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
+import { StatusVietnamesePipe } from '../../../../shared/pipes/status-vietnamese.pipe';
 
 @Component({
   selector: 'app-seller-dashboard',
@@ -16,9 +26,15 @@ import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
   imports: [
     CommonModule,
     RouterModule,
-    PaginationComponent,
-    SpinnerComponent,
     FormatDatePipe,
+    StatusVietnamesePipe,
+    // NG-ZORRO Modules
+    NzTableModule,
+    NzTabsModule,
+    NzButtonModule,
+    NzTagModule,
+    NzPopconfirmModule,
+    NzPageHeaderModule,
   ],
   templateUrl: './seller-dashboard.component.html',
 })
@@ -26,76 +42,99 @@ export class SellerDashboardComponent implements OnInit {
   private sellerService = inject(SellerBookingService);
   private currentUserService = inject(CurrentUserService);
   private router = inject(Router);
+  private message = inject(NzMessageService);
 
   availableBookings: Paging<SellerBookingSummary> | null = null;
   editedBookings: Paging<SellerBookingSummary> | null = null;
 
   isLoadingAvailable = true;
-  isLoadingEdited = true;
-  activeTab: 'available' | 'edited' = 'available';
+  isLoadingEdited = false; // Chỉ load tab đầu tiên lúc đầu
+  selectedTabIndex = 0;
+
+  // Pagination properties
+  pageSize = 10;
+  availableBookingsPage = 1;
+  editedBookingsPage = 1;
 
   ngOnInit(): void {
     this.loadAvailableBookings();
-    this.loadEditedBookings();
   }
 
-  loadAvailableBookings(page: number = 0, size: number = 10): void {
+  onTabChange(): void {
+    // Chỉ load dữ liệu cho tab "Booking của tôi" khi nó được chọn lần đầu
+    if (this.selectedTabIndex === 1 && !this.editedBookings) {
+      this.loadEditedBookings();
+    }
+  }
+
+  loadAvailableBookings(reset: boolean = false): void {
+    if (reset) {
+      this.availableBookingsPage = 1;
+    }
     this.isLoadingAvailable = true;
-    this.sellerService.getAvailableBookings(page, size).subscribe({
-      next: (res) => {
-        this.availableBookings = res.data;
-        this.isLoadingAvailable = false;
-      },
-      error: () => (this.isLoadingAvailable = false),
-    });
+    this.sellerService
+      .getAvailableBookings(this.availableBookingsPage - 1, this.pageSize)
+      .pipe(finalize(() => (this.isLoadingAvailable = false)))
+      .subscribe({
+        next: (res) => (this.availableBookings = res.data),
+        error: () =>
+          this.message.error('Không thể tải danh sách booking chờ xử lý.'),
+      });
   }
 
-  loadEditedBookings(page: number = 0, size: number = 10): void {
-    // SỬA LỖI: Gọi phương thức getCurrentUser() để lấy thông tin user
+  loadEditedBookings(reset: boolean = false): void {
+    if (reset) {
+      this.editedBookingsPage = 1;
+    }
     const username = this.currentUserService.getCurrentUser()?.username;
     if (!username) return;
 
     this.isLoadingEdited = true;
-    this.sellerService.getEditedBookings(username, page, size).subscribe({
-      next: (res) => {
-        this.editedBookings = res.data;
-        this.isLoadingEdited = false;
-      },
-      error: () => (this.isLoadingEdited = false),
-    });
+    this.sellerService
+      .getEditedBookings(username, this.editedBookingsPage - 1, this.pageSize)
+      .pipe(finalize(() => (this.isLoadingEdited = false)))
+      .subscribe({
+        next: (res) => (this.editedBookings = res.data),
+        error: () =>
+          this.message.error('Không thể tải danh sách booking của bạn.'),
+      });
   }
 
-  onClaimBooking(bookingId: number, event: MouseEvent): void {
-    event.stopPropagation();
-    // SỬA LỖI: Gọi phương thức getCurrentUser() để lấy thông tin user
+  onClaimBooking(bookingId: number): void {
     const username = this.currentUserService.getCurrentUser()?.username;
     if (!username) {
-      alert('Không tìm thấy thông tin người dùng');
+      this.message.error('Không tìm thấy thông tin người dùng');
       return;
     }
 
-    if (confirm('Bạn có chắc chắn muốn nhận xử lý booking này?')) {
-      this.sellerService.claimBooking(bookingId, username).subscribe({
-        next: () => {
-          alert('Nhận booking thành công!');
-          this.loadAvailableBookings();
+    this.sellerService.claimBooking(bookingId, username).subscribe({
+      next: () => {
+        this.message.success('Nhận booking thành công!');
+        this.loadAvailableBookings();
+        // Nếu tab "Booking của tôi" đã được mở, load lại
+        if (this.editedBookings) {
           this.loadEditedBookings();
-        },
-        error: (err) =>
-          alert(`Lỗi: ${err.error.message || 'Không thể nhận booking'}`),
-      });
-    }
+        }
+      },
+      error: (err) =>
+        this.message.error(err.error.message || 'Không thể nhận booking'),
+    });
   }
 
   navigateToDetail(bookingId: number): void {
     this.router.navigate(['/seller/booking', bookingId]);
   }
 
-  onPageChange(page: number, type: 'available' | 'edited'): void {
-    if (type === 'available') {
-      this.loadAvailableBookings(page);
-    } else {
-      this.loadEditedBookings(page);
+  getStatusColor(status: string): string {
+    switch (status) {
+      case 'PENDING':
+        return 'orange';
+      case 'CONFIRMED':
+        return 'green';
+      case 'CANCELLED':
+        return 'red';
+      default:
+        return 'default';
     }
   }
 }

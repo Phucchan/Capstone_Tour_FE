@@ -1,105 +1,72 @@
-<!-- src/app/features/business/pages/request-booking-detail/request-booking-detail.component.html -->
-<div class="p-4 sm:p-6 lg:p-8">
+<!--
+ * FILE: src/app/features/business/pages/request-booking-detail/request-booking-detail.component.html
+ * MÔ TẢ:
+ * - Giao diện đã được viết lại hoàn toàn bằng các component của NG-ZORRO.
+-->
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <ng-container *ngIf="request$ | async as request; else loading">
-    <div class="mb-6">
-      <!-- Header -->
-      <div class="md:flex md:items-center md:justify-between">
-        <div class="min-w-0 flex-1">
-          <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-            Yêu cầu từ: {{ request.customerName }}
-          </h2>
-        </div>
-        <div class="mt-4 flex md:ml-4 md:mt-0">
-          <button (click)="goBack()" type="button" class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-            Quay lại danh sách
-          </button>
-        </div>
-      </div>
-
-      <!-- Status and Actions -->
-      <div class="mt-4 flex items-center justify-between rounded-lg bg-gray-50 p-4">
-        <div>
-          <span class="text-sm font-medium text-gray-600">Trạng thái:</span>
-          <span class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium" [ngClass]="getStatusClass(request.status)">
-            {{ getStatusText(request.status) }}
-          </span>
-        </div>
-        <!-- Action Buttons -->
-        <div *ngIf="request.status === RequestBookingStatus.PENDING" class="flex space-x-3">
-          <button (click)="updateStatus(request.id, 'REJECTED')" type="button" class="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500">
-            Từ chối
-          </button>
-          <button (click)="updateStatus(request.id, 'ACCEPTED')" type="button" class="rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500">
-            Chấp nhận
-          </button>
+    <!-- Page Header -->
+    <nz-page-header [nzGhost]="false" (nzBack)="goBack()" nzBackIcon>
+      <nz-page-header-title>Yêu cầu từ: {{ request.customerName }}</nz-page-header-title>
+      <nz-page-header-subtitle>#{{ request.id }}</nz-page-header-subtitle>
+      <nz-page-header-tags>
+        <nz-tag [nzColor]="getStatusClass(request.status)">{{ getStatusText(request.status) }}</nz-tag>
+      </nz-page-header-tags>
+      <nz-page-header-extra>
+        <div *ngIf="request.status === RequestBookingStatus.PENDING" class="flex space-x-2">
+          <button (click)="updateStatus(request.id, 'REJECTED')" nz-button nzDanger>Từ chối</button>
+          <button (click)="updateStatus(request.id, 'ACCEPTED')" nz-button nzType="primary">Chấp nhận</button>
         </div>
         <div *ngIf="request.status === RequestBookingStatus.ACCEPTED">
-           <button (click)="createTour(request.id)" type="button" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
+          <button (click)="createTour(request.id)" nz-button nzType="primary">
+            <i nz-icon nzType="plus-circle" nzTheme="outline"></i>
             Tạo Tour từ Yêu cầu
           </button>
         </div>
-      </div>
-    </div>
+      </nz-page-header-extra>
+    </nz-page-header>
 
     <!-- Details Grid -->
-    <div class="mt-6 border-t border-gray-200">
-      <dl class="divide-y divide-gray-200">
-        <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-          <dt class="text-sm font-medium leading-6 text-gray-900">Thông tin liên hệ</dt>
-          <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-            <p><strong>Email:</strong> {{ request.customerEmail }}</p>
-            <p><strong>Điện thoại:</strong> {{ request.customerPhone }}</p>
-          </dd>
-        </div>
-        <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-          <dt class="text-sm font-medium leading-6 text-gray-900">Hành trình</dt>
-          <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-            <p><strong>Ngày đi:</strong> {{ request.startDate | date:'dd/MM/yyyy' }}</p>
-            <p><strong>Ngày về:</strong> {{ request.endDate | date:'dd/MM/yyyy' }}</p>
-          </dd>
-        </div>
-        <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-          <dt class="text-sm font-medium leading-6 text-gray-900">Số lượng khách</dt>
-          <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-            <p><strong>Người lớn:</strong> {{ request.adults }}</p>
-            <p><strong>Trẻ em:</strong> {{ request.children }}</p>
-            <p><strong>Trẻ nhỏ:</strong> {{ request.infants }}</p>
-            <p><strong>Em bé:</strong> {{ request.toddlers }}</p>
-          </dd>
-        </div>
-        <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-          <dt class="text-sm font-medium leading-6 text-gray-900">Lưu trú & Vận chuyển</dt>
-          <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-            <p><strong>Số phòng:</strong> {{ request.hotelRooms }}</p>
-            <p><strong>Loại phòng:</strong> {{ request.roomCategory }}</p>
-            <p><strong>Phương tiện:</strong> {{ request.transport }}</p>
-          </dd>
-        </div>
-        <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-          <dt class="text-sm font-medium leading-6 text-gray-900">Ngân sách dự kiến</dt>
-          <dd class="mt-1 text-sm font-medium leading-6 text-green-700 sm:col-span-2 sm:mt-0">
-             {{ request.priceMin | currency:'VND':'symbol':'1.0-0' }} - {{ request.priceMax | currency:'VND':'symbol':'1.0-0' }}
-          </dd>
-        </div>
-        <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-          <dt class="text-sm font-medium leading-6 text-gray-900">Yêu cầu chi tiết</dt>
-          <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 whitespace-pre-wrap">
-            {{ request.desiredServices || 'Không có yêu cầu đặc biệt.' }}
-          </dd>
-        </div>
-        <div *ngIf="request.reason" class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 bg-red-50">
-          <dt class="text-sm font-medium text-red-700">Lý do từ chối</dt>
-          <dd class="mt-1 text-sm text-red-900 sm:col-span-2 sm:mt-0 whitespace-pre-wrap">
-            {{ request.reason }}
-          </dd>
-        </div>
-      </dl>
+    <div class="mt-6" nz-row [nzGutter]="[16, 16]">
+      <!-- Left Column -->
+      <div nz-col [nzXs]="24" [nzLg]="16">
+        <nz-card nzTitle="Chi tiết yêu cầu">
+          <!-- [SỬA LỖI] Cung cấp đầy đủ các breakpoint cho nzColumn -->
+          <nz-descriptions nzBordered [nzColumn]="{ xs: 1, sm: 1, md: 2, lg: 2, xl: 2, xxl: 2 }">
+            <nz-descriptions-item nzTitle="Hành trình">{{ request.startDate | date:'dd/MM/yyyy' }} - {{ request.endDate | date:'dd/MM/yyyy' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Ngân sách dự kiến">{{ request.priceMin | currency:'VND':'symbol':'1.0-0' }} - {{ request.priceMax | currency:'VND':'symbol':'1.0-0' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Số lượng khách" [nzSpan]="2">
+              Người lớn: {{ request.adults }} | Trẻ em: {{ request.children }} | Trẻ nhỏ: {{ request.infants }} | Em bé: {{ request.toddlers }}
+            </nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Lưu trú & Vận chuyển" [nzSpan]="2">
+              Số phòng: {{ request.hotelRooms }} | Loại phòng: {{ request.roomCategory }} | Phương tiện: {{ request.transport }}
+            </nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Yêu cầu chi tiết" [nzSpan]="2" class="whitespace-pre-wrap">
+              {{ request.desiredServices || 'Không có yêu cầu đặc biệt.' }}
+            </nz-descriptions-item>
+            <nz-descriptions-item *ngIf="request.reason" nzTitle="Lý do từ chối" [nzSpan]="2" class="whitespace-pre-wrap bg-red-50">
+              <span class="text-red-700">{{ request.reason }}</span>
+            </nz-descriptions-item>
+          </nz-descriptions>
+        </nz-card>
+      </div>
+
+      <!-- Right Column -->
+      <div nz-col [nzXs]="24" [nzLg]="8">
+        <nz-card nzTitle="Thông tin khách hàng">
+          <nz-descriptions nzBordered [nzColumn]="1">
+            <nz-descriptions-item nzTitle="Họ và tên">{{ request.customerName }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Email">{{ request.customerEmail }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Điện thoại">{{ request.customerPhone }}</nz-descriptions-item>
+          </nz-descriptions>
+        </nz-card>
+      </div>
     </div>
   </ng-container>
 
   <ng-template #loading>
     <div class="text-center p-10">
-      <app-spinner></app-spinner>
+      <nz-spin nzSimple nzSize="large"></nz-spin>
     </div>
   </ng-template>
 </div>
