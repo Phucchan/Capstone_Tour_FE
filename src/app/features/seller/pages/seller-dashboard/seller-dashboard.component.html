@@ -1,154 +1,88 @@
-<div class="my-6 flex justify-between items-center">
-  <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
-    Quản lý Booking
-  </h2>
-</div>
+<!--
+  FILE: src/app/features/seller/pages/seller-dashboard/seller-dashboard.component.html
+  MÔ TẢ: Giao diện đã được chuyển đổi sang sử dụng NzTabs và NzTable của NG-ZORRO.
+-->
 
+<!-- 1. Page Header -->
+<nz-page-header class="site-page-header" nzTitle="Quản lý Booking"></nz-page-header>
 
-<!-- Tabs -->
-<div class="mb-4 border-b border-gray-200 dark:border-gray-700">
-  <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
-    <li class="mr-2">
-      <button (click)="activeTab = 'available'"
-        [ngClass]="{'border-purple-600 text-purple-600 active dark:text-purple-500 dark:border-purple-500': activeTab === 'available', 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300': activeTab !== 'available'}"
-        class="inline-block p-4 border-b-2 rounded-t-lg">
-        Booking chờ xử lý
-      </button>
-    </li>
-    <li class="mr-2">
-      <button (click)="activeTab = 'edited'"
-        [ngClass]="{'border-purple-600 text-purple-600 active dark:text-purple-500 dark:border-purple-500': activeTab === 'edited', 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300': activeTab !== 'edited'}"
-        class="inline-block p-4 border-b-2 rounded-t-lg">
-        Booking của tôi
-      </button>
-    </li>
-  </ul>
-</div>
-
-<!-- Content -->
-<div>
-  <!-- Available Bookings Table -->
-  <div [hidden]="activeTab !== 'available'">
-    <h4 class="mb-4 text-lg font-semibold text-gray-600 dark:text-gray-300">
-      Danh sách Booking chờ xử lý
-    </h4>
-    <div class="w-full overflow-hidden rounded-lg shadow-xs">
-      <div class="w-full overflow-x-auto">
-        <table class="w-full whitespace-no-wrap">
+<!-- 2. Card chứa nội dung chính -->
+<div class="p-6 bg-white rounded-lg shadow-md">
+  <!-- Sử dụng nz-tabset để tạo các tab -->
+  <nz-tabset [(nzSelectedIndex)]="selectedTabIndex" (nzSelectChange)="onTabChange()">
+    <!-- Tab 1: Booking chờ xử lý -->
+    <nz-tab nzTitle="Booking chờ xử lý">
+      <ng-template nz-tab>
+        <nz-table #availableTable [nzData]="availableBookings?.items || []" [nzLoading]="isLoadingAvailable"
+          [nzTotal]="availableBookings?.total || 0" [(nzPageIndex)]="availableBookingsPage"
+          [(nzPageSize)]="pageSize" (nzPageIndexChange)="loadAvailableBookings()"
+          (nzPageSizeChange)="loadAvailableBookings(true)" nzShowSizeChanger [nzFrontPagination]="false" nzBordered>
           <thead>
-            <tr
-              class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
-              <th class="px-4 py-3">Tên Tour</th>
-              <th class="px-4 py-3">Khách hàng</th>
-              <!-- === THÊM MỚI === -->
-              <th class="px-4 py-3">Ngày đặt</th>
-              <th class="px-4 py-3">Ngày đi</th>
-              <th class="px-4 py-3">Số khách</th>
-              <th class="px-4 py-3">Trạng thái</th>
-              <th class="px-4 py-3">Hành động</th>
+            <tr>
+              <th>Tên Tour</th>
+              <th>Khách hàng</th>
+              <th>Ngày đặt</th>
+              <th>Ngày đi</th>
+              <th>Số khách</th>
+              <th nzAlign="center">Trạng thái</th>
+              <th nzAlign="center">Hành động</th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
-            <ng-container *ngIf="!isLoadingAvailable">
-              <tr *ngFor="let booking of availableBookings?.items" (click)="navigateToDetail(booking.id)"
-                class="text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                <td class="px-4 py-3">{{ booking.tourName }}</td>
-                <td class="px-4 py-3">{{ booking.customer }}</td>
-                 <!-- === THÊM MỚI === -->
-                <td class="px-4 py-3">{{ booking.bookingDate | formatDate }}</td>
-                <td class="px-4 py-3">{{ booking.departureDate | formatDate }}</td>
-                <td class="px-4 py-3">{{ booking.seats }}</td>
-                <td class="px-4 py-3">
-                  <span
-                    class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:text-white dark:bg-orange-600">
-                    {{ booking.status }}
-                  </span>
-                </td>
-                <td class="px-4 py-3">
-                  <button (click)="onClaimBooking(booking.id, $event)"
-                    class="px-3 py-1 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-md active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
-                    Nhận
-                  </button>
-                </td>
-              </tr>
-              <!-- === CẬP NHẬT COLSPAN === -->
-              <tr *ngIf="!availableBookings?.items?.length">
-                <td colspan="7" class="px-4 py-3 text-center">Không có booking nào.</td>
-              </tr>
-            </ng-container>
-            <!-- === CẬP NHẬT COLSPAN === -->
-            <tr *ngIf="isLoadingAvailable">
-              <td colspan="7" class="text-center py-4">
-                <app-spinner></app-spinner>
+          <tbody>
+            <tr *ngFor="let booking of availableTable.data" (click)="navigateToDetail(booking.id)"
+              class="cursor-pointer hover:bg-gray-50">
+              <td>{{ booking.tourName }}</td>
+              <td>{{ booking.customer }}</td>
+              <td>{{ booking.bookingDate | formatDate }}</td>
+              <td>{{ booking.departureDate | formatDate }}</td>
+              <td>{{ booking.seats }}</td>
+              <td nzAlign="center">
+                <nz-tag [nzColor]="getStatusColor(booking.status)">{{ booking.status | statusVietnamese }}</nz-tag>
+              </td>
+              <td nzAlign="center">
+                <button nz-button nzType="primary" nzSize="small" (click)="$event.stopPropagation()" nz-popconfirm
+                  nzPopconfirmTitle="Bạn chắc chắn muốn nhận booking này?" (nzOnConfirm)="onClaimBooking(booking.id)">
+                  Nhận
+                </button>
               </td>
             </tr>
           </tbody>
-        </table>
-      </div>
-      <app-pagination *ngIf="availableBookings && availableBookings.total > 0"
-        [currentPage]="availableBookings.page"
-        [totalItems]="availableBookings.total"
-        [pageSize]="availableBookings.size"
-        (pageChange)="onPageChange($event, 'available')"></app-pagination>
-    </div>
-  </div>
+        </nz-table>
+      </ng-template>
+    </nz-tab>
 
-  <!-- Edited Bookings Table -->
-  <div [hidden]="activeTab !== 'edited'">
-    <h4 class="mb-4 text-lg font-semibold text-gray-600 dark:text-gray-300">
-      Danh sách Booking của tôi
-    </h4>
-    <div class="w-full overflow-hidden rounded-lg shadow-xs">
-        <div class="w-full overflow-x-auto">
-          <table class="w-full whitespace-no-wrap">
-            <thead>
-              <tr
-                class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
-                <th class="px-4 py-3">Tên Tour</th>
-                <th class="px-4 py-3">Khách hàng</th>
-                 <!-- === THÊM MỚI === -->
-                <th class="px-4 py-3">Ngày đặt</th>
-                <th class="px-4 py-3">Ngày đi</th>
-                <th class="px-4 py-3">Số khách</th>
-                <th class="px-4 py-3">Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
-              <ng-container *ngIf="!isLoadingEdited">
-                <tr *ngFor="let booking of editedBookings?.items" (click)="navigateToDetail(booking.id)"
-                  class="text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                  <td class="px-4 py-3">{{ booking.tourName }}</td>
-                  <td class="px-4 py-3">{{ booking.customer }}</td>
-                   <!-- === THÊM MỚI === -->
-                  <td class="px-4 py-3">{{ booking.bookingDate | formatDate }}</td>
-                  <td class="px-4 py-3">{{ booking.departureDate | formatDate }}</td>
-                  <td class="px-4 py-3">{{ booking.seats }}</td>
-                  <td class="px-4 py-3">
-                    <span
-                      class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                      {{ booking.status }}
-                    </span>
-                  </td>
-                </tr>
-                 <!-- === CẬP NHẬT COLSPAN === -->
-                <tr *ngIf="!editedBookings?.items?.length">
-                  <td colspan="6" class="px-4 py-3 text-center">Bạn chưa xử lý booking nào.</td>
-                </tr>
-              </ng-container>
-               <!-- === CẬP NHẬT COLSPAN === -->
-              <tr *ngIf="isLoadingEdited">
-                <td colspan="6" class="text-center py-4">
-                  <app-spinner></app-spinner>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <app-pagination *ngIf="editedBookings && editedBookings.total > 0"
-          [currentPage]="editedBookings.page"
-          [totalItems]="editedBookings.total"
-          [pageSize]="editedBookings.size"
-          (pageChange)="onPageChange($event, 'edited')"></app-pagination>
-      </div>
-  </div>
+    <!-- Tab 2: Booking của tôi -->
+    <nz-tab nzTitle="Booking của tôi">
+      <ng-template nz-tab>
+        <nz-table #editedTable [nzData]="editedBookings?.items || []" [nzLoading]="isLoadingEdited"
+          [nzTotal]="editedBookings?.total || 0" [(nzPageIndex)]="editedBookingsPage" [(nzPageSize)]="pageSize"
+          (nzPageIndexChange)="loadEditedBookings()" (nzPageSizeChange)="loadEditedBookings(true)" nzShowSizeChanger
+          [nzFrontPagination]="false" nzBordered>
+          <thead>
+            <tr>
+              <th>Tên Tour</th>
+              <th>Khách hàng</th>
+              <th>Ngày đặt</th>
+              <th>Ngày đi</th>
+              <th>Số khách</th>
+              <th nzAlign="center">Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let booking of editedTable.data" (click)="navigateToDetail(booking.id)"
+              class="cursor-pointer hover:bg-gray-50">
+              <td>{{ booking.tourName }}</td>
+              <td>{{ booking.customer }}</td>
+              <td>{{ booking.bookingDate | formatDate }}</td>
+              <td>{{ booking.departureDate | formatDate }}</td>
+              <td>{{ booking.seats }}</td>
+              <td nzAlign="center">
+                <nz-tag [nzColor]="getStatusColor(booking.status)">{{ booking.status | statusVietnamese }}</nz-tag>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </ng-template>
+    </nz-tab>
+  </nz-tabset>
 </div>
