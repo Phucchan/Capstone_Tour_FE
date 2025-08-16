@@ -19,7 +19,6 @@ import { AdminFooterComponent } from '../admin-footer/admin-footer.component';
     AdminFooterComponent,
   ],
   templateUrl: './admin-layout.component.html',
-  // [THAY ĐỔI] Tải cả 2 file CSS
   styleUrls: [
     '../../../../assets/styles/zorro-styles.css',
     '../../../../assets/styles/admin-theme.css',
