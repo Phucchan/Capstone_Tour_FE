@@ -5,6 +5,7 @@ import { ChatComponent } from './features/customer/components/chat/chat.componen
 import { RegisterComponent } from './core/register/register/register.component';
 import { UnauthorizeComponent } from './core/pages/error-page/unauthorize/unauthorize.component';
 import { LayoutComponent } from './features/admin/layout/layout.component';
+import { AdminLayoutComponent } from './shared/components/admin-layout/admin-layout.component';
 
 export const routes: Routes = [
   {
@@ -22,7 +23,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    component: LayoutComponent, // Layout CHUNG cho toàn bộ trang quản trị
+    component: AdminLayoutComponent, // Layout CHUNG cho toàn bộ trang quản trị
     canActivate: [AuthGuard], // Guard bảo vệ tất cả các route con
     children: [
       // --- Các module chức năng sẽ được render bên trong LayoutComponent ---
@@ -68,8 +69,8 @@ export const routes: Routes = [
       {
         path: 'marketing',
         loadChildren: () =>
-          import('./features/marketing/marketing-blog.routes').then(
-            (m) => m.MARKETING_BLOG_ROUTES
+          import('./features/marketing/marketing.routes').then(
+            (m) => m.MARKETING_ROUTES
           ),
         data: { expectedRoles: ['MARKETING_MANAGER'] },
       },

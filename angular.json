@@ -24,11 +24,6 @@
                 "glob": "**/*",
                 "input": "public",
                 "output": "assets"
-              },
-              {
-                "glob": "ng-zorro-antd.min.css",
-                "input": "./node_modules/ng-zorro-antd/",
-                "output": "./"
               }
             ],
             "styles": ["src/styles.css", "node_modules/ngx-toastr/toastr.css"],
