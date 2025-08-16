@@ -1,10 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+// [SỬA LỖI] Xóa import NumberPipe không hợp lệ. CommonModule đã bao gồm các pipe cơ bản.
 import { CommonModule } from '@angular/common';
-import { ServiceApprovalService } from '../../services/service-approval.service';
-import { ServiceInfo } from '../../models/service-approval.model';
-import { Paging } from '../../../../core/models/paging.model';
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
-import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {
   debounceTime,
@@ -14,6 +10,25 @@ import {
   tap,
 } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+
+// --- Imports cho các module của NG-ZORRO ---
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
+import { NzSpaceModule } from 'ng-zorro-antd/space';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
+import { NzEmptyModule } from 'ng-zorro-antd/empty';
+import { NzGridModule } from 'ng-zorro-antd/grid';
+
+// --- Imports từ project của bạn ---
+import { ServiceApprovalService } from '../../services/service-approval.service';
+import { ServiceInfo } from '../../models/service-approval.model';
+import { Paging } from '../../../../core/models/paging.model';
 import { ApiResponse } from '../../../../core/models/api-response.model';
 
 @Component({
@@ -21,10 +36,21 @@ import { ApiResponse } from '../../../../core/models/api-response.model';
   standalone: true,
   imports: [
     CommonModule,
-    SpinnerComponent,
-    PaginationComponent,
     ReactiveFormsModule,
+    // [SỬA LỖI] Xóa NumberPipe khỏi mảng imports.
+    NzTableModule,
+    NzButtonModule,
+    NzIconModule,
+    NzPageHeaderModule,
+    NzSpaceModule,
+    NzFormModule,
+    NzInputModule,
+    NzPopconfirmModule,
+    NzBreadCrumbModule,
+    NzEmptyModule,
+    NzGridModule,
   ],
+  // [SỬA LỖI] Xóa providers: [NumberPipe] không cần thiết.
   templateUrl: './service-approval.component.html',
 })
 export class ServiceApprovalComponent implements OnInit {
@@ -33,14 +59,17 @@ export class ServiceApprovalComponent implements OnInit {
   errorMessage: string | null = null;
 
   // Phân trang
-  currentPage = 0;
+  currentPage = 1; // Zorro table is 1-based
   pageSize = 10;
   totalItems = 0;
 
   // Tìm kiếm
   filterForm: FormGroup;
 
-  constructor(private serviceApprovalService: ServiceApprovalService) {
+  constructor(
+    private serviceApprovalService: ServiceApprovalService,
+    private message: NzMessageService
+  ) {
     this.filterForm = new FormGroup({
       keyword: new FormControl(''),
     });
@@ -51,39 +80,39 @@ export class ServiceApprovalComponent implements OnInit {
     this.loadPendingServices().subscribe();
 
     // Lắng nghe thay đổi trên ô tìm kiếm
-    this.filterForm
-      .get('keyword')
-      ?.valueChanges.pipe(
-        debounceTime(300),
+    this.filterForm.valueChanges
+      .pipe(
+        debounceTime(400),
         distinctUntilChanged(),
-        // === SỬA LỖI 1: switchMap giờ sẽ nhận một Observable từ loadPendingServices ===
-        switchMap(() => this.loadPendingServices(0))
+        tap(() => this.loadPendingServices(true)), // Reset về trang 1 khi lọc
+        switchMap(() => this.loadPendingServices())
       )
       .subscribe();
   }
 
   /**
-   * === SỬA LỖI 1: Hàm này giờ sẽ trả về một Observable ===
-   * Điều này cho phép nó được sử dụng bên trong các toán tử RxJS như switchMap.
+   * Tải danh sách dịch vụ đang chờ xử lý.
+   * @param resetPageIndex Cờ để reset về trang đầu tiên.
    */
   loadPendingServices(
-    page: number = this.currentPage
+    resetPageIndex: boolean = false
   ): Observable<ApiResponse<Paging<ServiceInfo>>> {
+    if (resetPageIndex) {
+      this.currentPage = 1;
+    }
     this.isLoading = true;
-    this.currentPage = page;
     const keyword = this.filterForm.get('keyword')?.value;
+    const apiPageIndex = this.currentPage - 1; // Chuyển về 0-based cho API
 
     return this.serviceApprovalService
-      .getPendingServices(this.currentPage, this.pageSize, keyword)
+      .getPendingServices(apiPageIndex, this.pageSize, keyword)
       .pipe(
         tap({
           next: (response) => {
-            // === SỬA LỖI 2: Kiểm tra response.data thay vì response.success ===
             if (response && response.data) {
-              const pageData = response.data; // Dữ liệu đã được bóc tách sẵn
+              const pageData = response.data;
               this.services = pageData.items;
               this.totalItems = pageData.total;
-              this.currentPage = pageData.page;
               this.errorMessage = null;
             } else {
               this.errorMessage = response.message || 'Không thể tải dữ liệu.';
@@ -102,10 +131,6 @@ export class ServiceApprovalComponent implements OnInit {
       );
   }
 
-  onPageChange(page: number): void {
-    this.loadPendingServices(page).subscribe();
-  }
-
   approveService(serviceId: number): void {
     this.updateStatus(serviceId, 'ACTIVE');
   }
@@ -114,35 +139,31 @@ export class ServiceApprovalComponent implements OnInit {
     this.updateStatus(serviceId, 'REJECTED');
   }
 
+  /**
+   * Cập nhật trạng thái dịch vụ (Duyệt/Từ chối).
+   */
   private updateStatus(
     serviceId: number,
     newStatus: 'ACTIVE' | 'REJECTED'
   ): void {
-    if (
-      !confirm(
-        `Bạn có chắc muốn ${
-          newStatus === 'ACTIVE' ? 'phê duyệt' : 'từ chối'
-        } dịch vụ này không?`
-      )
-    ) {
-      return;
-    }
+    const actionText = newStatus === 'ACTIVE' ? 'Phê duyệt' : 'Từ chối';
 
     this.serviceApprovalService
       .updateServiceStatus(serviceId, { newStatus })
       .subscribe({
         next: (response) => {
-          // === SỬA LỖI 2: Kiểm tra response.data thay vì response.success ===
           if (response && response.data) {
-            alert('Cập nhật trạng thái thành công!');
-            // Tải lại danh sách để loại bỏ dịch vụ vừa được xử lý
-            this.loadPendingServices(this.currentPage).subscribe();
+            this.message.success(`${actionText} dịch vụ thành công!`);
+            // Tải lại danh sách để cập nhật giao diện
+            this.loadPendingServices().subscribe();
           } else {
-            alert(`Lỗi: ${response.message}`);
+            this.message.error(
+              response.message || `Lỗi khi ${actionText.toLowerCase()} dịch vụ.`
+            );
           }
         },
         error: (err) => {
-          alert(`Đã có lỗi xảy ra: ${err.message}`);
+          this.message.error(err.message || `Đã có lỗi xảy ra.`);
         },
       });
   }
