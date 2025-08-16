@@ -3,7 +3,7 @@
   <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
     <h1 class="text-2xl font-bold text-gray-900">Quản lý Khách hàng</h1>
     <div class="flex items-center space-x-2 w-full sm:w-auto">
-      <!-- Ô tìm kiếm -->
+      <!-- Ô tìm kiếm được thiết kế lại -->
       <div class="relative w-full sm:w-64">
         <span class="absolute inset-y-0 left-0 flex items-center pl-3">
           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -13,7 +13,7 @@
         <input
           type="text"
           placeholder="Tìm kiếm khách hàng..."
-          class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5"
+          class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-primary-300 focus:border-primary-500 block w-full pl-10 p-2.5 transition"
           [(ngModel)]="keyword"
           (keyup.enter)="onSearch()">
       </div>
@@ -54,8 +54,8 @@
             <td class="px-6 py-4 whitespace-nowrap">
               <span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full"
                     [ngClass]="{
-                      'bg-success-100 text-success-800': !customer.deleted,
-                      'bg-danger-100 text-danger-800': customer.deleted
+                      'bg-green-100 text-green-800': !customer.deleted,
+                      'bg-red-100 text-red-800': customer.deleted
                     }">
                 {{ getStatus(customer.deleted) | statusVietnamese }}
               </span>
