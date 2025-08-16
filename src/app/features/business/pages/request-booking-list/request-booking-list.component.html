@@ -1,77 +1,63 @@
-<!-- src/app/features/business/pages/request-booking-list/request-booking-list.component.html -->
-<div class="p-4 sm:p-6 lg:p-8">
-  <div class="sm:flex sm:items-center">
-    <div class="sm:flex-auto">
-      <h1 class="text-xl font-semibold text-gray-900">Quản lý Yêu cầu Tour</h1>
-      <p class="mt-2 text-sm text-gray-700">
-        Danh sách các yêu cầu tạo tour tùy chỉnh từ khách hàng.
-      </p>
-    </div>
+<!--
+ * FILE: src/app/features/business/pages/request-booking-list/request-booking-list.component.html
+ * MÔ TẢ:
+ * - Giao diện đã được viết lại hoàn toàn bằng NG-ZORRO.
+-->
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Page Header -->
+  <div class="mb-6">
+    <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
+      Quản lý Yêu cầu Tour Riêng
+    </h1>
+    <p class="text-sm text-gray-600 mt-1">
+      Quản lý các yêu cầu thiết kế tour riêng từ khách hàng.
+    </p>
   </div>
 
-  <div class="mt-8 flex flex-col">
-    <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-      <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-          <ng-container *ngIf="requestsPage$ | async as page">
-            <table class="min-w-full divide-y divide-gray-300">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Khách hàng</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Điểm đến</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Ngày đi</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Ngày về</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Trạng thái</th>
-                  <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                    <span class="sr-only">Hành động</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200 bg-white">
-                <tr *ngFor="let request of page.items">
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                    <div class="font-medium text-gray-900">{{ request.customerName }}</div>
-                    <div class="text-gray-500">{{ request.customerPhone }}</div>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    {{ request.destinations.join(', ') }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    {{ request.startDate | date:'dd/MM/yyyy' }}
-                  </td>
-                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    {{ request.endDate | date:'dd/MM/yyyy' }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5" [ngClass]="getStatusClass(request.status)">
-                      {{ request.status }}
-                    </span>
-                  </td>
-                  <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                    <!-- SỬA ĐỔI: Thêm link để xem chi tiết -->
-                    <a [routerLink]="['/business/request-bookings', request.id]" class="text-indigo-600 hover:text-indigo-900">
-                      Xem chi tiết
-                    </a>
-                  </td>
-                </tr>
-                 <!-- Hàng trống nếu không có dữ liệu -->
-                <tr *ngIf="!page.items || page.items.length === 0">
-                    <td colspan="6" class="px-6 py-12 text-center text-sm text-gray-500">
-                      Không có yêu cầu nào.
-                    </td>
-                </tr>
-              </tbody>
-            </table>
-            <!-- Pagination -->
-            <app-pagination [currentPage]="page.page" [totalItems]="page.total" [pageSize]="page.size" (pageChange)="onPageChange($event)"></app-pagination>
-          </ng-container>
-
-          <!-- Loading state -->
-          <ng-template #loading>
-            <div class="p-6 text-center text-gray-500">Đang tải dữ liệu...</div>
-          </ng-template>
-        </div>
-      </div>
+  <!-- Main Content Card -->
+  <nz-card>
+    <div class="overflow-x-auto">
+      <nz-table
+        #requestTable
+        [nzData]="requests"
+        [nzFrontPagination]="false"
+        [nzLoading]="isLoading"
+        [nzTotal]="totalItems"
+        [(nzPageIndex)]="pageIndex"
+        [(nzPageSize)]="pageSize"
+        (nzQueryParams)="onQueryParamsChange($event)"
+        nzShowSizeChanger="false"
+      >
+        <thead>
+          <tr>
+            <th>Khách hàng</th>
+            <th>Điểm đến</th>
+            <th>Ngày đi</th>
+            <th>Ngày về</th>
+            <th class="text-center">Trạng thái</th>
+            <th class="text-center">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let request of requestTable.data">
+            <td>
+              <div class="font-semibold text-gray-900">{{ request.customerName }}</div>
+              <div class="text-gray-600">{{ request.customerPhone }}</div>
+            </td>
+            <td>{{ request.destinations.join(', ') }}</td>
+            <td>{{ request.startDate | date:'dd/MM/yyyy' }}</td>
+            <td>{{ request.endDate | date:'dd/MM/yyyy' }}</td>
+            <td class="text-center">
+              <nz-tag [nzColor]="getStatusColor(request.status)">
+                {{ getStatusText(request.status) }}
+              </nz-tag>
+            </td>
+            <td class="text-center">
+              <a [routerLink]="['/business/request-bookings', request.id]">Xem chi tiết</a>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
     </div>
-  </div>
+  </nz-card>
 </div>

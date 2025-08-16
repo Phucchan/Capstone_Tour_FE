@@ -1,14 +1,12 @@
-// src/app/features/business/pages/dashboard/dashboard.component.ts
+/*
+ * FILE: src/app/features/business/pages/dashboard/dashboard.component.ts
+ * MÔ TẢ:
+ * - Thêm các module NG-ZORRO cần thiết cho Dashboard.
+ * - Cập nhật form lọc ngày để sử dụng nz-range-picker.
+ */
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import {
-  AbstractControl,
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidationErrors,
-  ValidatorFn,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
 import { forkJoin, of } from 'rxjs';
 import {
@@ -16,28 +14,24 @@ import {
   finalize,
   debounceTime,
   distinctUntilChanged,
+  startWith,
 } from 'rxjs/operators';
+
+// --- [THAY ĐỔI] Import các module của NG-ZORRO ---
+import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzStatisticModule } from 'ng-zorro-antd/statistic';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzListModule } from 'ng-zorro-antd/list';
+import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 
 import { DashboardService } from '../../services/dashboard.service';
 import {
   TourRevenue,
   MonthlyRevenue,
 } from '../../../../core/models/dashboard.model';
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
-
-// Custom validator function (đã có sẵn trong file của bạn)
-export const dateRangeValidator: ValidatorFn = (
-  control: AbstractControl
-): ValidationErrors | null => {
-  const startDate = control.get('startDate')?.value;
-  const endDate = control.get('endDate')?.value;
-
-  if (startDate && endDate) {
-    const isError = new Date(endDate) < new Date(startDate);
-    return isError ? { dateRange: true } : null;
-  }
-  return null;
-};
 
 @Component({
   selector: 'app-dashboard',
@@ -46,7 +40,15 @@ export const dateRangeValidator: ValidatorFn = (
     CommonModule,
     ReactiveFormsModule,
     NgxChartsModule,
-    SpinnerComponent,
+    // --- [THAY ĐỔI] Thêm các module NG-ZORRO vào imports ---
+    NzGridModule,
+    NzCardModule,
+    NzStatisticModule,
+    NzDatePickerModule,
+    NzSpinModule,
+    NzListModule,
+    NzAlertModule,
+    NzIconModule,
   ],
   providers: [CurrencyPipe],
   templateUrl: './dashboard.component.html',
@@ -60,7 +62,7 @@ export class DashboardComponent implements OnInit {
   error: string | null = null;
   filterForm!: FormGroup;
 
-  // --- Data Properties ---
+  // Data Properties
   totalRevenue: number = 0;
   totalBookings: number = 0;
   totalNewUsers: number = 0;
@@ -68,7 +70,7 @@ export class DashboardComponent implements OnInit {
   monthlyRevenueData: any[] = [];
   bookingStatsData: any[] = [];
 
-  // --- Chart Configuration ---
+  // Chart Configuration
   chartColorScheme: Color = {
     name: 'business',
     selectable: true,
@@ -87,81 +89,60 @@ export class DashboardComponent implements OnInit {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(today.getDate() - 30);
 
-    this.filterForm = this.fb.group(
-      {
-        startDate: [this.formatDate(thirtyDaysAgo)],
-        endDate: [this.formatDate(today)],
-      },
-      {
-        validators: dateRangeValidator,
-      }
-    );
+    // --- [THAY ĐỔI] Cập nhật form để dùng với nz-range-picker ---
+    this.filterForm = this.fb.group({
+      dateRange: [[thirtyDaysAgo, today]],
+    });
 
-    // Bắt đầu fetch dữ liệu lần đầu
-    this.fetchDashboardData();
-
-    // Lắng nghe sự thay đổi của form để fetch lại dữ liệu
     this.filterForm.valueChanges
       .pipe(
-        debounceTime(400), // Chờ 400ms sau khi người dùng thay đổi
+        startWith(this.filterForm.value), // Lấy dữ liệu ngay lần đầu
+        debounceTime(400),
         distinctUntilChanged(
           (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
-        ) // Chỉ fetch khi giá trị thực sự thay đổi
+        )
       )
-      .subscribe(() => {
-        if (this.filterForm.valid) {
-          this.fetchDashboardData();
+      .subscribe((value) => {
+        if (value.dateRange && value.dateRange[0] && value.dateRange[1]) {
+          this.fetchDashboardData(value.dateRange[0], value.dateRange[1]);
         }
       });
   }
 
-  fetchDashboardData(): void {
-    if (this.filterForm.invalid) {
-      console.log('Form is invalid, skipping fetch.');
-      return;
-    }
-
-    console.log('Starting to fetch dashboard data...');
+  fetchDashboardData(startDate: Date, endDate: Date): void {
     this.isLoading = true;
     this.error = null;
-    this.filterForm.disable({ emitEvent: false }); // Vô hiệu hóa form, không trigger valueChanges
 
-    const { startDate, endDate } = this.filterForm.value;
+    const start = this.formatDate(startDate);
+    const end = this.formatDate(endDate);
 
     forkJoin({
       revenue: this.dashboardService
-        .getTotalRevenue(startDate, endDate)
+        .getTotalRevenue(start, end)
         .pipe(catchError(() => of({ data: 0 }))),
       bookings: this.dashboardService
-        .getTotalBookings(startDate, endDate)
+        .getTotalBookings(start, end)
         .pipe(catchError(() => of({ data: 0 }))),
       newUsers: this.dashboardService
-        .getTotalNewUsers(startDate, endDate)
+        .getTotalNewUsers(start, end)
         .pipe(catchError(() => of({ data: 0 }))),
       topTours: this.dashboardService
-        .getTopToursByRevenue(5, startDate, endDate)
+        .getTopToursByRevenue(5, start, end)
         .pipe(catchError(() => of({ data: [] }))),
       monthlyRevenue: this.dashboardService
-        .getMonthlyRevenueSummary(startDate, endDate)
+        .getMonthlyRevenueSummary(start, end)
         .pipe(catchError(() => of({ data: [] }))),
       bookingStats: this.dashboardService
-        .getBookingStats(startDate, endDate)
+        .getBookingStats(start, end)
         .pipe(
           catchError(() =>
             of({ data: { cancelledBookings: 0, returningCustomers: 0 } })
           )
         ),
     })
-      .pipe(
-        finalize(() => {
-          console.log('Finalize block executed: Re-enabling form.');
-          this.isLoading = false;
-          this.filterForm.enable({ emitEvent: false }); // Bật lại form, không trigger valueChanges
-        })
-      )
+      .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (results) => {
-          console.log('Successfully fetched data:', results);
           this.totalRevenue = results.revenue.data ?? 0;
           this.totalBookings = results.bookings.data ?? 0;
           this.totalNewUsers = results.newUsers.data ?? 0;
