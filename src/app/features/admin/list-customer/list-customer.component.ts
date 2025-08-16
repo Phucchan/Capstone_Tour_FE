@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 import { AdminService } from '../admin.service';
 import { UserFullInformation } from '../models/user.model';
-// SỬA LỖI: Dùng đường dẫn tương đối
 import { Paging } from '../../../core/models/paging.model';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { AvatarComponent } from '../../../shared/components/avatar/avatar.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { StatusVietnamesePipe } from '../../../shared/pipes/status-vietnamese.pipe';
 
 @Component({
   selector: 'app-list-customer',
@@ -20,6 +19,7 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
     SpinnerComponent,
     AvatarComponent,
     PaginationComponent,
+    StatusVietnamesePipe,
   ],
   templateUrl: './list-customer.component.html',
 })
@@ -64,5 +64,10 @@ export class ListCustomerComponent implements OnInit {
   onSearch(): void {
     this.currentPage = 0;
     this.loadCustomers();
+  }
+
+  // 3. Thêm hàm để chuyển đổi `deleted` boolean thành status string
+  getStatus(deleted: boolean): string {
+    return deleted ? 'INACTIVE' : 'ACTIVE';
   }
 }
