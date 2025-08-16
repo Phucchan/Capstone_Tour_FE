@@ -1,99 +1,136 @@
-<!-- Container chính, hiển thị spinner khi đang tải dữ liệu ban đầu -->
-<div class="relative p-4 sm:p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
-  <app-spinner *ngIf="isLoading"></app-spinner>
+<!--
+  FILE: src/app/features/coordinator/pages/list-service-provider/add-service-provider/add-service-provider.component.html
+  MÔ TẢ: Giao diện form đã được chuyển đổi sang sử dụng các component của NG-ZORRO.
+-->
 
-  <!-- Card chứa form, chỉ hiện khi đã tải xong -->
-  <div *ngIf="!isLoading" class="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+<!-- 1. Breadcrumb: Giúp người dùng định vị -->
+<nz-breadcrumb>
+  <nz-breadcrumb-item>
+    <a routerLink="/coordinator/service-providers">Quản lý Nhà cung cấp</a>
+  </nz-breadcrumb-item>
+  <nz-breadcrumb-item>{{ pageTitle }}</nz-breadcrumb-item>
+</nz-breadcrumb>
 
-    <!-- 1. Tiêu đề chính (động) -->
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">{{ pageTitle }}</h1>
+<!-- 2. Page Header: Tiêu đề trang và nút quay lại -->
+<nz-page-header class="site-page-header" [nzTitle]="pageTitle" nzBackIcon (nzBack)="onCancel()">
+</nz-page-header>
 
+<!-- 3. Vùng chứa form, được bao bọc bởi nz-spin để hiển thị trạng thái loading -->
+<div class="p-6 bg-white rounded-lg shadow-md">
+  <nz-spin [nzSpinning]="isLoading">
     <!-- Thông báo lỗi chung -->
-    <div *ngIf="errorMessage" class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
-      <span class="font-medium">Lỗi!</span> {{ errorMessage }}
-    </div>
+    <nz-alert *ngIf="errorMessage" nzType="error" [nzMessage]="errorMessage" nzShowIcon class="mb-4"></nz-alert>
 
-    <form [formGroup]="partnerForm" (ngSubmit)="onSubmit()">
-      <div class="grid gap-6 mb-6 md:grid-cols-2">
+    <!-- Form được xây dựng bằng các component của NG-ZORRO -->
+    <form nz-form [formGroup]="partnerForm" (ngSubmit)="onSubmit()">
+      <div nz-row [nzGutter]="24">
         <!-- Tên Nhà cung cấp -->
-        <div>
-          <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tên Nhà cung cấp <span class="text-red-500">*</span></label>
-          <input type="text" id="name" formControlName="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600" placeholder="Nhập tên...">
-          <p *ngIf="partnerForm.get('name')?.invalid && partnerForm.get('name')?.touched" class="mt-2 text-xs text-red-600 dark:text-red-500">Tên nhà cung cấp là bắt buộc.</p>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Tên Nhà cung cấp</nz-form-label>
+            <nz-form-control nzErrorTip="Vui lòng nhập tên nhà cung cấp!">
+              <input nz-input formControlName="name" placeholder="Nhập tên..." />
+            </nz-form-control>
+          </nz-form-item>
         </div>
 
         <!-- Tên người liên hệ -->
-        <div>
-          <label for="contactName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tên người liên hệ</label>
-          <input type="text" id="contactName" formControlName="contactName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600" placeholder="Nhập tên...">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>Tên người liên hệ</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="contactName" placeholder="Nhập tên..." />
+            </nz-form-control>
+          </nz-form-item>
         </div>
 
         <!-- Số điện thoại -->
-        <div>
-          <label for="contactPhone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Số điện thoại <span class="text-red-500">*</span></label>
-          <input type="tel" id="contactPhone" formControlName="contactPhone" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600" placeholder="0901234567">
-           <p *ngIf="partnerForm.get('contactPhone')?.invalid && partnerForm.get('contactPhone')?.touched" class="mt-2 text-xs text-red-600 dark:text-red-500">Số điện thoại là bắt buộc.</p>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Số điện thoại</nz-form-label>
+            <nz-form-control nzErrorTip="Vui lòng nhập số điện thoại!">
+              <input nz-input formControlName="contactPhone" placeholder="0901234567" />
+            </nz-form-control>
+          </nz-form-item>
         </div>
 
         <!-- Email -->
-        <div>
-          <label for="contactEmail" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email <span class="text-red-500">*</span></label>
-          <input type="email" id="contactEmail" formControlName="contactEmail" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600" placeholder="example@company.com">
-          <div *ngIf="partnerForm.get('contactEmail')?.touched && partnerForm.get('contactEmail')?.errors">
-            <p *ngIf="partnerForm.get('contactEmail')?.errors?.['required']" class="mt-2 text-xs text-red-600">Email là bắt buộc.</p>
-            <p *ngIf="partnerForm.get('contactEmail')?.errors?.['email']" class="mt-2 text-xs text-red-600">Email không đúng định dạng.</p>
-          </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Email</nz-form-label>
+            <nz-form-control [nzErrorTip]="emailErrorTpl">
+              <input nz-input formControlName="contactEmail" placeholder="example@company.com" />
+              <ng-template #emailErrorTpl let-control>
+                <ng-container *ngIf="control.hasError('required')">Vui lòng nhập email!</ng-container>
+                <ng-container *ngIf="control.hasError('email')">Email không đúng định dạng!</ng-container>
+              </ng-template>
+            </nz-form-control>
+          </nz-form-item>
         </div>
 
         <!-- Website -->
-        <div>
-          <label for="websiteUrl" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Website</label>
-          <input type="url" id="websiteUrl" formControlName="websiteUrl" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600" placeholder="https://example.com">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>Website</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="websiteUrl" placeholder="https://example.com" />
+            </nz-form-control>
+          </nz-form-item>
         </div>
 
         <!-- Logo URL -->
-        <div>
-          <label for="logoUrl" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">URL Logo</label>
-          <input type="text" id="logoUrl" formControlName="logoUrl" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600" placeholder="https://example.com/logo.png">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>URL Logo</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="logoUrl" placeholder="https://example.com/logo.png" />
+            </nz-form-control>
+          </nz-form-item>
         </div>
 
         <!-- Địa điểm -->
-        <div>
-          <label for="locationId" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Địa điểm <span class="text-red-500">*</span></label>
-          <select id="locationId" formControlName="locationId" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600">
-            <option [ngValue]="null" disabled>Chọn địa điểm</option>
-            <option *ngFor="let loc of locationOptions" [value]="loc.id">{{ loc.name }}</option>
-          </select>
-          <p *ngIf="partnerForm.get('locationId')?.invalid && partnerForm.get('locationId')?.touched" class="mt-2 text-xs text-red-600">Vui lòng chọn địa điểm.</p>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Địa điểm</nz-form-label>
+            <nz-form-control nzErrorTip="Vui lòng chọn địa điểm!">
+              <nz-select formControlName="locationId" nzPlaceHolder="Chọn địa điểm" nzShowSearch nzAllowClear>
+                <nz-option *ngFor="let loc of locationOptions" [nzLabel]="loc.name" [nzValue]="loc.id"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
         </div>
 
         <!-- Danh mục dịch vụ -->
-        <div>
-          <label for="serviceTypeId" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Danh mục dịch vụ <span class="text-red-500">*</span></label>
-          <select id="serviceTypeId" formControlName="serviceTypeId" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600">
-            <option [ngValue]="null" disabled>Chọn danh mục</option>
-            <option *ngFor="let st of serviceTypeOptions" [value]="st.id">{{ st.name }}</option>
-          </select>
-           <p *ngIf="partnerForm.get('serviceTypeId')?.invalid && partnerForm.get('serviceTypeId')?.touched" class="mt-2 text-xs text-red-600">Vui lòng chọn danh mục dịch vụ.</p>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Danh mục dịch vụ</nz-form-label>
+            <nz-form-control nzErrorTip="Vui lòng chọn danh mục dịch vụ!">
+              <nz-select formControlName="serviceTypeId" nzPlaceHolder="Chọn danh mục" nzShowSearch nzAllowClear>
+                <nz-option *ngFor="let st of serviceTypeOptions" [nzLabel]="st.name" [nzValue]="st.id"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <!-- Mô tả -->
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>Mô tả</nz-form-label>
+            <nz-form-control>
+              <textarea nz-input formControlName="description" [nzAutosize]="{ minRows: 3, maxRows: 5 }"
+                placeholder="Viết mô tả ngắn về nhà cung cấp..."></textarea>
+            </nz-form-control>
+          </nz-form-item>
         </div>
       </div>
 
-      <!-- Mô tả -->
-      <div class="mb-6">
-        <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Mô tả</label>
-        <textarea id="description" formControlName="description" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600" placeholder="Viết mô tả ngắn về nhà cung cấp..."></textarea>
-      </div>
-
       <!-- Các nút chức năng -->
-      <div class="flex items-center justify-end gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-        <button type="button" (click)="onCancel()" class="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:bg-gray-800">
-          Hủy
-        </button>
-        <button type="submit" [disabled]="isSaving" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 disabled:opacity-50 disabled:cursor-not-allowed">
-          <span *ngIf="!isSaving">{{ isEditMode ? 'Cập nhật' : 'Tạo mới' }}</span>
-          <span *ngIf="isSaving">Đang lưu...</span>
+      <div class="flex items-center justify-end gap-4 mt-4 pt-6 border-t">
+        <button nz-button type="button" (click)="onCancel()">Hủy</button>
+        <button nz-button nzType="primary" type="submit" [nzLoading]="isSaving">
+          {{ isEditMode ? 'Cập nhật' : 'Tạo mới' }}
         </button>
       </div>
     </form>
-  </div>
+  </nz-spin>
 </div>

@@ -9,20 +9,43 @@ import {
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { finalize, forkJoin, map } from 'rxjs';
 
+// --- [THÊM MỚI] Imports cho các module của NG-ZORRO ---
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
+import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
+import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzMessageService } from 'ng-zorro-antd/message';
+
 // Models và Services cần thiết
 import { LocationShort, ServiceTypeShort } from '../../../models/partner.model';
 import { PartnerService } from '../../../services/partner.service';
 import { ServiceTypeService } from '../../../services/service-type.service';
 import { LocationService } from '../../../../business/services/location.service';
-
-// Components dùng chung
-import { SpinnerComponent } from '../../../../../shared/components/spinner/spinner.component';
 import { LocationDTO } from '../../../../../core/models/location.model';
 
 @Component({
   selector: 'app-add-service-provider',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, SpinnerComponent],
+  // --- [CẬP NHẬT] Thêm các module của NG-ZORRO vào imports ---
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    NzFormModule,
+    NzInputModule,
+    NzSelectModule,
+    NzButtonModule,
+    NzSpinModule,
+    NzAlertModule,
+    NzPageHeaderModule,
+    NzBreadCrumbModule,
+    NzGridModule,
+  ],
   templateUrl: './add-service-provider.component.html',
 })
 export class AddServiceProviderComponent implements OnInit {
@@ -43,7 +66,8 @@ export class AddServiceProviderComponent implements OnInit {
     private serviceTypeService: ServiceTypeService,
     private locationService: LocationService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private message: NzMessageService // [THÊM MỚI] Inject NzMessageService
   ) {
     this.partnerForm = this.fb.group({
       name: ['', Validators.required],
@@ -75,22 +99,26 @@ export class AddServiceProviderComponent implements OnInit {
   loadPartnerForEdit(): void {
     if (!this.partnerId) return;
     this.isLoading = true;
-    this.partnerService
-      .getPartnerDetail(this.partnerId)
+    // [CẬP NHẬT] Tải đồng thời dữ liệu của partner và các dropdown
+    forkJoin({
+      partnerRes: this.partnerService.getPartnerDetail(this.partnerId),
+      locations: this.loadLocationOptions(),
+      serviceTypes: this.loadServiceTypeOptions(),
+    })
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
-        next: (res) => {
-          if (res.status === 200 && res.data) {
-            const partnerData = res.data;
+        next: ({ partnerRes, locations, serviceTypes }) => {
+          this.locationOptions = locations;
+          this.serviceTypeOptions = serviceTypes;
+          if (partnerRes.status === 200 && partnerRes.data) {
+            const partnerData = partnerRes.data;
             this.partnerForm.patchValue({
               ...partnerData,
               locationId: partnerData.location?.id,
               serviceTypeId: partnerData.serviceType?.id,
             });
-            this.locationOptions = partnerData.locationOptions;
-            this.serviceTypeOptions = partnerData.serviceTypeOptions;
           } else {
-            this.errorMessage = res.message;
+            this.errorMessage = partnerRes.message;
           }
         },
         error: (err) => (this.errorMessage = err.message),
@@ -99,36 +127,9 @@ export class AddServiceProviderComponent implements OnInit {
 
   loadDropdownData(): void {
     this.isLoading = true;
-
-    // === SỬA LỖI TẠI ĐÂY ===
-    // Gọi API lấy locations với size lớn để có tất cả
-    const locations$ = this.locationService.getLocations(0, 1000).pipe(
-      map((response) => {
-        // Lỗi 2 & 3: Kiểm tra response và trích xuất mảng 'items'
-        if (response && response.data && Array.isArray(response.data.items)) {
-          // Chuyển đổi từ LocationDTO sang LocationShort nếu cần
-          return response.data.items.map((loc: LocationDTO) => ({
-            id: loc.id,
-            name: loc.name,
-          }));
-        }
-        // Trả về mảng rỗng nếu có lỗi hoặc không có dữ liệu
-        return [];
-      })
-    );
-
-    const serviceTypes$ = this.serviceTypeService.getServiceTypes().pipe(
-      map((response) => {
-        if (response.status === 200 && response.data) {
-          return response.data.filter((st) => !st.deleted);
-        }
-        return [];
-      })
-    );
-
     forkJoin({
-      locations: locations$,
-      serviceTypes: serviceTypes$,
+      locations: this.loadLocationOptions(),
+      serviceTypes: this.loadServiceTypeOptions(),
     })
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
@@ -140,14 +141,48 @@ export class AddServiceProviderComponent implements OnInit {
       });
   }
 
+  // [TÁI CẤU TRÚC] Tách logic lấy location ra hàm riêng
+  private loadLocationOptions() {
+    return this.locationService.getLocations(0, 1000).pipe(
+      map((response) => {
+        if (response && response.data && Array.isArray(response.data.items)) {
+          return response.data.items.map((loc: LocationDTO) => ({
+            id: loc.id,
+            name: loc.name,
+          }));
+        }
+        return [];
+      })
+    );
+  }
+
+  // [TÁI CẤU TRÚC] Tách logic lấy service type ra hàm riêng
+  private loadServiceTypeOptions() {
+    return this.serviceTypeService.getServiceTypes().pipe(
+      map((response) => {
+        if (response.status === 200 && response.data) {
+          return response.data.filter((st) => !st.deleted);
+        }
+        return [];
+      })
+    );
+  }
+
   onSubmit(): void {
+    // [CẬP NHẬT] Sử dụng for...in để duyệt và cập nhật trạng thái touched cho tất cả control
     if (this.partnerForm.invalid) {
-      this.partnerForm.markAllAsTouched();
+      for (const i in this.partnerForm.controls) {
+        if (this.partnerForm.controls.hasOwnProperty(i)) {
+          this.partnerForm.controls[i].markAsDirty();
+          this.partnerForm.controls[i].updateValueAndValidity();
+        }
+      }
       return;
     }
     if (this.isSaving) return;
 
     this.isSaving = true;
+    this.errorMessage = null; // Xóa lỗi cũ trước khi submit
     const requestData = this.partnerForm.value;
 
     const action$ = this.isEditMode
@@ -157,12 +192,22 @@ export class AddServiceProviderComponent implements OnInit {
     action$.pipe(finalize(() => (this.isSaving = false))).subscribe({
       next: (res) => {
         if (res.status === 200) {
+          this.message.success(
+            this.isEditMode
+              ? 'Cập nhật nhà cung cấp thành công!'
+              : 'Thêm mới nhà cung cấp thành công!'
+          );
           this.router.navigate(['/coordinator/service-providers']);
         } else {
+          // [CẬP NHẬT] Hiển thị lỗi bằng NzMessageService hoặc nz-alert
           this.errorMessage = res.message;
+          this.message.error(res.message || 'Đã có lỗi xảy ra.');
         }
       },
-      error: (err) => (this.errorMessage = err.message),
+      error: (err) => {
+        this.errorMessage = err.message;
+        this.message.error(err.message || 'Đã có lỗi xảy ra.');
+      },
     });
   }
 
