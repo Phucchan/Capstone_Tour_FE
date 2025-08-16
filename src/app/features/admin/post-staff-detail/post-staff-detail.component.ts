@@ -1,3 +1,9 @@
+/*
+ * FILE: src/app/features/admin/post-staff-detail/post-staff-detail.component.ts
+ * MÔ TẢ:
+ * - Thêm các module NG-ZORRO cần thiết cho form.
+ * - Thay thế alert() bằng NzMessageService để có thông báo đẹp hơn.
+ */
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import {
@@ -9,39 +15,59 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AdminService } from '../admin.service';
+
+// --- [THAY ĐỔI] Import các module của NG-ZORRO ---
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+
+import { AdminService } from '../services/admin.service';
 import { UserManagementRequest } from '../models/user.model';
-import { CustomValidators } from '../../../../../src/app/core/validators/custom-validators';
+import { CustomValidators } from '../../../../app/core/validators/custom-validators';
 
 @Component({
   selector: 'app-post-staff-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    // --- [THAY ĐỔI] Thêm các module NG-ZORRO vào imports ---
+    NzFormModule,
+    NzInputModule,
+    NzButtonModule,
+    NzCheckboxModule,
+    NzIconModule,
+    NzSpinModule,
+  ],
   templateUrl: './post-staff-detail.component.html',
 })
 export class PostStaffDetailComponent implements OnInit {
   staffForm!: FormGroup;
   isSubmitting = false;
   availableRoles = [
-    'STAFF',
     'SELLER',
-    'COORDINATOR',
-    'MARKETING',
+    'BUSINESS_DEPARTMENT',
+    'SERVICE_COORDINATOR',
+    'MARKETING_MANAGER',
     'ACCOUNTANT',
   ];
   hidePassword = true;
 
-  // SỬA LỖI: Chuyển sang dùng inject() cho tất cả các dependency
   private fb = inject(FormBuilder);
   private adminService = inject(AdminService);
   private router = inject(Router);
   private location = inject(Location);
+  // --- [THAY ĐỔI] Inject NzMessageService ---
+  private message = inject(NzMessageService);
 
-  // Constructor có thể để trống
   constructor() {}
 
   ngOnInit(): void {
-    // Khởi tạo form với các validators từ file gốc của bạn
     this.staffForm = this.fb.group({
       fullName: ['', Validators.required],
       username: [
@@ -73,7 +99,6 @@ export class PostStaffDetailComponent implements OnInit {
     });
   }
 
-  // Helper để truy cập form control dễ dàng hơn trong template
   get f(): { [key: string]: AbstractControl } {
     return this.staffForm.controls;
   }
@@ -96,7 +121,13 @@ export class PostStaffDetailComponent implements OnInit {
 
   onSubmit(): void {
     if (this.staffForm.invalid) {
-      this.staffForm.markAllAsTouched();
+      // Đánh dấu tất cả các trường là đã chạm vào để hiển thị lỗi
+      Object.values(this.staffForm.controls).forEach((control) => {
+        if (control.invalid) {
+          control.markAsDirty();
+          control.updateValueAndValidity({ onlySelf: true });
+        }
+      });
       return;
     }
 
@@ -106,23 +137,18 @@ export class PostStaffDetailComponent implements OnInit {
     this.adminService.createStaff(payload).subscribe({
       next: (res) => {
         this.isSubmitting = false;
-        alert(res.message || 'Tạo nhân viên thành công!');
+        this.message.success(res.message || 'Tạo nhân viên thành công!');
         this.router.navigate(['/admin/list-staff']);
       },
       error: (err) => {
         this.isSubmitting = false;
-        alert(
+        this.message.error(
           err.error?.message || 'Tạo nhân viên thất bại. Vui lòng thử lại.'
         );
       },
     });
   }
 
-  togglePasswordVisibility(): void {
-    this.hidePassword = !this.hidePassword;
-  }
-
-  // Hàm này giờ sẽ hoạt động chính xác
   goBack(): void {
     this.location.back();
   }
