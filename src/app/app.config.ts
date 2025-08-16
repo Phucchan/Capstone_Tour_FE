@@ -1,7 +1,4 @@
-import {
-  ApplicationConfig,
-  provideZoneChangeDetection,
-} from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
@@ -25,9 +22,9 @@ import { IconDefinition } from '@ant-design/icons-angular';
 import * as AllIcons from '@ant-design/icons-angular/icons';
 import { importProvidersFrom } from '@angular/core';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+// --- FIX: Import NzMessageModule ---
 import { NzMessageModule } from 'ng-zorro-antd/message';
 
-// *** THAY ĐỔI 2: Đăng ký dữ liệu locale Tiếng Việt ***
 registerLocaleData(vi);
 
 const antDesignIcons = AllIcons as {
@@ -36,7 +33,6 @@ const antDesignIcons = AllIcons as {
 const icons: IconDefinition[] = Object.keys(antDesignIcons).map(
   (key) => antDesignIcons[key]
 );
-
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -56,5 +52,7 @@ export const appConfig: ApplicationConfig = {
     provideNzI18n(vi_VN),
     provideNzIcons(icons),
     importProvidersFrom(NzModalModule),
+    // --- FIX: Add NzMessageModule to providers ---
+    importProvidersFrom(NzMessageModule),
   ],
 };
