@@ -55,4 +55,16 @@ export class TourDepartureService {
       )
       .pipe(map((res) => res.data));
   }
+
+  /**
+   * Xóa một lịch khởi hành
+   * DELETE /tours/{tourId}/schedules/{scheduleId}
+   */
+  deleteTourSchedule(tourId: number, scheduleId: number): Observable<string> {
+    return this.http
+      .delete<ApiResponse<string>>(
+        `${this.apiUrl}/${tourId}/schedules/${scheduleId}`
+      )
+      .pipe(map((res) => res.message));
+  }
 }

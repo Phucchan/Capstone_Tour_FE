@@ -426,6 +426,21 @@ export class SellerBookingDetailComponent implements OnInit {
       (this.booking.toddlers || 0);
 
     const subject = `Xác nhận Booking #${this.booking.bookingCode} - Tour ${this.booking.tourName}`;
+
+    // Tạo nội dung lịch trình nếu có dữ liệu
+    const planDays = ((this.booking as any)?.plan?.days || []) as any[];
+    let itineraryText = '';
+    if (planDays.length) {
+      itineraryText =
+        '\nLịch trình tour:\n' +
+        planDays
+          .map((day: any, idx: number) => {
+            const desc =
+              day.summary || day.description || day.longDescription || day.locationName || '';
+            return `- Ngày ${idx + 1}: ${desc}`;
+          })
+          .join('\n');
+    }
     const content = `Kính gửi ${this.booking.customerName},
 
 Cảm ơn bạn đã đặt tour tại Đi Đâu. Chúng tôi xin xác nhận thông tin booking của bạn như sau:
@@ -441,7 +456,7 @@ Cảm ơn bạn đã đặt tour tại Đi Đâu. Chúng tôi xin xác nhận th
       currency: 'VND',
     }).format(this.booking.totalAmount)}
 
-Vui lòng kiểm tra lại thông tin chi tiết và liên hệ với chúng tôi nếu có bất kỳ thắc mắc nào.
+Vui lòng kiểm tra lại thông tin chi tiết và liên hệ với chúng tôi nếu có bất kỳ thắc mắc nào. Nếu bạn chưa thanh toán, vui lòng thanh toán cho chúng tôi trước ngày khởi hành 3 ngày nếu không booking sẽ bị hủy
 
 Trân trọng,
 Đội ngũ Đi Đâu.
