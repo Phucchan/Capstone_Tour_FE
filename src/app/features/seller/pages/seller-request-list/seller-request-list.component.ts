@@ -1,16 +1,23 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
+
+// --- [CẬP NHẬT] Imports cho các module của NG-ZORRO ---
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzEmptyModule } from 'ng-zorro-antd/empty';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
+import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+
+// --- Imports từ project của bạn ---
 import { SellerBookingService } from '../../services/seller-booking.service';
 import { RequestBookingSummary } from '../../models/request-booking-summary.model';
 import { Paging } from '../../../../core/models/paging.model';
-
-// SỬA: Import đầy đủ các module cần thiết
-import { NzTableModule } from 'ng-zorro-antd/table';
-import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
-import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzPaginationModule } from 'ng-zorro-antd/pagination';
-import { NzEmptyModule } from 'ng-zorro-antd/empty'; // MỚI
 import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
 
 @Component({
@@ -18,12 +25,16 @@ import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
+    FormatDatePipe,
+    // NG-ZORRO Modules
     NzTableModule,
     NzButtonModule,
-    NzModalModule,
-    NzPaginationModule,
-    NzEmptyModule, // MỚI
-    FormatDatePipe,
+    NzEmptyModule,
+    NzIconModule,
+    NzPageHeaderModule,
+    NzBreadCrumbModule,
+    NzPopconfirmModule,
   ],
   templateUrl: './seller-request-list.component.html',
 })
@@ -33,7 +44,6 @@ export class SellerRequestListComponent implements OnInit {
   private message = inject(NzMessageService);
 
   requests: RequestBookingSummary[] = [];
-
   isLoading = true;
   paging: Paging<any> = { page: 0, size: 10, total: 0, items: [] };
 
@@ -46,49 +56,42 @@ export class SellerRequestListComponent implements OnInit {
     size: number = this.paging.size
   ): void {
     this.isLoading = true;
-    this.sellerService.getRequestBookings(page, size).subscribe({
-      next: (res) => {
-        // SỬA: Thay đổi cách kiểm tra response cho đúng với model ApiResponse
-        if (res && res.data) {
-          this.requests = res.data.items;
-          this.paging = res.data;
-        } else {
-          this.message.error(res.message || 'Không thể tải danh sách yêu cầu.');
-        }
-        this.isLoading = false;
-      },
-      error: () => {
-        this.isLoading = false;
-        this.message.error('Đã xảy ra lỗi. Vui lòng thử lại.');
-      },
-    });
+    this.sellerService
+      .getRequestBookings(page, size)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (res) => {
+          if (res && res.data) {
+            this.requests = res.data.items;
+            this.paging = res.data;
+          } else {
+            this.message.error(
+              res.message || 'Không thể tải danh sách yêu cầu.'
+            );
+          }
+        },
+        error: () => this.message.error('Đã xảy ra lỗi. Vui lòng thử lại.'),
+      });
   }
 
   onApprove(requestId: number): void {
-    this.modal.confirm({
-      nzTitle: 'Bạn có chắc muốn duyệt yêu cầu này?',
-      nzContent: 'Hành động này sẽ chuyển yêu cầu cho bộ phận kinh doanh.',
-      nzOkText: 'Đồng ý',
-      nzCancelText: 'Hủy',
-      nzOnOk: () => {
-        this.sellerService.approveRequestBooking(requestId).subscribe({
-          next: (res) => {
-            // SỬA: Thay đổi cách kiểm tra response
-            if (res && res.data) {
-              this.message.success('Duyệt yêu cầu thành công!');
-              this.loadRequests();
-            } else {
-              this.message.error(res.message || 'Duyệt yêu cầu thất bại.');
-            }
-          },
-          error: (err) =>
-            this.message.error(err.error?.message || 'Đã xảy ra lỗi.'),
-        });
+    // Logic xác nhận đã được chuyển sang nz-popconfirm trên template
+    this.sellerService.approveRequestBooking(requestId).subscribe({
+      next: (res) => {
+        if (res && res.data) {
+          this.message.success('Duyệt yêu cầu thành công!');
+          this.loadRequests(); // Tải lại danh sách sau khi duyệt thành công
+        } else {
+          this.message.error(res.message || 'Duyệt yêu cầu thất bại.');
+        }
       },
+      error: (err) =>
+        this.message.error(err.error?.message || 'Đã xảy ra lỗi.'),
     });
   }
 
   onPageIndexChange(page: number): void {
+    // nz-table trả về page index 1-based, cần trừ 1 để gọi API
     this.paging.page = page - 1;
     this.loadRequests();
   }
