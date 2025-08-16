@@ -1,6 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-// FIX: Import FormsModule for ngModel
 import {
   FormBuilder,
   FormGroup,
@@ -10,7 +9,6 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable, of } from 'rxjs';
-// FIX: Import finalize operator
 import { map, switchMap, tap, finalize } from 'rxjs/operators';
 
 // Core Services & Models
@@ -45,7 +43,7 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
     CommonModule,
     ReactiveFormsModule,
     RouterLink,
-    FormsModule, // FIX: Add FormsModule
+    FormsModule,
     // --- NG-ZORRO ---
     NzFormModule,
     NzInputModule,
@@ -195,13 +193,11 @@ export class TourFormComponent implements OnInit {
     }
   }
 
-  // --- File Upload Handler ---
   beforeUpload = (file: NzUploadFile): boolean => {
     this.selectedFile = file as unknown as File;
     const reader = new FileReader();
     reader.onload = (e) => (this.imagePreview = e.target?.result ?? null);
     reader.readAsDataURL(this.selectedFile);
-    // Return false to prevent auto-upload, we will handle it manually
     return false;
   };
 
@@ -254,14 +250,14 @@ export class TourFormComponent implements OnInit {
         : this.tourService.createTourWithFile(formData);
 
     apiCall.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
-      // FIX: Explicitly type the response parameter
       next: (createdTour: TourDetail) => {
         this.message.success(
           this.isEditMode
             ? 'Cập nhật tour thành công!'
             : `Tạo tour thành công! Mã tour: ${createdTour.code}`
         );
-        this.router.navigate(['/management/tours', createdTour.id, 'schedule']);
+        // FIX: Corrected navigation path
+        this.router.navigate(['/business/tours', createdTour.id, 'schedule']);
       },
       error: (err) => {
         console.error('Lỗi khi lưu tour:', err);
@@ -271,6 +267,7 @@ export class TourFormComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/management/tours']);
+    // FIX: Corrected navigation path
+    this.router.navigate(['/business/tours']);
   }
 }
