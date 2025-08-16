@@ -1,270 +1,158 @@
-<div class="container mx-auto p-4 md:p-6 lg:p-8">
-  <header class="flex items-center justify-between mb-6 border-b pb-4">
-    <h1 class="text-2xl md:text-3xl font-bold text-gray-800">{{ pageTitle }}</h1>
-    <button (click)="goBack()" class="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-      Quay lại
-    </button>
-  </header>
+<div class="container mx-auto p-4 sm:p-6 lg:p-8">
+  <nz-page-header [nzTitle]="pageTitle" (nzBack)="goBack()">
+    <nz-page-header-extra>
+      <a *ngIf="isEditMode && tourId" [routerLink]="['/management/tours', tourId, 'schedule']" nz-button>
+        <span nz-icon nzType="schedule"></span> Lịch trình
+      </a>
+      <a *ngIf="isEditMode && tourId" [routerLink]="['/management/tours', tourId, 'costing']" nz-button>
+        <span nz-icon nzType="calculator"></span> Chiết tính
+      </a>
+      <a *ngIf="isEditMode && tourId && tourForm.get('tourStatus')?.value === 'PUBLISHED'" [routerLink]="['/management/tours', tourId, 'departure-dates']" nz-button>
+        <span nz-icon nzType="calendar"></span> Ngày khởi hành
+      </a>
+      <button form="tourForm" type="submit" nz-button nzType="primary" [nzLoading]="isSubmitting" [disabled]="tourForm.invalid">
+        <span nz-icon nzType="save"></span>
+        {{ isEditMode ? 'Lưu thay đổi' : 'Lưu & Tiếp tục' }}
+      </button>
+    </nz-page-header-extra>
+  </nz-page-header>
 
+  <nz-spin [nzSpinning]="isLoading">
+    <ng-container *ngIf="tourOptions$ | async as options">
+      <form nz-form id="tourForm" [formGroup]="tourForm" (ngSubmit)="onSubmit()">
+        <div nz-row [nzGutter]="[24, 24]">
+          <!-- Cột chính -->
+          <div nz-col nzXs="24" nzLg="16">
+            <nz-card>
+              <!-- Tên Tour -->
+              <nz-form-item>
+                <nz-form-label nzRequired>Tên Tour</nz-form-label>
+                <nz-form-control nzErrorTip="Vui lòng nhập tên tour">
+                  <input nz-input formControlName="name" placeholder="Ví dụ: Khám phá Hà Giang 3 ngày 2 đêm" />
+                </nz-form-control>
+              </nz-form-item>
 
-  <ng-container *ngIf="tourOptions$ | async as options; else loadingTemplate">
-    <form
-      [formGroup]="tourForm"
-      (ngSubmit)="onSubmit()"
-      class="bg-white p-6 md:p-8 rounded-xl shadow-lg space-y-8"
-    >
-      <!-- Phần thông tin chung -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Cột trái: Tên, Ảnh, Mô tả -->
-        <div class="lg:col-span-2 space-y-6">
-          <div>
-            <label for="name" class="form-label">Tên Tour</label>
-            <input
-              type="text"
-              id="name"
-              formControlName="name"
-              class="input-style"
-              placeholder="Ví dụ: Khám phá Hà Giang 3 ngày 2 đêm"
-            />
+              <!-- Upload Ảnh -->
+              <nz-form-item>
+                <nz-form-label>Ảnh đại diện</nz-form-label>
+                <nz-form-control>
+                  <nz-upload nzListType="picture-card" [nzFileList]="fileList" [nzBeforeUpload]="beforeUpload" [nzShowUploadList]="{ showPreviewIcon: false }">
+                    <div *ngIf="!imagePreview">
+                      <span nz-icon nzType="plus"></span>
+                      <div class="ant-upload-text">Tải ảnh lên</div>
+                    </div>
+                    <img *ngIf="imagePreview" [src]="imagePreview" class="w-full h-full object-cover" alt="Preview" />
+                  </nz-upload>
+                </nz-form-control>
+              </nz-form-item>
+
+              <!-- Loại Tour -->
+              <nz-form-item>
+                <nz-form-label nzRequired>Loại Tour</nz-form-label>
+                <nz-form-control>
+                  <nz-radio-group formControlName="tourType">
+                    <label nz-radio nzValue="FIXED">Tour cố định (FIXED)</label>
+                    <label nz-radio nzValue="CUSTOM">Tour theo yêu cầu (CUSTOM)</label>
+                  </nz-radio-group>
+                </nz-form-control>
+              </nz-form-item>
+
+              <!-- Mô tả -->
+              <nz-form-item>
+                <nz-form-label>Mô tả chi tiết</nz-form-label>
+                <nz-form-control>
+                  <textarea nz-input formControlName="description" placeholder="Nhập mô tả chi tiết, lịch trình sơ lược..." [nzAutosize]="{ minRows: 8, maxRows: 15 }"></textarea>
+                </nz-form-control>
+              </nz-form-item>
+            </nz-card>
           </div>
-          <div class="mb-4">
-            <label
-              for="thumbnail"
-              class="block text-sm font-medium text-gray-700"
-              >Ảnh đại diện</label
-            >
-            <!-- Input để chọn file -->
-            <input
-              type="file"
-              id="thumbnail"
-              (change)="onFileSelect($event)"
-              class="mt-1 block w-full"
-            />
-            <!-- Vùng xem trước ảnh -->
-            <div *ngIf="imagePreview" class="mt-2">
-              <img [src]="imagePreview" class="h-48 w-auto rounded-md object-cover" alt="Xem trước ảnh đại diện tour">
-            </div>
+
+          <!-- Cột phụ -->
+          <div nz-col nzXs="24" nzLg="8">
+            <nz-card nzTitle="Thông tin bổ sung">
+              <!-- Mã Tour -->
+              <nz-form-item>
+                <nz-form-label>Mã Tour</nz-form-label>
+                <nz-form-control>
+                  <input nz-input formControlName="code" [placeholder]="!isEditMode ? 'Sẽ được tạo tự động' : ''" />
+                </nz-form-control>
+              </nz-form-item>
+
+              <!-- Trạng thái -->
+              <nz-form-item *ngIf="isEditMode">
+                <nz-form-label>Trạng thái</nz-form-label>
+                <nz-form-control>
+                  <nz-select formControlName="tourStatus">
+                    <nz-option nzValue="DRAFT" nzLabel="Bản nháp"></nz-option>
+                    <nz-option nzValue="PUBLISHED" nzLabel="Công khai"></nz-option>
+                    <nz-option nzValue="CANCELLED" nzLabel="Đã hủy"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+
+              <!-- Số ngày -->
+              <nz-form-item>
+                <nz-form-label>Số ngày</nz-form-label>
+                <nz-form-control>
+                  <nz-input-number [ngModel]="durationDays" [ngModelOptions]="{standalone: true}" [nzDisabled]="true" class="w-full"></nz-input-number>
+                </nz-form-control>
+              </nz-form-item>
+
+              <!-- Điểm khởi hành -->
+              <nz-form-item>
+                <nz-form-label nzRequired>Điểm khởi hành</nz-form-label>
+                <nz-form-control nzErrorTip="Vui lòng chọn điểm khởi hành">
+                  <nz-select formControlName="departLocationId" nzShowSearch nzPlaceHolder="Chọn điểm khởi hành">
+                    <nz-option *ngFor="let loc of options.departures" [nzLabel]="loc.name" [nzValue]="loc.id"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </nz-card>
           </div>
 
-          <!-- Phần chọn loại Tour -->
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700"
-              >Loại Tour</label
-            >
-            <div class="mt-2 flex items-center space-x-4">
-              <div class="flex items-center">
-                <input
-                  id="tour-type-fixed"
-                  formControlName="tourType"
-                  type="radio"
-                  value="FIXED"
-                  class="h-4 w-4 text-indigo-600 border-gray-300"
-                />
-                <label
-                  for="tour-type-fixed"
-                  class="ml-2 block text-sm text-gray-900"
-                  >Tour cố định (FIXED)</label
-                >
+          <!-- Phần chọn nhiều -->
+          <div nz-col nzXs="24">
+            <nz-card>
+              <div nz-row [nzGutter]="16">
+                <div nz-col nzSpan="12">
+                  <nz-form-item>
+                    <nz-form-label nzRequired>Điểm đến (chọn nhiều)</nz-form-label>
+                    <nz-form-control nzErrorTip="Vui lòng chọn ít nhất một điểm đến">
+                      <nz-select formControlName="destinationLocationIds" nzMode="multiple" nzPlaceHolder="Chọn các điểm đến">
+                        <nz-option *ngFor="let dest of options.destinations" [nzLabel]="dest.name" [nzValue]="dest.id"></nz-option>
+                      </nz-select>
+                    </nz-form-control>
+                  </nz-form-item>
+                </div>
+                <div nz-col nzSpan="12">
+                  <nz-form-item>
+                    <nz-form-label nzRequired>Chủ đề (chọn nhiều)</nz-form-label>
+                    <nz-form-control nzErrorTip="Vui lòng chọn ít nhất một chủ đề">
+                      <nz-select formControlName="tourThemeIds" nzMode="multiple" nzPlaceHolder="Chọn các chủ đề">
+                        <nz-option *ngFor="let theme of options.themes" [nzLabel]="theme.name" [nzValue]="theme.id"></nz-option>
+                      </nz-select>
+                    </nz-form-control>
+                  </nz-form-item>
+                </div>
               </div>
-              <div class="flex items-center">
-                <input
-                  id="tour-type-custom"
-                  formControlName="tourType"
-                  type="radio"
-                  value="CUSTOM"
-                  class="h-4 w-4 text-indigo-600 border-gray-300"
-                />
-                <label
-                  for="tour-type-custom"
-                  class="ml-2 block text-sm text-gray-900"
-                  >Tour theo yêu cầu (CUSTOM)</label
-                >
-              </div>
-            </div>
+            </nz-card>
           </div>
-          <div>
-            <label for="description" class="form-label">Mô tả chi tiết</label>
-            <textarea
-              id="description"
-              formControlName="description"
-              rows="8"
-              class="input-style"
-              placeholder="Nhập mô tả chi tiết, lịch trình sơ lược..."
-            ></textarea>
+
+          <!-- Hiển thị thông tin yêu cầu của khách (nếu có) -->
+          <div nz-col nzXs="24" *ngIf="isCustomRequestMode && (requestBookingDetail$ | async) as request">
+             <nz-alert nzType="info" [nzMessage]="messageTemplate" [nzDescription]="descriptionTemplate" nzShowIcon></nz-alert>
+             <ng-template #messageTemplate>
+                Thông tin yêu cầu từ khách hàng: <strong>{{request.customerName}}</strong> (SĐT: {{request.customerPhone}})
+             </ng-template>
+             <ng-template #descriptionTemplate>
+                <!-- FIX: Correct property names based on the user's actual model -->
+                <p><strong>Ngày đi dự kiến:</strong> {{request.startDate | date: 'dd/MM/yyyy'}}</p>
+                <p><strong>Số người lớn:</strong> {{request.adults}} - <strong>Số trẻ em:</strong> {{request.children}}</p>
+                <p><strong>Ghi chú/Dịch vụ mong muốn:</strong> {{request.desiredServices || 'Không có'}}</p>
+             </ng-template>
           </div>
         </div>
-
-        <!-- Cột phải: Các thông tin ngắn -->
-        <div class="space-y-6 bg-gray-50 p-4 rounded-lg">
-          <div>
-            <label for="code" class="form-label">Mã Tour</label>
-            <input
-              type="text"
-              id="code"
-              formControlName="code"
-              class="input-style-disabled"
-              [placeholder]="!isEditMode ? 'Sẽ được tạo tự động' : ''"
-            />
-          </div>
-          <div *ngIf="isEditMode">
-            <label for="tourStatus" class="form-label">Trạng thái</label>
-            <select
-              id="tourStatus"
-              formControlName="tourStatus"
-              class="input-style"
-            >
-              <option value="DRAFT">Bản nháp </option>
-              <option value="PUBLISHED">Công khai </option>
-              <option value="CANCELLED">Đã hủy </option>
-            </select>
-          </div>
-          <div>
-            <label class="form-label">Số ngày</label>
-            <input
-              type="number"
-              [value]="durationDays"
-              readonly
-              class="input-style-disabled"
-              placeholder="Tự động tính"
-            />
-          </div>
-          <div>
-            <label for="departLocationId" class="form-label"
-              >Điểm khởi hành</label
-            >
-            <select
-              id="departLocationId"
-              formControlName="departLocationId"
-              class="input-style"
-            >
-              <option [ngValue]="null" disabled>
-                -- Chọn điểm khởi hành --
-              </option>
-              <option *ngFor="let loc of options.departures" [value]="loc.id">
-                {{ loc.name }}
-              </option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- Phần chọn nhiều -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t">
-        <div>
-          <label for="destinationLocationIds" class="form-label"
-            >Điểm đến (chọn nhiều)</label
-          >
-          <ng-select
-            [items]="options.destinations"
-            bindLabel="name"
-            bindValue="id"
-            [multiple]="true"
-            [closeOnSelect]="false"
-            placeholder="Chọn các điểm đến"
-            formControlName="destinationLocationIds"
-          >
-          </ng-select>
-        </div>
-        <div>
-          <label for="tourThemeIds" class="form-label"
-            >Chủ đề (chọn nhiều)</label
-          >
-          <ng-select
-            [items]="options.themes"
-            bindLabel="name"
-            bindValue="id"
-            [multiple]="true"
-            [closeOnSelect]="false"
-            placeholder="Chọn các chủ đề"
-            formControlName="tourThemeIds"
-          >
-          </ng-select>
-        </div>
-      </div>
-
-      <!-- Nút bấm -->
-      <div class="flex items-center justify-end gap-4 pt-6 border-t">
-        <a
-          *ngIf="isEditMode && tourId"
-          [routerLink]="['/business/tours', tourId, 'schedule']"
-          class="inline-flex items-center px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 mr-2"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          Quản lý Lịch trình
-        </a>
-
-        <a
-          *ngIf="isEditMode && tourId"
-          [routerLink]="['/business/tours', tourId, 'costing']"
-          class="inline-flex items-center px-4 py-2 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 transition-colors"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 3h.008v.008H8.25v-.008zm0 3h.008v.008H8.25v-.008zm3-6h.008v.008H11.25v-.008zm0 3h.008v.008H11.25v-.008zm0 3h.008v.008H11.25v-.008zm3-6h.008v.008H14.25v-.008zm0 3h.008v.008H14.25v-.008zm0 3h.008v.008H14.25v-.008zM6 6h12v12H6V6z"
-            />
-          </svg>
-          Chiết tính chi phí
-        </a>
-
-        <a
-          *ngIf="
-            isEditMode &&
-            tourId &&
-            tourForm.get('tourStatus')?.value === 'PUBLISHED'
-          "
-          [routerLink]="['/business/tours', tourId, 'departure-dates']"
-          class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white font-bold rounded-lg hover:bg-yellow-600 transition-colors"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 mr-2"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M5.5 2a.5.5 0 01.5.5v1a.5.5 0 01-1 0v-1a.5.5 0 01.5-.5zM14.5 2a.5.5 0 01.5.5v1a.5.5 0 01-1 0v-1a.5.5 0 01.5-.5zM3 6a1 1 0 011-1h12a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V6zm3 5a1 1 0 100-2H5a1 1 0 100 2h1zm3 0a1 1 0 100-2H8a1 1 0 100 2h1zm3 0a1 1 0 100-2h-1a1 1 0 100 2h1z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          Quản lý Ngày khởi hành
-        </a>
-
-        <button
-          type="submit"
-          [disabled]="tourForm.invalid"
-          class="submit-button"
-        >
-          {{ isEditMode ? "Lưu thay đổi" : "Lưu và Tiếp tục" }}
-        </button>
-      </div>
-    </form>
-  </ng-container>
-
-  <ng-template #loadingTemplate>
-    <div class="text-center py-20 text-gray-500">
-      <p>Đang tải dữ liệu...</p>
-    </div>
-  </ng-template>
+      </form>
+    </ng-container>
+  </nz-spin>
 </div>
