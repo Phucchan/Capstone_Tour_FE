@@ -1,14 +1,14 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { ApiResponse } from '../../core/models/api-response.model';
-import { Paging } from '../../core/models/paging.model';
+import { environment } from '../../../../environments/environment';
+import { ApiResponse } from '../../../core/models/api-response.model';
+import { Paging } from '../../../core/models/paging.model';
 import {
   ChangeStatusRequest,
   UserFullInformation,
   UserManagementRequest,
-} from './models/user.model';
+} from '../models/user.model';
 
 @Injectable({
   providedIn: 'root',
