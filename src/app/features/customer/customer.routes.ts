@@ -6,6 +6,7 @@ import { WishlistComponent } from "./components/wishlist/wishlist.component";
 import { BookingHistoriesComponent } from "./components/booking-histories/booking-histories.component";
 import { ListPlanComponent } from "./components/list-plan/list-plan.component";
 import { RequestBookingListComponent } from "./components/request-booking-list/request-booking-list.component";
+import { TourPrivateComponent } from "./components/tour-private/tour-private.component";
 
 
 export const CUSTOMER_ROUTES: Route[] = [
@@ -37,6 +38,10 @@ export const CUSTOMER_ROUTES: Route[] = [
   {
     path: 'list-request-booking',
     component: RequestBookingListComponent
+  },
+  {
+    path: 'tour-private',
+    component: TourPrivateComponent
   }
 
 

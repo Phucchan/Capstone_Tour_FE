@@ -1,0 +1,83 @@
+<div class="p-4 md:p-6">
+  <h2 class="text-2xl text-blue-700 font-bold mb-4">Tour riêng của bạn</h2>
+
+  <!-- change: Thanh filter giống form tham khảo, bỏ trạng thái -->
+  <div class="flex flex-wrap items-center gap-3 mb-4">
+    <label class="text text-gray-600">Tìm kiếm:</label>
+    <input
+      class="border rounded px-3 py-2"
+      placeholder="Tên tour"
+      [(ngModel)]="search"                  
+      (keyup.enter)="onSearch()"            
+    />
+
+    <label class="text text-gray-600 ml-4">Ngày khởi hành:</label>
+    <input
+      type="date"
+      class="border rounded px-3 py-2"
+      [ngModel]="selectedDate"              
+      (ngModelChange)="onDateChange($event)"
+    />
+
+    <button
+      type="button"
+      class="px-3 py-2 text-sm text-blue-600 border rounded hover:bg-blue-200"
+      (click)="resetFilters()">              
+      Xóa lọc
+    </button>
+
+    <button
+      type="button"
+      class="px-3 py-2 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
+      (click)="onSearch()">                  
+      Tìm
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="text-gray-500 py-6">Đang tải...</div>
+  <div *ngIf="!isLoading && errorMsg" class="text-red-500 py-6">{{ errorMsg }}</div>
+  <div *ngIf="!isLoading && !errorMsg && visibleTours.length === 0" class="text-gray-500 py-6">
+    Chưa có tour nào.
+  </div>
+
+  <div *ngIf="!isLoading && visibleTours.length > 0" class="overflow-x-auto">
+    <!-- danh sách -->
+    <div class="space-y-4">
+      <div *ngFor="let tour of visibleTours"  
+           class="flex border rounded-lg overflow-hidden shadow-sm bg-white">
+        <img [src]="tour.thumbnailUrl || tour.thumbnail || 'assets/images/placeholder.jpg'"
+             [alt]="tour.name"
+             class="w-[280px] h-[180px] object-cover flex-shrink-0" loading="lazy"/>
+
+        <div class="p-4 flex-1">
+          <h3 class="font-semibold text-lg text-gray-900 line-clamp-2 mb-1">{{ tour.name }}</h3>
+          <div class="grid grid-cols-2 gap-x-6 text-sm text-gray-700">
+            <p>🆔 <strong>Mã tour:</strong> {{ tour.code }}</p>
+            <p>📍 <strong>Khởi hành:</strong> {{ tour.locationName }}</p>
+            <p>⏳ <strong>Thời gian:</strong> {{ tour.durationDays | durationFormat }}</p>
+            <p>🚌 <strong>Phương tiện:</strong> {{ tour.tourTransport | iconTransport }}</p>
+            <p>📅 <strong>Ngày khởi hành:</strong> {{ tour.departureDates | date:'dd/MM/yyyy H:mm' }}</p>
+          </div>
+          <div class="flex justify-between items-end mt-3">
+            <div>
+              <p class="text-sm text-gray-600">Giá từ</p>
+              <p class="text-2xl font-bold text-red-600">{{ tour.startingPrice | currencyVnd }}</p>
+            </div>
+            <a [routerLink]="['/tours', tour.id]"
+               class="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">
+              Xem chi tiết
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- phân trang (server-side) -->
+    <app-pagination
+      [currentPage]="page"
+      [totalItems]="total"
+      [pageSize]="size"
+      (pageChange)="onPageChange($event)">
+    </app-pagination>
+  </div>
+</div>

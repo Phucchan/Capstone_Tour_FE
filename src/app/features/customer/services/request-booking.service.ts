@@ -2,6 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { map, Observable } from 'rxjs';
+import { ApiResponse } from '../../../core/models/api-response.model';
 
 @Injectable({
   providedIn: 'root',
@@ -28,7 +29,7 @@ export class RequestBookingService {
     if (params?.search) httpParams.search = params.search;
 
     return this.http.get<any>(
-      `${environment.apiUrl}/public/${userId}/request-bookings`, {
+      `${environment.apiUrl}/customer/${userId}/request-bookings`, {
          params: httpParams });
   }
   sendVerifyCode(email: string): Observable<any> {
@@ -38,7 +39,7 @@ export class RequestBookingService {
   }
 
  requestBooking(body: any, userId: number) {
-  return this.http.post<ApiResp>(
+  return this.http.post<ApiResponse<any>>(
     `${environment.apiUrl}/public/request-bookings`,
     body,
     { params: { userId } }
@@ -57,10 +58,16 @@ export class RequestBookingService {
     })
   );
 }
-}
-export interface ApiResp<T=any> {
-  status?: number;  // 0 | 200 = OK, 400... = lỗi nghiệp vụ
-  code?: number;
-  message?: string;
-  data?: T;
+getPrivateTours(userId: number, params?: { page?: number; size?: number; search?: string }): Observable<any> {
+
+    // build query string
+       const httpParams: any = {};
+    if (params?.page !== undefined) httpParams.page = params.page;
+    if (params?.size !== undefined) httpParams.size = params.size;
+    if (params?.search) httpParams.search = params.search;            
+    return this.http.get<any>(
+      `${environment.apiUrl}/customer/${userId}/custom-tours`,
+      { params: httpParams }
+    );
+  }
 }

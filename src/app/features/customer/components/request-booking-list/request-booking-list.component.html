@@ -17,7 +17,7 @@
            [ngModel]="searchText()"
            (ngModelChange)="searchText.set($event); page.set(0); fetch()"/>
 
-    <label class="text text-gray-600 ml-4">Ngày đi:</label>
+    <label class="text text-gray-600 ml-4">Ngày khởi hành:</label>
     <input type="date" class="border rounded px-3 py-2"
            [ngModel]="searchDate()"
            (ngModelChange)="searchDate.set($event); page.set(0); fetch()"/>
