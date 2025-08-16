@@ -207,6 +207,23 @@ export class TourDepartureDateComponent implements OnInit, OnDestroy {
         },
       });
   }
+  onDelete(scheduleId: number): void {
+    if (!confirm('Bạn có chắc chắn muốn xóa ngày khởi hành này?')) {
+      return;
+    }
+    this.tourDepartureService
+      .deleteTourSchedule(this.tourId, scheduleId)
+      .subscribe({
+        next: () => {
+          alert('Xóa ngày khởi hành thành công!');
+          this.loadInitialData().subscribe();
+        },
+        error: (err) => {
+          console.error('Lỗi xóa ngày khởi hành:', err);
+          alert('Không thể xóa ngày khởi hành.');
+        },
+      });
+  }
 
   formatPaxOption(pax: TourPaxOption): string {
     return `Gói ${pax.minQuantity} - ${pax.maxQuantity} khách`;
