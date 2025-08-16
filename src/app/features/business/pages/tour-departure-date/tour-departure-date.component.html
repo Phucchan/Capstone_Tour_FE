@@ -1,123 +1,100 @@
-<!-- src/app/features/business/pages/tour-departure-date/tour-departure-date.component.html -->
-
-<div class="container mx-auto p-4 md:p-6 lg:p-8">
+<div class="container mx-auto p-4 sm:p-6 lg:p-8">
   <!-- Header -->
   <ng-container *ngIf="tourDetail$ | async as tour">
-    <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 border-b pb-4">
-      <div>
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Quản lý Lịch Khởi Hành</h1>
-        <p class="text-lg text-blue-600 font-semibold">{{ tour.name }}</p>
-      </div>
-      <button (click)="showCreateModal()" class="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
-        + Thêm Ngày Khởi Hành
-      </button>
-    </header>
+    <nz-page-header [nzTitle]="'Quản lý Lịch Khởi Hành'" [nzSubtitle]="tour.name + ' (' + tour.code + ')'">
+      <nz-page-header-extra>
+        <button nz-button nzType="primary" (click)="showCreateModal(modalContent)">
+          <span nz-icon nzType="plus"></span>
+          Thêm Ngày Khởi Hành
+        </button>
+      </nz-page-header-extra>
+    </nz-page-header>
   </ng-container>
 
-  <!-- Loading Spinner -->
-  <div *ngIf="isLoading" class="text-center py-20">
-    <app-spinner></app-spinner>
-    <p class="text-gray-500 mt-2">Đang tải dữ liệu...</p>
-  </div>
-
   <!-- Content -->
-  <div *ngIf="!isLoading">
+  <nz-spin [nzSpinning]="isLoading">
     <ng-container *ngIf="schedules$ | async as schedules">
-      <!-- Trường hợp chưa có ngày nào -->
-      <div *ngIf="schedules.length === 0" class="text-center py-16 bg-gray-50 rounded-lg">
-        <p class="text-gray-500">Chưa có ngày khởi hành nào được mở bán.</p>
-        <p class="text-gray-400 text-sm mt-1">Hãy bắt đầu bằng cách nhấn nút "Thêm Ngày Khởi Hành".</p>
-      </div>
+      <nz-table #departureTable [nzData]="schedules" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle">
+        <thead class="bg-gray-50">
+          <tr>
+            <th>Ngày Khởi Hành</th>
+            <th>Điều Phối Viên</th>
+            <th>Gói Giá</th>
+            <th>Giá Bán</th>
+            <th nzAlign="right">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let schedule of departureTable.data">
+            <td>{{ schedule.departureDate | date:'dd/MM/yyyy' }}</td>
+            <td>{{ schedule.coordinator?.fullName || 'N/A' }}</td>
+            <td>{{ formatPaxOption(schedule.tourPax!) }}</td>
+            <td>
+              <strong class="text-green-600">{{ schedule.price | currencyVnd }}</strong>
+            </td>
+            <td nzAlign="right">
+              <a nz-popconfirm nzPopconfirmTitle="Bạn có chắc chắn muốn xóa?" (nzOnConfirm)="onDelete(schedule.id)" class="text-red-500">Xóa</a>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
 
-      <!-- Hiển thị danh sách các ngày -->
-      <div *ngIf="schedules.length > 0" class="bg-white rounded-lg shadow-md overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày Khởi Hành</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Điều Phối Viên</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gói Giá</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Giá Bán</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hành động</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr *ngFor="let schedule of schedules" class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ schedule.departureDate | date:'dd/MM/yyyy' }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ schedule.coordinator?.fullName || 'N/A' }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ formatPaxOption(schedule.tourPax!) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">{{ schedule.price | currencyVnd }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <button type="button" (click)="onDelete(schedule.id)" class="text-red-600 hover:text-red-900">
-                  Xóa
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div *ngIf="schedules.length === 0" class="mt-4">
+         <nz-empty nzNotFoundContent="Chưa có ngày khởi hành nào. Hãy thêm ngày mới!"></nz-empty>
       </div>
     </ng-container>
-  </div>
+  </nz-spin>
 </div>
 
-<!-- Modal Thêm Mới -->
-<div *ngIf="isModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-  <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
-    <h3 class="text-xl font-semibold mb-4">Thêm Ngày Khởi Hành Mới</h3>
+<!-- Modal Template -->
+<ng-template #modalContent>
+  <form nz-form [formGroup]="departureForm" class="mt-6">
+    <nz-form-item>
+      <nz-form-label nzRequired>Ngày khởi hành đầu tiên</nz-form-label>
+      <nz-form-control nzErrorTip="Vui lòng chọn ngày">
+        <nz-date-picker formControlName="departureDate" class="w-full"></nz-date-picker>
+      </nz-form-control>
+    </nz-form-item>
 
-    <ng-container *ngIf="options; else modalLoading">
-      <form [formGroup]="departureForm" (ngSubmit)="onSave()">
-        <div class="space-y-4">
-          <!-- Các trường cũ -->
-          <div>
-            <label for="departureDate" class="form-label">Ngày khởi hành đầu tiên</label>
-            <input type="date" id="departureDate" formControlName="departureDate" class="input-style w-full">
-          </div>
-          <div>
-            <label for="coordinatorId" class="form-label">Điều phối viên</label>
-            <ng-select [items]="options.coordinators" bindLabel="fullName" bindValue="id" formControlName="coordinatorId" placeholder="Chọn điều phối viên"></ng-select>
-          </div>
-          <div>
-            <label for="tourPaxId" class="form-label">Gói giá</label>
-            <ng-select [items]="options.tourPaxes" bindValue="id" formControlName="tourPaxId" placeholder="Chọn gói giá">
-               <ng-template ng-label-tmp let-item="item">
-                  {{ formatPaxOption(item) }}
-               </ng-template>
-               <ng-template ng-option-tmp let-item="item" let-index="index" let-searchTerm="searchTerm">
-                  <div>{{ formatPaxOption(item) }}</div>
-               </ng-template>
-            </ng-select>
-          </div>
+    <nz-form-item>
+      <nz-form-label nzRequired>Điều phối viên</nz-form-label>
+      <nz-form-control nzErrorTip="Vui lòng chọn điều phối viên">
+        <nz-select formControlName="coordinatorId" nzShowSearch nzPlaceHolder="Chọn điều phối viên">
+          <nz-option *ngFor="let coordinator of options?.coordinators" [nzLabel]="coordinator.fullName" [nzValue]="coordinator.id"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
 
-          <!--CÁC TRƯỜNG MỚI CHO CHỨC NĂNG LẶP LẠI-->
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-                <label for="repeatType" class="form-label">Lặp lại</label>
-                <ng-select [items]="repeatTypes" bindLabel="label" bindValue="value" formControlName="repeatType"></ng-select>
-            </div>
-            <div *ngIf="departureForm.get('repeatType')?.value !== 'NONE'">
-                <label for="repeatCount" class="form-label">Số lần lặp</label>
-                <input type="number" id="repeatCount" formControlName="repeatCount" class="input-style w-full" min="1">
-            </div>
-          </div>
+    <nz-form-item>
+      <nz-form-label nzRequired>Gói giá</nz-form-label>
+      <nz-form-control nzErrorTip="Vui lòng chọn gói giá">
+        <nz-select formControlName="tourPaxId" nzShowSearch nzPlaceHolder="Chọn gói giá">
+          <nz-option *ngFor="let pax of options?.tourPaxes" [nzLabel]="formatPaxOption(pax)" [nzValue]="pax.id"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
 
-        </div>
-        <div class="flex justify-end gap-4 mt-6">
-          <button type="button" (click)="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Hủy</button>
-          <button type="submit" [disabled]="departureForm.invalid || isSubmitting" class="submit-button">
-            {{ isSubmitting ? 'Đang lưu...' : 'Lưu' }}
-          </button>
-        </div>
-      </form>
-    </ng-container>
+    <nz-divider nzText="Tùy chọn lặp lại"></nz-divider>
 
-    <!-- Template hiển thị khi options đang được tải -->
-    <ng-template #modalLoading>
-        <div class="text-center p-8">
-            <app-spinner></app-spinner>
-            <p class="text-gray-500 mt-2">Đang tải dữ liệu form...</p>
-        </div>
-    </ng-template>
-
-  </div>
-</div>
+    <div nz-row [nzGutter]="16">
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label>Lặp lại</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="repeatType">
+              <nz-option *ngFor="let type of repeatTypes" [nzLabel]="type.label" [nzValue]="type.value"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label>Số lần lặp</nz-form-label>
+          <nz-form-control nzErrorTip="Vui lòng nhập số lần lặp">
+            <nz-input-number formControlName="repeatCount" [nzMin]="1" class="w-full"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </div>
+  </form>
+</ng-template>

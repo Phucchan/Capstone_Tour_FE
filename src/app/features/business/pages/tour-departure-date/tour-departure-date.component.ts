@@ -1,18 +1,22 @@
-// src/app/features/business/pages/tour-departure-date/tour-departure-date.component.ts
-
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  TemplateRef,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Observable, forkJoin, BehaviorSubject, Subscription } from 'rxjs';
+import { Observable, forkJoin, BehaviorSubject, Subscription, of } from 'rxjs';
 import { switchMap, map, tap, finalize } from 'rxjs/operators';
-import { NgSelectModule } from '@ng-select/ng-select';
 
+// Core Services & Models
 import { TourDepartureService } from '../../../../core/services/tour-departure.service';
 import { TourService } from '../../../../core/services/tour.service';
 import { TourDetail } from '../../../../core/models/tour.model';
@@ -23,8 +27,24 @@ import {
   TourScheduleCreateRequest,
 } from '../../../../core/models/tour-schedule.model';
 
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+// Shared Pipes
 import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
+
+// NG-ZORRO Imports
+import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzModalService, NzModalModule } from 'ng-zorro-antd/modal';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzEmptyModule } from 'ng-zorro-antd/empty';
+import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 
 @Component({
   selector: 'app-tour-departure-date',
@@ -32,35 +52,45 @@ import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    NgSelectModule,
-    SpinnerComponent,
+    RouterLink,
     CurrencyVndPipe,
-    DatePipe,
+    // --- NG-ZORRO ---
+    NzPageHeaderModule,
+    NzButtonModule,
+    NzTableModule,
+    NzSpinModule,
+    NzModalModule,
+    NzFormModule,
+    NzDatePickerModule,
+    NzSelectModule,
+    NzInputNumberModule,
+    NzPopconfirmModule,
+    NzEmptyModule,
+    NzDividerModule,
+    NzIconModule,
   ],
   templateUrl: './tour-departure-date.component.html',
 })
 export class TourDepartureDateComponent implements OnInit, OnDestroy {
+  // --- Injections ---
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
   private tourService = inject(TourService);
   private tourDepartureService = inject(TourDepartureService);
+  private modalService = inject(NzModalService);
+  private message = inject(NzMessageService);
 
+  // --- State ---
   tourId!: number;
   tourDetail$!: Observable<TourDetail>;
-
   private schedulesSubject = new BehaviorSubject<TourSchedule[]>([]);
   schedules$ = this.schedulesSubject.asObservable();
-
-  options!: TourScheduleOptions;
-
+  options: TourScheduleOptions | null = null;
   isLoading = true;
-  isModalVisible = false;
   isSubmitting = false;
-
   departureForm!: FormGroup;
   private repeatSub!: Subscription;
 
-  // Mảng dữ liệu cho dropdown lặp lại
   repeatTypes = [
     { value: 'NONE', label: 'Không lặp lại' },
     { value: 'WEEKLY', label: 'Hàng tuần' },
@@ -80,9 +110,7 @@ export class TourDepartureDateComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.repeatSub) {
-      this.repeatSub.unsubscribe();
-    }
+    this.repeatSub?.unsubscribe();
   }
 
   private loadInitialData() {
@@ -112,16 +140,14 @@ export class TourDepartureDateComponent implements OnInit, OnDestroy {
       departureDate: [null, Validators.required],
       coordinatorId: [null, Validators.required],
       tourPaxId: [null, Validators.required],
-      // Thêm 2 trường mới
       repeatType: ['NONE', Validators.required],
       repeatCount: [
-        { value: 0, disabled: true },
+        { value: 1, disabled: true },
         [Validators.required, Validators.min(1)],
       ],
     });
   }
 
-  // Xử lý logic ẩn/hiện và yêu cầu của ô "Số lần lặp"
   private handleRepeatChanges(): void {
     const repeatTypeControl = this.departureForm.get('repeatType');
     const repeatCountControl = this.departureForm.get('repeatCount');
@@ -129,11 +155,10 @@ export class TourDepartureDateComponent implements OnInit, OnDestroy {
     if (repeatTypeControl && repeatCountControl) {
       this.repeatSub = repeatTypeControl.valueChanges.subscribe((value) => {
         if (value === 'NONE') {
-          repeatCountControl.setValue(0);
+          repeatCountControl.setValue(1);
           repeatCountControl.disable();
         } else {
           repeatCountControl.enable();
-          repeatCountControl.setValue(1); // Set giá trị mặc định là 1
         }
       });
     }
@@ -152,33 +177,49 @@ export class TourDepartureDateComponent implements OnInit, OnDestroy {
     }));
   }
 
-  showCreateModal(): void {
+  showCreateModal(modalContent: TemplateRef<{}>): void {
     this.departureForm.reset({
       repeatType: 'NONE',
-      repeatCount: { value: 0, disabled: true },
+      repeatCount: { value: 1, disabled: true },
     });
-    this.isModalVisible = true;
-  }
 
-  closeModal(): void {
-    this.isModalVisible = false;
+    this.modalService.create({
+      nzTitle: 'Thêm Ngày Khởi Hành Mới',
+      nzContent: modalContent,
+      nzFooter: [
+        { label: 'Hủy', onClick: () => this.modalService.closeAll() },
+        {
+          label: 'Lưu',
+          type: 'primary',
+          loading: this.isSubmitting,
+          disabled: () => this.departureForm.invalid,
+          onClick: () => this.onSave(),
+        },
+      ],
+      nzMaskClosable: false,
+      nzWidth: '600px',
+    });
   }
 
   onSave(): void {
     if (this.departureForm.invalid) {
-      this.departureForm.markAllAsTouched();
+      Object.values(this.departureForm.controls).forEach((control) => {
+        if (control.invalid) {
+          control.markAsDirty();
+          control.updateValueAndValidity({ onlySelf: true });
+        }
+      });
       return;
     }
 
     this.isSubmitting = true;
-    const formValue = this.departureForm.getRawValue(); // Dùng getRawValue để lấy cả trường bị disable
+    const formValue = this.departureForm.getRawValue();
 
-    // Tạo chuỗi ngày giờ đúng định dạng YYYY-MM-DDTHH:mm:ss
-    const localDate = new Date(formValue.departureDate);
-    const year = localDate.getFullYear();
-    const month = ('0' + (localDate.getMonth() + 1)).slice(-2);
-    const day = ('0' + localDate.getDate()).slice(-2);
-    const formattedDateString = `${year}-${month}-${day}T00:00:00`;
+    const localDate: Date = formValue.departureDate;
+    const formattedDateString = `${localDate.getFullYear()}-${(
+      '0' +
+      (localDate.getMonth() + 1)
+    ).slice(-2)}-${('0' + localDate.getDate()).slice(-2)}T00:00:00`;
 
     const payload: TourScheduleCreateRequest = {
       coordinatorId: formValue.coordinatorId,
@@ -188,44 +229,41 @@ export class TourDepartureDateComponent implements OnInit, OnDestroy {
       repeatCount: formValue.repeatType === 'NONE' ? 0 : formValue.repeatCount,
     };
 
-    console.log('Dữ liệu gửi lên server:', payload);
-
     this.tourDepartureService
       .createTourSchedule(this.tourId, payload)
       .pipe(finalize(() => (this.isSubmitting = false)))
       .subscribe({
         next: () => {
-          alert('Thêm (các) ngày khởi hành thành công!');
-          this.closeModal();
+          this.message.success('Thêm (các) ngày khởi hành thành công!');
+          this.modalService.closeAll();
           this.loadInitialData().subscribe();
         },
         error: (err) => {
           console.error('Lỗi chi tiết từ server:', err);
-          alert(
-            `Lỗi từ server: ${err.message || 'Không thể thêm ngày khởi hành.'}`
+          this.message.error(
+            err.error?.message || 'Không thể thêm ngày khởi hành.'
           );
         },
       });
   }
+
   onDelete(scheduleId: number): void {
-    if (!confirm('Bạn có chắc chắn muốn xóa ngày khởi hành này?')) {
-      return;
-    }
     this.tourDepartureService
       .deleteTourSchedule(this.tourId, scheduleId)
       .subscribe({
         next: () => {
-          alert('Xóa ngày khởi hành thành công!');
+          this.message.success('Xóa ngày khởi hành thành công!');
           this.loadInitialData().subscribe();
         },
         error: (err) => {
           console.error('Lỗi xóa ngày khởi hành:', err);
-          alert('Không thể xóa ngày khởi hành.');
+          this.message.error('Không thể xóa ngày khởi hành.');
         },
       });
   }
 
   formatPaxOption(pax: TourPaxOption): string {
+    if (!pax) return '';
     return `Gói ${pax.minQuantity} - ${pax.maxQuantity} khách`;
   }
 }
