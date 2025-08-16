@@ -47,7 +47,7 @@
                     <p> {{ tour.tourTransport | iconTransport }}</p>
                     <p>📅 Ngày đi: {{ tour.departureDates[0] | date: 'dd/MM/yyyy' }}</p>
                     <p>⏳ Thời gian: {{ tour.durationDays }}N{{ tour.durationDays - 1 }}Đ</p>
-                    <p>🛏️ Còn: {{ tour.availableSeats || '...' }}</p>
+                  <p>🛏️ Còn: {{ tour.availableSeats === 0 ? 'Hết chỗ' : (tour.availableSeats || '...') }}</p>
                 </div>
 
                 <!-- Giá -->

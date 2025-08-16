@@ -63,7 +63,7 @@ export const MENU_ITEMS: MenuItem[] = [
       },
       {
         icon: 'assets/icons/heroicons/outline/request-quote-svgrepo-com.svg',
-        label: 'Yêu cầu đặt Tour',
+        label: 'Yêu cầu tạo Tour',
         route: '/business/request-bookings', // Khớp với routing
         roles: [ROLES.BUSINESS_DEPARTMENT],
       },
@@ -122,7 +122,7 @@ export const MENU_ITEMS: MenuItem[] = [
 
       {
         icon: 'assets/icons/heroicons/outline/request-quote-svgrepo-com.svg',
-        label: 'Yêu cầu tùy chỉnh',
+        label: 'Yêu cầu đặt tour',
         route: '/seller/requests',
         roles: [ROLES.SELLER],
       },

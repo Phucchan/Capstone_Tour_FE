@@ -580,8 +580,12 @@ export class TourBookingComponent implements OnInit, OnDestroy {
   }
 
   get availableSeats(): number {
-    return this.tourSchedule?.availableSeats! - this.getTotalGuests();
+    const totalSeats = this.tourSchedule?.availableSeats ?? 0;
+    return Math.max(0, totalSeats - this.getTotalGuests());
   }
+
+
+
 
   getTotalGuests(): number {
     return (
