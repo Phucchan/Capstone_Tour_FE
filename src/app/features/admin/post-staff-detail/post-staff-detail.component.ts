@@ -1,6 +1,5 @@
-
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import {
   AbstractControl,
   FormArray,
@@ -32,13 +31,17 @@ export class PostStaffDetailComponent implements OnInit {
   ];
   hidePassword = true;
 
-  constructor(
-    private fb: FormBuilder,
-    private adminService: AdminService,
-    private router: Router
-  ) {}
+  // SỬA LỖI: Chuyển sang dùng inject() cho tất cả các dependency
+  private fb = inject(FormBuilder);
+  private adminService = inject(AdminService);
+  private router = inject(Router);
+  private location = inject(Location);
+
+  // Constructor có thể để trống
+  constructor() {}
 
   ngOnInit(): void {
+    // Khởi tạo form với các validators từ file gốc của bạn
     this.staffForm = this.fb.group({
       fullName: ['', Validators.required],
       username: [
@@ -51,7 +54,7 @@ export class PostStaffDetailComponent implements OnInit {
           asyncValidators: [
             CustomValidators.createUsernameTakenValidator(this.adminService),
           ],
-          updateOn: 'blur', // Chỉ validate khi người dùng rời khỏi ô input
+          updateOn: 'blur',
         },
       ],
       email: [
@@ -94,7 +97,6 @@ export class PostStaffDetailComponent implements OnInit {
   onSubmit(): void {
     if (this.staffForm.invalid) {
       this.staffForm.markAllAsTouched();
-      console.log('Form is invalid:', this.staffForm.errors);
       return;
     }
 
@@ -108,16 +110,20 @@ export class PostStaffDetailComponent implements OnInit {
         this.router.navigate(['/admin/list-staff']);
       },
       error: (err) => {
-        console.error('Failed to create staff', err);
+        this.isSubmitting = false;
         alert(
           err.error?.message || 'Tạo nhân viên thất bại. Vui lòng thử lại.'
         );
-        this.isSubmitting = false;
       },
     });
   }
 
   togglePasswordVisibility(): void {
     this.hidePassword = !this.hidePassword;
+  }
+
+  // Hàm này giờ sẽ hoạt động chính xác
+  goBack(): void {
+    this.location.back();
   }
 }

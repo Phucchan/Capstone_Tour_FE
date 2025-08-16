@@ -27,6 +27,8 @@ import { StyleManagerService } from '../../../core/services/style-manager.servic
 export class LayoutComponent implements OnInit, OnDestroy {
   private mainContent: HTMLElement | null = null;
   private styleManager = inject(StyleManagerService);
+  private readonly adminThemeId = 'admin-theme'; // Dùng ID để quản lý
+  private readonly zorroThemeId = 'ng-zorro-theme'; // Dùng ID để quản lý
 
   constructor(
     private router: Router,
@@ -44,15 +46,18 @@ export class LayoutComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.mainContent = document.getElementById('main-content');
-      // Tải CSS khi component được tạo
+
+      // SỬA LỖI: Tải CẢ HAI file CSS
       this.styleManager.loadStyle('ng-zorro-antd.min.css');
+      this.styleManager.loadStyle('assets/styles/admin-theme.css');
     }
   }
 
   ngOnDestroy(): void {
     if (isPlatformBrowser(this.platformId)) {
-      // Gỡ bỏ CSS khi component bị hủy (ví dụ: khi logout)
+      // SỬA LỖI: Gỡ bỏ CẢ HAI file CSS
       this.styleManager.removeStyle('ng-zorro-antd.min.css');
+      this.styleManager.removeStyle('assets/styles/admin-theme.css');
     }
   }
 }

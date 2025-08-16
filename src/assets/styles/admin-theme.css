@@ -1,0 +1,71 @@
+/* src/assets/styles/admin-theme.css */
+
+/* File này định nghĩa các biến CSS (CSS Variables) để đồng bộ hóa
+  giao diện cho toàn bộ các trang quản lý.
+*/
+
+:root {
+  /* Định nghĩa Bảng màu chính */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  /* Màu chính */
+  --color-primary-600: #2563eb;
+  /* Màu chính khi hover/active */
+  --color-primary-700: #1d4ed8;
+
+  --color-danger-500: #ef4444;
+  /* Màu cho hành động nguy hiểm (xóa) */
+  --color-danger-600: #dc2626;
+
+  --color-success-500: #22c55e;
+  /* Màu cho hành động thành công */
+  --color-success-600: #16a34a;
+
+  --color-gray-200: #e5e7eb;
+  /* Màu cho nút phụ (hủy, đóng) */
+  --color-gray-300: #d1d5db;
+  --color-gray-800: #1f2937;
+
+  /* Định nghĩa Font chữ */
+  --font-family-sans: 'Be Vietnam Pro', sans-serif;
+}
+
+/* Áp dụng font chữ cho toàn bộ các trang quản lý khi file này được tải.
+  Chúng ta nhắm đến các layout component của admin.
+*/
+app-admin-layout,
+app-business-layout,
+app-accountant-layout,
+app-seller-layout,
+app-coordinator-layout,
+app-marketing-layout {
+  font-family: var(--font-family-sans);
+}
+
+/* Định nghĩa các class tiện ích cho Nút bấm.
+  Bạn sẽ sử dụng các class này trong file HTML thay vì viết lại các class của Tailwind.
+*/
+
+.btn {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-semibold text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.btn-primary {
+  @apply bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400;
+}
+
+.btn-danger {
+  @apply bg-danger-500 text-white hover:bg-danger-600 focus:ring-danger-500;
+}
+
+.btn-back {
+  @apply inline-flex items-center gap-2 text-gray-600 hover:text-primary-500 font-medium;
+}
