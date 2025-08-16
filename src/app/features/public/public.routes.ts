@@ -12,6 +12,8 @@ import { AuthGuard } from '../../core/guards/auth.guard';
 import { PlanPreviewComponent } from './plan/plan-detail/plan-detail.component';
 import { CUSTOMER_ROUTES } from '../customer/customer.routes';
 import { ListTourDiscountComponent } from './list-tour-discount/list-tour-discount.component';
+import { CheckinListComponent } from '../customer/components/checkin/checkin-list/checkin-list.component';
+import { CheckinPhotosComponent } from '../customer/components/checkin/checkin-photo/checkin-photo.component';
 
 export const PUBLIC_ROUTES: Route[] = [
   {
@@ -74,6 +76,17 @@ export const PUBLIC_ROUTES: Route[] = [
         loadChildren: () => import('../blog/blog.routes').then(r => r.BLOG_ROUTES),
         data: { title: 'Tin tức' }
       },
+      {
+        path: 'checkin',
+        component: CheckinListComponent,
+        canActivate: [AuthGuard]
+      },
+      {
+        path: 'checkin/:bookingId',
+        component: CheckinPhotosComponent,
+        canActivate: [AuthGuard]
+      }
+
 
     ],
   },
