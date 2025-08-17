@@ -25,9 +25,9 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 
-import { AdminService } from '../services/admin.service';
-import { UserManagementRequest } from '../models/user.model';
-import { CustomValidators } from '../../../../app/core/validators/custom-validators';
+import { AdminService } from '../../services/admin.service';
+import { UserManagementRequest } from '../../models/user.model';
+import { CustomValidators } from '../../../../core/validators/custom-validators';
 
 @Component({
   selector: 'app-post-staff-detail',
