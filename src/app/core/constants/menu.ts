@@ -140,7 +140,13 @@ export const MENU_ITEMS: MenuItem[] = [
       {
         icon: 'assets/icons/heroicons/outline/marketing-svgrepo-com.svg',
         label: 'Quản lý Bài viết',
-        route: '/marketing', // <-- Sửa từ '/marketing/blogs' thành '/marketing' cho đúng
+        route: '/marketing',
+        roles: [ROLES.MARKETING_MANAGER],
+      },
+      {
+        icon: 'assets/icons/heroicons/outline/ticket.svg',
+        label: 'Quản lý Khuyến mãi',
+        route: '/marketing/discounts',
         roles: [ROLES.MARKETING_MANAGER],
       },
     ],

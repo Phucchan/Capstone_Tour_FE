@@ -35,7 +35,7 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
-import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions'; // THÊM: NzDescriptionsModule
+import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 
 @Component({
   selector: 'app-tour-form',
@@ -43,10 +43,8 @@ import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions'; // THÊM: NzD
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
     FormsModule,
-    CurrencyPipe, // THÊM: CurrencyPipe
-    // --- NG-ZORRO ---
+    CurrencyPipe,
     NzFormModule,
     NzInputModule,
     NzSelectModule,
@@ -121,7 +119,7 @@ export class TourFormComponent implements OnInit {
     this.requestBookingId = reqId;
     this.pageTitle = 'Tạo Tour theo Yêu cầu';
 
-    // THAY ĐỔI: Sử dụng `tap` để tự động điền form sau khi nhận dữ liệu
+    // Sử dụng `tap` để tự động điền form sau khi nhận dữ liệu
     this.requestBookingDetail$ = this.requestBookingService
       .getRequestDetail(this.requestBookingId)
       .pipe(
