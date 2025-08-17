@@ -8,6 +8,7 @@ import { environment } from '../../../../environments/environment';
 })
 export class PlanService {
 
+  private baseUrl = 'https://6893530ac49d24bce86a57a1.mockapi.io';
 
   constructor(private http: HttpClient) { }
 
@@ -21,14 +22,15 @@ export class PlanService {
     });
   }
 
+
+
   generatePlan(data: any): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/public/plans/generate`, data);
   }
 
-  savePlan(userId: any, plan: any): Observable<any> {
+  savePlan(planId: any): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/public/plans/save`, {
-      userId: userId,
-      plan: plan
+      id: planId
     });
   }
 

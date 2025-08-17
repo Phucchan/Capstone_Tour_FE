@@ -39,6 +39,7 @@ export class HeaderComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    console.log('HeaderComponent initialized with currentUser:', this.currentUser);
   }
 
   onLogin() {
@@ -55,6 +56,9 @@ export class HeaderComponent implements OnInit {
     this.currentUserService.clearCurrentUser();
     this.router.navigate(['/homepage']);
   }
+
+
+  
 
   toggleDropdown() {
     this.showDropdown = !this.showDropdown;

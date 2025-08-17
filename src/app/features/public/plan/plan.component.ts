@@ -10,7 +10,6 @@ import {
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { GeminiService } from './gemini.service';
-import { ImageSearchService } from './plan-detail/imge.service';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { UserStorageService } from '../../../core/services/user-storage/user-storage.service';
 import { PlanService } from '../services/plan.service';
@@ -47,7 +46,6 @@ export class PlanComponent {
     private userStorageService: UserStorageService,
     private route: Router,
     private geminiService: GeminiService,
-    private imageSearchService: ImageSearchService
   ) {
     this.generatePlanForm = this.fb.group({
       userId: ['', [Validators.required]],

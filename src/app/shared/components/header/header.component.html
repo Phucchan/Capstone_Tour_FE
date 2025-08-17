@@ -35,10 +35,10 @@
         id="user-dropdown">
         <div class="px-4 py-3">
           <span class="block text-sm text-gray-900 dark:text-white">
-            {{currentUser?.fullName}}
+            {{customerBasicInfo?.fullName}}
           </span>
           <span class="block text-sm  text-gray-500 truncate dark:text-gray-400">
-            {{currentUser?.email}}
+            {{customerBasicInfo?.email}}
           </span>
         </div>
         <ul *ngIf="showDropdown" class="py-2" aria-labelledby="user-menu-button">

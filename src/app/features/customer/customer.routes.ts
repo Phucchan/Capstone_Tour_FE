@@ -34,7 +34,8 @@ export const CUSTOMER_ROUTES: Route[] = [
   {
     path: 'list-plan',
     component: ListPlanComponent
-  }
+  },
+
 
 
 ];

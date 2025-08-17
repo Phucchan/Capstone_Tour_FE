@@ -15,14 +15,14 @@
           (click)="previousStep()">
           Quay lại
         </button>
-        <button type="button" *ngIf="step <= plan?.days.length - 1"
+        <button type="button" *ngIf="step <= plan?.days?.length + 1"
           class="text-lg text-gray-500 dark:text-gray-400 text-right cursor-pointer hover:text-blue-500"
           (click)="nextStep()">
           Tiếp theo >>
         </button>
-        <button type="button" *ngIf="step >plan?.days.length - 1"
+        <button type="button" *ngIf="step > plan?.days?.length + 1"
           class="text-lg text-gray-500 dark:text-gray-400 text-right cursor-pointer hover:text-blue-500"
-          (click)="nextStep()">
+          (click)="savePlan()">
           Lưu kế hoạch >>
         </button>
       </div>
@@ -33,8 +33,79 @@
     </video>
   </div>
 
+  <div class="opacity-0 animate-[slideInRight_0.5s_ease-out_forwards]" *ngIf="step === plan?.days?.length + 2">
 
-  <div class="opacity-0 animate-[slideInRight_0.5s_ease-out_forwards]" *ngIf="step > 0">
+    <section class="mt-8 text-center py-8">
+      <h1 class="text-4xl font-bold text-blue-900 mb-12">
+        Biểu đồ
+        <br>
+        <span class="text-blue-500">
+          Thống kê chi phí sử dụng trong chuyến đi
+        </span>
+      </h1>
+    </section>
+
+    <div class="flex items-center gap-8 max-w-5xl mx-auto px-4 py-8">
+      <ngx-charts-bar-vertical *ngIf="!isLoading" [view]="newUserChartView" [results]="dayTotals"
+        [scheme]="chartColorScheme" [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis"
+        [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabelUsers"
+        [yAxisLabel]="yAxisLabelUsers" (select)="onChartSelect($event)">
+      </ngx-charts-bar-vertical>
+
+      <ngx-charts-pie-chart *ngIf="!isLoading" [view]="tourTypeChartView" [results]="tourTypeChartData"
+        [scheme]="chartColorScheme" [gradient]="gradient" [doughnut]="doughnut" [labels]="true" [arcWidth]="0.4"
+        [labelFormatting]="formatPercentage" (select)="onChartSelect($event)">
+      </ngx-charts-pie-chart>
+    </div>
+
+    <div
+      class="flex justify-center items-center px-5 py-3 rounded-lg text-lg m-auto font-semibold text-blue-800 ">
+      Tổng chi phí: {{ plan?.totalSpend | currency }}
+    </div>
+
+
+
+  </div>
+
+  <div class="opacity-0 animate-[slideInRight_0.5s_ease-out_forwards]" *ngIf="step === plan?.days?.length + 1">
+    <section class="mt-8 text-center py-8">
+      <h1 class="text-4xl font-bold text-blue-900 mb-4">
+        Di chuyển
+        <br>
+        <span class="text-blue-500">
+          Một số nhà cung cấp dịch vụ di chuyển uy tín
+        </span>
+      </h1>
+    </section>
+
+
+
+    <section class="max-w-5xl mx-auto px-4 py-8">
+      <p class="text-gray-600 mt-2">
+        Dưới đây là những nhà cung cấp được đánh giá cao, thuận tiện cho việc di chuyển và nghỉ ngơi trong hành
+        trình của
+        bạn.
+      </p>
+
+      <!-- Repeat Card Format with Different Content -->
+      @for (transport of plan?.transports; track $index) {
+      <div class="flex bg-white shadow rounded overflow-hidden gap-4">
+        <img [src]="transport?.logoUrl" alt="Petit Palais" class="w-48 h-48 object-cover" />
+
+        <div class="p-4 space-y-1">
+          <h3 class="text-lg font-semibold text-gray-800"> {{transport?.name}}</h3>
+          <p class="text-sm text-gray-500">Website: <a [href]="transport?.websiteUrl"
+              class="text-blue-500 hover:underline" target="_blank">{{transport?.websiteUrl}}</a></p>
+          <p class="text-sm text-gray-500"> Ước tính: {{transport?.estimatedCost | currency}}
+          </p>
+        </div>
+      </div>
+      }
+    </section>
+  </div>
+
+  <div class="opacity-0 animate-[slideInRight_0.5s_ease-out_forwards]"
+    *ngIf="step > 0 &&  step != plan?.days.length + 1 && step != plan?.days?.length + 2">
     <section class="mt-8 text-center py-8">
       <h1 class="text-4xl font-bold text-blue-900 mb-12">
         Ngày {{ selectedDay?.dayNumber }}
