@@ -18,21 +18,65 @@ import { registerLocaleData } from '@angular/common';
 import vi from '@angular/common/locales/vi';
 import { vi_VN, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
-import { IconDefinition } from '@ant-design/icons-angular';
-import * as AllIcons from '@ant-design/icons-angular/icons';
 import { importProvidersFrom } from '@angular/core';
 import { NzModalModule } from 'ng-zorro-antd/modal';
-// --- FIX: Import NzMessageModule ---
 import { NzMessageModule } from 'ng-zorro-antd/message';
+
+import {
+  DashboardOutline,
+  DollarCircleOutline,
+  FileDoneOutline,
+  UserAddOutline,
+  SearchOutline,
+  PlusCircleOutline,
+  LockOutline,
+  UnlockOutline,
+  UserOutline,
+  TeamOutline,
+  LogoutOutline,
+  MenuFoldOutline,
+  MenuUnfoldOutline,
+  PlusOutline,
+  EditOutline,
+  DeleteOutline,
+  EyeOutline,
+  HomeOutline,
+  UnorderedListOutline,
+  SettingOutline,
+  AppstoreOutline,
+  LeftOutline,
+  RightOutline,
+  DownOutline,
+} from '@ant-design/icons-angular/icons';
 
 registerLocaleData(vi);
 
-const antDesignIcons = AllIcons as {
-  [key: string]: IconDefinition;
-};
-const icons: IconDefinition[] = Object.keys(antDesignIcons).map(
-  (key) => antDesignIcons[key]
-);
+const icons = [
+  DashboardOutline,
+  DollarCircleOutline,
+  FileDoneOutline,
+  UserAddOutline,
+  SearchOutline,
+  PlusCircleOutline,
+  LockOutline,
+  UnlockOutline,
+  UserOutline,
+  TeamOutline,
+  LogoutOutline,
+  MenuFoldOutline,
+  MenuUnfoldOutline,
+  PlusOutline,
+  EditOutline,
+  DeleteOutline,
+  EyeOutline,
+  HomeOutline,
+  UnorderedListOutline,
+  SettingOutline,
+  AppstoreOutline,
+  LeftOutline,
+  RightOutline,
+  DownOutline,
+];
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -52,7 +96,6 @@ export const appConfig: ApplicationConfig = {
     provideNzI18n(vi_VN),
     provideNzIcons(icons),
     importProvidersFrom(NzModalModule),
-    // --- FIX: Add NzMessageModule to providers ---
     importProvidersFrom(NzMessageModule),
   ],
 };

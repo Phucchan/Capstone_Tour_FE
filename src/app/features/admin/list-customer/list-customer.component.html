@@ -3,6 +3,7 @@
  * MÔ TẢ:
  * - Giao diện đã được viết lại hoàn toàn bằng NG-ZORRO và Tailwind CSS.
  * - Bố cục, bảng, ô tìm kiếm và trạng thái trống đều đồng bộ với trang mẫu.
+ * - [MỚI] Thêm cột "Hành động" với nút khóa/mở khóa tài khoản.
 -->
 <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <!-- Page Header -->
@@ -18,7 +19,9 @@
   <!-- Main Content Card -->
   <div class="bg-white rounded-lg shadow-md overflow-hidden">
     <!-- Card Header with Search -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 sm:p-6 border-b border-gray-200">
+    <div
+      class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 sm:p-6 border-b border-gray-200"
+    >
       <h3 class="text-xl font-semibold text-gray-800">Danh sách Khách hàng</h3>
       <div class="w-full sm:w-auto sm:max-w-xs">
         <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton">
@@ -51,19 +54,46 @@
       >
         <thead>
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Họ và tên</th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Email & SĐT</th>
-            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Trạng thái</th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ngày tham gia</th>
+            <th
+              class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >
+              Họ và tên
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >
+              Email & SĐT
+            </th>
+            <th
+              class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >
+              Trạng thái
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >
+              Ngày tham gia
+            </th>
+            <!-- [MỚI] Thêm cột Hành động -->
+            <th
+              class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >
+              Hành động
+            </th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let data of customerTable.data" class="hover:bg-gray-50 transition-colors duration-150">
+          <tr
+            *ngFor="let data of customerTable.data"
+            class="hover:bg-gray-50 transition-colors duration-150"
+          >
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <app-avatar [username]="data.fullName"></app-avatar>
                 <div class="ml-4">
-                  <div class="text-sm font-semibold text-gray-900">{{ data.fullName }}</div>
+                  <div class="text-sm font-semibold text-gray-900">
+                    {{ data.fullName }}
+                  </div>
                   <div class="text-xs text-gray-500">{{ data.username }}</div>
                 </div>
               </div>
@@ -77,18 +107,48 @@
                 {{ (data.deleted ? 'INACTIVE' : 'ACTIVE') | statusVietnamese }}
               </nz-tag>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ data.createdAt | date:'dd/MM/yyyy' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+              {{ data.createdAt | date: 'dd/MM/yyyy' }}
+            </td>
+            <!-- [MỚI] Thêm ô chứa nút Hành động -->
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+              <button
+                nz-button
+                [nzType]="data.deleted ? 'default' : 'primary'"
+                [nzDanger]="!data.deleted"
+                nz-popconfirm
+                [nzPopconfirmTitle]="
+                  data.deleted
+                    ? 'Bạn có chắc muốn mở khóa tài khoản này?'
+                    : 'Bạn có chắc muốn khóa tài khoản này?'
+                "
+                nzPopconfirmPlacement="top"
+                (nzOnConfirm)="toggleStatus(data)"
+                nzSize="small"
+              >
+                {{ data.deleted ? 'Mở khóa' : 'Khóa' }}
+              </button>
+            </td>
           </tr>
         </tbody>
       </nz-table>
       <!-- Empty State -->
-      <div *ngIf="!isLoading && customers.length === 0" class="text-center py-16">
-        <nz-empty nzNotFoundImage="simple" nzNotFoundContent="Không tìm thấy khách hàng nào"></nz-empty>
+      <div
+        *ngIf="!isLoading && customers.length === 0"
+        class="text-center py-16"
+      >
+        <nz-empty
+          nzNotFoundImage="simple"
+          nzNotFoundContent="Không tìm thấy khách hàng nào"
+        ></nz-empty>
       </div>
     </div>
 
     <!-- Pagination -->
-    <div *ngIf="paging && paging.total > paging.size" class="flex justify-end p-4 sm:p-6 border-t border-gray-200">
+    <div
+      *ngIf="paging && paging.total > paging.size"
+      class="flex justify-end p-4 sm:p-6 border-t border-gray-200"
+    >
       <app-pagination
         [currentPage]="(paging.page || 0) + 1"
         [totalItems]="paging.total"

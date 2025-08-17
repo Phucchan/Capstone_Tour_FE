@@ -2,10 +2,13 @@
  * FILE: src/app/features/admin/list-staff/list-staff.component.html
  * MÔ TẢ:
  * - Giao diện đã được viết lại hoàn toàn bằng NG-ZORRO và Tailwind CSS.
+ * - [MỚI] Cập nhật nút hành động từ thẻ <a> sang <button> để đồng bộ giao diện.
 -->
 <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <!-- Page Header -->
-  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+  <div
+    class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4"
+  >
     <div>
       <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
         Quản lý Nhân viên
@@ -25,7 +28,9 @@
   <!-- Main Content Card -->
   <div class="bg-white rounded-lg shadow-md overflow-hidden">
     <!-- Card Header with Search -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 sm:p-6 border-b border-gray-200">
+    <div
+      class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 sm:p-6 border-b border-gray-200"
+    >
       <h3 class="text-xl font-semibold text-gray-800">Danh sách Nhân viên</h3>
       <div class="w-full sm:w-auto sm:max-w-xs">
         <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton">
@@ -58,25 +63,48 @@
       >
         <thead>
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Họ và tên</th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Vai trò</th>
-            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Trạng thái</th>
-            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Hành động</th>
+            <th
+              class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >
+              Họ và tên
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >
+              Vai trò
+            </th>
+            <th
+              class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >
+              Trạng thái
+            </th>
+            <th
+              class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >
+              Hành động
+            </th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let data of staffTable.data" class="hover:bg-gray-50 transition-colors duration-150">
+          <tr
+            *ngFor="let data of staffTable.data"
+            class="hover:bg-gray-50 transition-colors duration-150"
+          >
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <app-avatar [username]="data.fullName"></app-avatar>
                 <div class="ml-4">
-                  <div class="text-sm font-semibold text-gray-900">{{ data.fullName }}</div>
+                  <div class="text-sm font-semibold text-gray-900">
+                    {{ data.fullName }}
+                  </div>
                   <div class="text-xs text-gray-500">{{ data.username }}</div>
                 </div>
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <nz-tag *ngFor="let role of data.roleNames" [nzColor]="'blue'" class="m-1">{{ role }}</nz-tag>
+              <nz-tag *ngFor="let role of data.roleNames" [nzColor]="'blue'" class="m-1">{{
+                role
+              }}</nz-tag>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-center">
               <nz-tag [nzColor]="getStatusColor(data.deleted)">
@@ -84,31 +112,44 @@
               </nz-tag>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-              <a
+              <!-- [THAY ĐỔI] Thay thế thẻ <a> bằng <button> -->
+              <button
+                nz-button
+                [nzType]="data.deleted ? 'default' : 'primary'"
+                [nzDanger]="!data.deleted"
                 nz-popconfirm
-                [nzPopconfirmTitle]="'Bạn có chắc chắn muốn ' + (data.deleted ? 'mở khóa' : 'khóa') + ' tài khoản này?'"
+                [nzPopconfirmTitle]="
+                  data.deleted
+                    ? 'Bạn có chắc muốn mở khóa tài khoản này?'
+                    : 'Bạn có chắc muốn khóa tài khoản này?'
+                "
                 nzPopconfirmPlacement="topRight"
                 (nzOnConfirm)="toggleStatus(data)"
-                class="font-semibold hover:underline"
-                [class.text-red-600]="!data.deleted"
-                [class.hover:text-red-800]="!data.deleted"
-                [class.text-green-600]="data.deleted"
-                [class.hover:text-green-800]="data.deleted"
+                nzSize="small"
               >
                 {{ data.deleted ? 'Mở khóa' : 'Khóa' }}
-              </a>
+              </button>
             </td>
           </tr>
         </tbody>
       </nz-table>
       <!-- Empty State -->
-      <div *ngIf="!isLoading && staffs.length === 0" class="text-center py-16">
-        <nz-empty nzNotFoundImage="simple" nzNotFoundContent="Không tìm thấy nhân viên nào"></nz-empty>
+      <div
+        *ngIf="!isLoading && staffs.length === 0"
+        class="text-center py-16"
+      >
+        <nz-empty
+          nzNotFoundImage="simple"
+          nzNotFoundContent="Không tìm thấy nhân viên nào"
+        ></nz-empty>
       </div>
     </div>
 
     <!-- Pagination -->
-    <div *ngIf="paging && paging.total > paging.size" class="flex justify-end p-4 sm:p-6 border-t border-gray-200">
+    <div
+      *ngIf="paging && paging.total > paging.size"
+      class="flex justify-end p-4 sm:p-6 border-t border-gray-200"
+    >
       <app-pagination
         [currentPage]="(paging.page || 0) + 1"
         [totalItems]="paging.total"
