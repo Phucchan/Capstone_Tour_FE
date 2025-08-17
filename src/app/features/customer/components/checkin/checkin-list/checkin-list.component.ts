@@ -21,24 +21,24 @@ import { ApiResponse } from '../../../../../core/models/api-response.model';
 })
 export class CheckinListComponent implements OnInit {
   // ---- signals (UI state)
-  loading    = signal(true);   // change
-  errorMsg   = signal<string | null>(null); // change
+  loading = signal(true);   // change
+  errorMsg = signal<string | null>(null); // change
 
   // ---- data
-  all        = signal<CheckinBooking[]>([]); // change: dữ liệu full khi clientMode
-  rows       = signal<CheckinBooking[]>([]); // change: dữ liệu trang hiện tại
+  all = signal<CheckinBooking[]>([]); // change: dữ liệu full khi clientMode
+  rows = signal<CheckinBooking[]>([]); // change: dữ liệu trang hiện tại
 
   // ---- pagination (0-based)
-  page       = signal(0);      // change
-  size       = signal(9);      // change
-  total      = signal(0);      // change
+  page = signal(0);      // change
+  size = signal(9);      // change
+  total = signal(0);      // change
 
   // ---- filters
-  name       = signal<string>('');        // change
+  name = signal<string>('');        // change
   departDate = signal<string>('');        // yyyy-MM-dd  // change
 
   // ---- mode
-  clientMode  = signal(false); // true khi có filter  // change
+  clientMode = signal(false); // true khi có filter  // change
   fetchingAll = signal(false); // đang gom tất cả trang // change
 
   // ---- user
@@ -50,10 +50,12 @@ export class CheckinListComponent implements OnInit {
     private toastr: ToastrService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object, // change
-  ) {}
+  ) { }
 
   ngOnInit(): void {
+
     if (!isPlatformBrowser(this.platformId)) return; // change
+    console.log('CheckinListComponent init');
     this.currentUser.currentUser$.pipe(take(1)).subscribe(u => {
       this.userId.set(u?.id ?? null);
       if (!this.userId()) {
@@ -92,6 +94,9 @@ export class CheckinListComponent implements OnInit {
         // chấp nhận cả 2 kiểu trả (Page hoặc mảng phẳng)
         if (Array.isArray(data.items)) {
           this.rows.set((data.items as CheckinBooking[]) || []);
+          if (isPlatformBrowser(this.platformId)) {
+            console.log('[client] checkin list (server mode):', this.rows());
+          }
           this.total.set(Number(data.total) || 0);
         } else if (Array.isArray(res?.data)) {
           const arr = res.data as CheckinBooking[];
@@ -110,6 +115,8 @@ export class CheckinListComponent implements OnInit {
       }
     });
   }
+
+
 
   private fetchAllForFilters(): void { // change
     if (!this.userId()) return;
@@ -206,6 +213,6 @@ export class CheckinListComponent implements OnInit {
   }
 
   openPhotos(b: CheckinBooking) {
-    this.router.navigate(['/customer/checkin', b.id]);
+    this.router.navigate(['/checkin', b.id]);
   }
 }

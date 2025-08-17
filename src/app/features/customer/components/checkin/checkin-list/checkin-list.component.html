@@ -36,10 +36,13 @@
   <!-- LIST -->
   <div *ngIf="!loading() && !errorMsg() && total() > 0"
        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-    <article *ngFor="let b of rows()" class="rounded-2xl shadow p-4 hover:shadow-md transition">
+       
+    <article *ngFor="let b of rows()" class="rounded-2xl border border-gray-300 shadow p-4 hover:shadow-md transition">
+      <img [src]="b.tourImage" alt="Tour Image" class="w-full h-48 object-cover rounded-xl mb-3" loading="lazy" />
       <h3 class="text-base font-semibold mb-1 line-clamp-2">{{ b.tourName }}</h3>
       <div class="text-sm opacity-70">Mã đặt: <span class="font-medium">{{ b.bookingCode }}</span></div>
       <div class="text-sm">Khởi hành: {{ b.departureDate | date:'dd/MM/yyyy' }}</div>
+      <div class="text-sm">Kết thúc: {{ b.endDate | date:'dd/MM/yyyy' }} </div>
       <div class="text-sm mb-3">Tổng tiền: <span class="font-semibold text-red-500">{{ b.totalAmount | currencyVnd }}</span></div>
 
       <button class="w-full rounded-xl px-4 py-2 bg-blue-600 text-white hover:bg-blue-700"
