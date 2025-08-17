@@ -20,7 +20,7 @@ export const ADMIN_ROUTES: Routes = [
   {
     path: 'list-staff',
     loadComponent: () =>
-      import('./list-staff/list-staff.component').then(
+      import('./pages/list-staff/list-staff.component').then(
         (m) => m.ListStaffComponent
       ),
   },

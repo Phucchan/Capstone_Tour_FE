@@ -1,9 +1,3 @@
-/*
- * FILE: src/app/features/business/pages/request-booking-detail/request-booking-detail.component.ts
- * MÔ TẢ:
- * - Thêm các module NG-ZORRO cần thiết.
- * - Thay thế prompt/confirm bằng NzModalService và NzMessageService.
- */
 import { Component, OnInit, inject } from '@angular/core';
 import {
   CommonModule,
@@ -12,10 +6,19 @@ import {
   Location,
 } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { EMPTY, Observable, Subject } from 'rxjs';
-import { switchMap, catchError, startWith } from 'rxjs/operators';
+import { EMPTY, Observable, Subject, combineLatest } from 'rxjs';
+import { switchMap, catchError, startWith, map } from 'rxjs/operators';
 
-// --- [THAY ĐỔI] Import các module của NG-ZORRO ---
+// --- Services & Models ---
+import { RequestBookingService } from '../../services/request-booking.service';
+import { TourService } from '../../../../core/services/tour.service';
+import {
+  RequestBookingDetail,
+  RequestBookingStatus,
+} from '../../models/request-booking.model';
+import { TourOptionsData } from '../../../../core/models/tour.model';
+
+// --- NG-ZORRO Imports ---
 import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -26,12 +29,7 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzInputModule } from 'ng-zorro-antd/input';
-
-import { RequestBookingService } from '../../services/request-booking.service';
-import {
-  RequestBookingDetail,
-  RequestBookingStatus,
-} from '../../models/request-booking.model';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 
 @Component({
   selector: 'app-request-booking-detail',
@@ -41,7 +39,6 @@ import {
     RouterModule,
     DatePipe,
     CurrencyPipe,
-    // --- [THAY ĐỔI] Thêm các module NG-ZORRO ---
     NzPageHeaderModule,
     NzGridModule,
     NzCardModule,
@@ -50,6 +47,7 @@ import {
     NzButtonModule,
     NzSpinModule,
     NzInputModule,
+    NzIconModule,
   ],
   templateUrl: './request-booking-detail.component.html',
 })
@@ -58,12 +56,18 @@ export class RequestBookingDetailComponent implements OnInit {
   private router = inject(Router);
   private location = inject(Location);
   private requestBookingService = inject(RequestBookingService);
+  private tourService = inject(TourService);
   private modal = inject(NzModalService);
   private message = inject(NzMessageService);
 
-  public request$!: Observable<RequestBookingDetail>;
-  private refreshTrigger$ = new Subject<void>();
+  viewData$!: Observable<{
+    request: RequestBookingDetail;
+    departureLocationName: string;
+    destinationLocationNames: string[];
+    tourThemeNames: string[];
+  }>;
 
+  private refreshTrigger$ = new Subject<void>();
   public RequestBookingStatus = RequestBookingStatus;
 
   ngOnInit(): void {
@@ -76,14 +80,42 @@ export class RequestBookingDetailComponent implements OnInit {
       })
     );
 
-    this.request$ = this.refreshTrigger$.pipe(
+    const request$ = this.refreshTrigger$.pipe(
       startWith(undefined),
       switchMap(() => id$),
       switchMap((id) => this.requestBookingService.getRequestDetail(id)),
-      catchError(() => {
+      catchError((err: any) => {
+        console.error(err);
         this.message.error('Không tìm thấy yêu cầu này.');
         this.router.navigate(['/business/request-bookings']);
         return EMPTY;
+      })
+    );
+
+    const options$ = this.tourService.getTourOptions();
+
+    this.viewData$ = combineLatest([request$, options$]).pipe(
+      map(([request, options]) => {
+        const departureLocationName =
+          options.departures.find((d) => d.id === request.departureLocationId)
+            ?.name || 'Không xác định';
+
+        const destinationLocationNames = (request.destinationLocationIds || [])
+          .map(
+            (id) => options.destinations.find((d) => d.id === id)?.name || ''
+          )
+          .filter((name) => name);
+
+        const tourThemeNames = (request.tourThemeIds || [])
+          .map((id) => options.themes.find((t) => t.id === id)?.name || '')
+          .filter((name) => name);
+
+        return {
+          request,
+          departureLocationName,
+          destinationLocationNames,
+          tourThemeNames,
+        };
       })
     );
   }
@@ -102,11 +134,12 @@ export class RequestBookingDetailComponent implements OnInit {
 
   showRejectModal(id: number): void {
     let reason = '';
-    this.modal.confirm({
+    // Đây là cách đơn giản, nếu cần phức tạp hơn, nên tạo một component riêng cho nội dung modal.
+    this.modal.create({
       nzTitle: 'Bạn có chắc chắn muốn từ chối yêu cầu này?',
       nzContent: `
         <p class="mb-2">Vui lòng nhập lý do từ chối:</p>
-        <textarea nz-input [(ngModel)]="reason" rows="3"></textarea>
+        <textarea nz-input [(ngModel)]="reason" rows="3" placeholder="Yêu cầu không khả thi vì..."></textarea>
       `,
       nzOnOk: () => {
         if (!reason.trim()) {
@@ -134,7 +167,7 @@ export class RequestBookingDetailComponent implements OnInit {
         this.message.success(`Đã ${action} yêu cầu thành công.`);
         this.refreshTrigger$.next();
       },
-      error: (err) =>
+      error: (err: any) =>
         this.message.error(
           `Có lỗi xảy ra: ${err.error?.message || 'Không thể cập nhật'}`
         ),
@@ -153,7 +186,7 @@ export class RequestBookingDetailComponent implements OnInit {
 
   getStatusClass(status: RequestBookingStatus): string {
     const classes = {
-      [RequestBookingStatus.PENDING]: 'yellow',
+      [RequestBookingStatus.PENDING]: 'gold',
       [RequestBookingStatus.ACCEPTED]: 'green',
       [RequestBookingStatus.REJECTED]: 'red',
       [RequestBookingStatus.COMPLETED]: 'blue',

@@ -1,15 +1,8 @@
+
 <div class="container mx-auto p-4 sm:p-6 lg:p-8">
   <nz-page-header [nzTitle]="pageTitle" (nzBack)="goBack()">
     <nz-page-header-extra>
-      <a *ngIf="isEditMode && tourId" [routerLink]="['/management/tours', tourId, 'schedule']" nz-button>
-        <span nz-icon nzType="schedule"></span> Lịch trình
-      </a>
-      <a *ngIf="isEditMode && tourId" [routerLink]="['/management/tours', tourId, 'costing']" nz-button>
-        <span nz-icon nzType="calculator"></span> Chiết tính
-      </a>
-      <a *ngIf="isEditMode && tourId && tourForm.get('tourStatus')?.value === 'PUBLISHED'" [routerLink]="['/management/tours', tourId, 'departure-dates']" nz-button>
-        <span nz-icon nzType="calendar"></span> Ngày khởi hành
-      </a>
+      <!-- ... các button khác ... -->
       <button form="tourForm" type="submit" nz-button nzType="primary" [nzLoading]="isSubmitting" [disabled]="tourForm.invalid">
         <span nz-icon nzType="save"></span>
         {{ isEditMode ? 'Lưu thay đổi' : 'Lưu & Tiếp tục' }}
@@ -23,6 +16,7 @@
         <div nz-row [nzGutter]="[24, 24]">
           <!-- Cột chính -->
           <div nz-col nzXs="24" nzLg="16">
+            <!-- ... Các trường form cơ bản ... -->
             <nz-card>
               <!-- Tên Tour -->
               <nz-form-item>
@@ -69,6 +63,7 @@
 
           <!-- Cột phụ -->
           <div nz-col nzXs="24" nzLg="8">
+             <!-- ... Các trường form phụ ... -->
             <nz-card nzTitle="Thông tin bổ sung">
               <!-- Mã Tour -->
               <nz-form-item>
@@ -138,19 +133,36 @@
             </nz-card>
           </div>
 
-          <!-- Hiển thị thông tin yêu cầu của khách (nếu có) -->
+          <!-- THAY ĐỔI: Hiển thị thông tin yêu cầu của khách (nếu có) -->
           <div nz-col nzXs="24" *ngIf="isCustomRequestMode && (requestBookingDetail$ | async) as request">
-             <nz-alert nzType="info" [nzMessage]="messageTemplate" [nzDescription]="descriptionTemplate" nzShowIcon></nz-alert>
-             <ng-template #messageTemplate>
-                Thông tin yêu cầu từ khách hàng: <strong>{{request.customerName}}</strong> (SĐT: {{request.customerPhone}})
-             </ng-template>
-             <ng-template #descriptionTemplate>
-                <!-- FIX: Correct property names based on the user's actual model -->
-                <p><strong>Ngày đi dự kiến:</strong> {{request.startDate | date: 'dd/MM/yyyy'}}</p>
-                <p><strong>Số người lớn:</strong> {{request.adults}} - <strong>Số trẻ em:</strong> {{request.children}}</p>
-                <p><strong>Ghi chú/Dịch vụ mong muốn:</strong> {{request.desiredServices || 'Không có'}}</p>
-             </ng-template>
+            <nz-card nzTitle="Thông tin chi tiết từ Yêu cầu của Khách hàng">
+              <nz-descriptions nzBordered [nzColumn]="{ xs: 1, sm: 2, md: 2, lg: 2, xl: 2, xxl: 2 }">
+                <nz-descriptions-item nzTitle="Khách hàng">{{ request.customerName }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Liên hệ">{{ request.customerPhone }} / {{ request.customerEmail }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Hành trình">{{ request.startDate | date:'dd/MM/yyyy' }} - {{ request.endDate | date:'dd/MM/yyyy' }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Ngân sách dự kiến">{{ request.priceMin | currency:'VND' }} - {{ request.priceMax | currency:'VND' }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Số lượng khách" [nzSpan]="2">
+                  Người lớn: <strong>{{ request.adults }}</strong> |
+                  Trẻ em: <strong>{{ request.children }}</strong> |
+                  Trẻ nhỏ: <strong>{{ request.infants }}</strong> |
+                  Em bé: <strong>{{ request.toddlers }}</strong>
+                </nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Lưu trú">
+                  Số phòng: <strong>{{ request.hotelRooms }}</strong> - Loại: <strong>{{ request.roomCategory }}</strong>
+                </nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Phương tiện">
+                  <strong>{{ request.transport }}</strong>
+                </nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Điểm đến chi tiết" [nzSpan]="2" class="whitespace-pre-wrap">
+                  {{ request.destinationDetail || 'Không có ghi chú.' }}
+                </nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Dịch vụ mong muốn" [nzSpan]="2" class="whitespace-pre-wrap">
+                  {{ request.desiredServices || 'Không có yêu cầu đặc biệt.' }}
+                </nz-descriptions-item>
+              </nz-descriptions>
+            </nz-card>
           </div>
+
         </div>
       </form>
     </ng-container>

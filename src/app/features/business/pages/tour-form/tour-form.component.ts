@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common'; // THÊM: CurrencyPipe
 import {
   FormBuilder,
   FormGroup,
@@ -35,6 +35,7 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions'; // THÊM: NzDescriptionsModule
 
 @Component({
   selector: 'app-tour-form',
@@ -44,6 +45,7 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
     ReactiveFormsModule,
     RouterLink,
     FormsModule,
+    CurrencyPipe, // THÊM: CurrencyPipe
     // --- NG-ZORRO ---
     NzFormModule,
     NzInputModule,
@@ -58,6 +60,7 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
     NzInputNumberModule,
     NzIconModule,
     NzAlertModule,
+    NzDescriptionsModule, // THÊM: NzDescriptionsModule
   ],
   templateUrl: './tour-form.component.html',
 })
@@ -117,11 +120,27 @@ export class TourFormComponent implements OnInit {
     this.isCustomRequestMode = true;
     this.requestBookingId = reqId;
     this.pageTitle = 'Tạo Tour theo Yêu cầu';
-    this.requestBookingDetail$ = this.requestBookingService.getRequestDetail(
-      this.requestBookingId
-    );
+
+    // THAY ĐỔI: Sử dụng `tap` để tự động điền form sau khi nhận dữ liệu
+    this.requestBookingDetail$ = this.requestBookingService
+      .getRequestDetail(this.requestBookingId)
+      .pipe(
+        tap((requestDetail) => {
+          // Tự động điền các trường form từ thông tin yêu cầu
+          this.tourForm.patchValue({
+            tourType: 'CUSTOM',
+            departLocationId: requestDetail.departureLocationId,
+            destinationLocationIds: requestDetail.destinationLocationIds,
+            tourThemeIds: requestDetail.tourThemeIds,
+            // Gợi ý tên tour từ yêu cầu của khách
+            name: `Tour theo yêu cầu của ${requestDetail.customerName} - ${
+              requestDetail.destinationDetail || 'Khám phá'
+            }`,
+          });
+        })
+      );
+
     this.tourOptions$ = this.tourService.getTourOptions();
-    this.tourForm.patchValue({ tourType: 'CUSTOM' });
     this.tourForm.get('tourType')?.disable();
     this.isLoading = false;
   }
@@ -256,10 +275,9 @@ export class TourFormComponent implements OnInit {
             ? 'Cập nhật tour thành công!'
             : `Tạo tour thành công! Mã tour: ${createdTour.code}`
         );
-        // FIX: Corrected navigation path
         this.router.navigate(['/business/tours', createdTour.id, 'schedule']);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Lỗi khi lưu tour:', err);
         this.message.error('Có lỗi xảy ra khi lưu tour.');
       },
@@ -267,7 +285,6 @@ export class TourFormComponent implements OnInit {
   }
 
   goBack(): void {
-    // FIX: Corrected navigation path
     this.router.navigate(['/business/tours']);
   }
 }
