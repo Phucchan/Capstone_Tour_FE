@@ -1,0 +1,45 @@
+<div class="container mx-auto px-4 py-6">
+  <h1 class="text-2xl font-semibold mb-4">Ảnh check-in</h1>
+
+  <!-- Upload -->
+  <div class="mb-4 flex items-center gap-3">
+    <label class="relative inline-flex items-center">
+      <input type="file" accept="image/*" class="hidden" (change)="onSelectFile($event)" #fi />
+      <button class="rounded-xl px-4 py-2 bg-blue-600 text-white hover:bg-blue-700" (click)="fi.click()" [disabled]="uploading">
+        {{ uploading ? 'Đang tải...' : 'Tải ảnh lên' }}
+      </button>
+    </label>
+
+    <div *ngIf="uploading" class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div class="h-full bg-blue-600 transition-all" [style.width.%]="progress"></div>
+    </div>
+  </div>
+
+  <!-- List -->
+  <ng-container *ngIf="isLoading">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div *ngFor="let _ of [1,2,3,4,5,6,7,8]" class="h-32 rounded-xl bg-gray-100 animate-pulse"></div>
+    </div>
+  </ng-container>
+
+  <div *ngIf="!isLoading && photos.length === 0" class="text-gray-500">
+    Chưa có ảnh nào. Hãy tải ảnh kỷ niệm của bạn!
+  </div>
+
+  <div *ngIf="!isLoading && photos.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <figure *ngFor="let p of photos" class="relative group rounded-xl overflow-hidden border">
+      <img [src]="p.imageUrl" alt="checkin photo" class="w-full h-40 object-cover" />
+      <figcaption class="p-2 text-xs text-gray-600">
+        {{ p.createdAt | date:'HH:mm dd/MM/yyyy' }} · +{{ p.pointsEarned }} điểm
+      </figcaption>
+
+      <button
+        class="absolute top-2 right-2 bg-white/90 hover:bg-white text-red-600 rounded-lg px-2 py-1 text-xs shadow"
+        (click)="remove(p)"
+        title="Xóa ảnh"
+      >
+        Xóa
+      </button>
+    </figure>
+  </div>
+</div>

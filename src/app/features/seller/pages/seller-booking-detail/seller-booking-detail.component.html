@@ -1,98 +1,86 @@
-<div *ngIf="isLoading" class="flex justify-center items-center h-64">
-  <app-spinner></app-spinner>
-</div>
+<!--
+  FILE: src/app/features/seller/pages/seller-booking-detail/seller-booking-detail.component.html
+  MÔ TẢ: Giao diện đã được tái cấu trúc hoàn toàn bằng các component của NG-ZORRO.
+-->
 
-<div *ngIf="!isLoading && booking">
-  <!-- Header -->
-  <div class="my-6 flex justify-between items-center">
-    <div>
-      <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
-        Chi tiết Booking: {{ booking.bookingCode }}
-      </h2>
-      <p class="text-sm text-gray-500">
-        Tạo lúc: {{ booking.createdAt | formatDate }}
-      </p>
-    </div>
-    <a routerLink="/seller/dashboard"
-      class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
-      Quay lại Dashboard
-    </a>
-  </div>
+<nz-spin [nzSpinning]="isLoading" nzTip="Đang tải dữ liệu...">
+  <div *ngIf="booking">
+    <!-- 1. Breadcrumb và Page Header -->
+    <nz-breadcrumb>
+      <nz-breadcrumb-item>
+        <a routerLink="/seller/dashboard">Quản lý Booking</a>
+      </nz-breadcrumb-item>
+      <nz-breadcrumb-item>Chi tiết Booking</nz-breadcrumb-item>
+    </nz-breadcrumb>
 
-  <!-- Main Content Grid -->
-  <div class="grid gap-6 mb-8 md:grid-cols-5">
-    <!-- Cột trái (Thông tin Tour & Lịch trình) -->
-    <div class="md:col-span-2 space-y-6">
-      <!-- Card thông tin Tour -->
-      <div class="p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
-        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">Thông tin Tour</h4>
-        <div class="space-y-3 text-gray-700 dark:text-gray-400">
-          <p><strong>Tên tour:</strong> {{ booking.tourName }}</p>
-          <p><strong>Thời gian:</strong> {{ booking.durationDays }} ngày</p>
-          <p><strong>Điểm khởi hành:</strong> {{ booking.departLocation }}</p>
-          <p><strong>Các điểm đến:</strong> {{ booking.destinations.join(', ') }}</p>
-        </div>
-      </div>
-      <!-- Card thông tin Lịch trình -->
-      <div class="p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
-        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">Thông tin Lịch trình</h4>
-        <div class="space-y-3 text-gray-700 dark:text-gray-400">
-          <nz-form-item>
-            <nz-form-label><strong>Ngày đi</strong></nz-form-label>
-            <nz-form-control>
-              <nz-select [ngModel]="currentScheduleId" (ngModelChange)="onDepartureDateChange($event)">
-                <nz-option *ngFor="let schedule of booking.schedules" [nzValue]="schedule.id"
-                           [nzLabel]="(schedule.departureDate | formatDate) + ' (Còn ' + schedule.availableSeats + ' chỗ)'">
-                </nz-option>
-              </nz-select>
-            </nz-form-control>
-          </nz-form-item>
-          <p><strong>Điều hành viên:</strong> {{ booking.operator }}</p>
-          <p><strong>Số chỗ còn lại:</strong> {{ selectedScheduleSeats !== null ? selectedScheduleSeats : booking.remainingSeats }} / {{ booking.totalSeats }}</p>
-        </div>
-      </div>
-    </div>
-    <!-- Cột giữa (Thông tin thanh toán) -->
-    <div class="md:col-span-3 space-y-6">
-      <!-- Card Thanh toán -->
-      <div class="p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
-        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">Thanh toán & Xác nhận</h4>
-        <div class="space-y-3 text-gray-700 dark:text-gray-400">
-          <div class="flex justify-between items-center">
-            <span>Trạng thái:</span>
-            <div class="flex items-center gap-2">
-              <nz-select [(ngModel)]="booking.status" class="w-40">
-                <nz-option nzValue="PENDING" nzLabel="Chờ xử lý"></nz-option>
-                <nz-option nzValue="CONFIRMED" nzLabel="Đã xác nhận"></nz-option>
-              </nz-select>
-              <button nz-button nzType="primary" (click)="onUpdateStatus()">Lưu</button>
-            </div>
+    <nz-page-header class="site-page-header" [nzTitle]="'Chi tiết Booking: ' + booking.bookingCode"
+      [nzSubtitle]="'Tạo lúc: ' + (booking.createdAt | formatDate)" nzBackIcon (nzBack)="goBack()">
+    </nz-page-header>
+
+    <!-- 2. Bố cục chính sử dụng Grid -->
+    <div nz-row [nzGutter]="[16, 16]">
+      <!-- Cột trái: Thông tin Tour, Lịch trình, Thanh toán -->
+      <div nz-col [nzXs]="24" [nzLg]="16">
+        <div nz-row [nzGutter]="[16, 16]">
+          <!-- Thông tin Tour -->
+          <div nz-col [nzSpan]="24">
+            <nz-card nzTitle="Thông tin Tour">
+              <nz-descriptions nzBordered [nzColumn]="1">
+                <nz-descriptions-item nzTitle="Tên tour">{{ booking.tourName }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Thời gian">{{ booking.durationDays }} ngày</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Điểm khởi hành">{{ booking.departLocation }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Các điểm đến">{{ booking.destinations.join(', ') }}</nz-descriptions-item>
+              </nz-descriptions>
+            </nz-card>
           </div>
-          <div class="flex justify-between items-center">
-            <span>Thanh toán:</span>
-            <span class="font-medium">{{ booking.paymentMethod || 'Chưa có' }}</span>
+
+          <!-- Thông tin Lịch trình -->
+          <div nz-col [nzXs]="24" [nzMd]="12">
+            <nz-card nzTitle="Thông tin Lịch trình">
+              <nz-form-item>
+                <nz-form-label>Ngày đi</nz-form-label>
+                <nz-form-control>
+                  <nz-select [ngModel]="currentScheduleId" (ngModelChange)="onDepartureDateChange($event)" class="w-full">
+                    <nz-option *ngFor="let schedule of booking.schedules" [nzValue]="schedule.id"
+                      [nzLabel]="(schedule.departureDate | formatDate) + ' (Còn ' + schedule.availableSeats + ' chỗ)'">
+                    </nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+              <p><strong>Điều hành viên:</strong> {{ booking.operator }}</p>
+              <p><strong>Số chỗ còn lại:</strong> {{ selectedScheduleSeats !== null ? selectedScheduleSeats :
+                booking.remainingSeats }} / {{ booking.totalSeats }}</p>
+            </nz-card>
           </div>
-          <hr class="dark:border-gray-700">
-          <div class="flex justify-between items-center text-lg font-semibold">
-            <span class="text-gray-800 dark:text-gray-200">Tổng cộng:</span>
-            <span class="text-purple-600 dark:text-purple-400">{{ booking.totalAmount | currencyVnd }}</span>
+
+          <!-- Thông tin Thanh toán -->
+          <div nz-col [nzXs]="24" [nzMd]="12">
+            <nz-card nzTitle="Thanh toán & Xác nhận" [nzExtra]="extraTpl">
+              <ng-template #extraTpl>
+                <button nz-button nzType="link" (click)="openMailModal()">
+                  <span nz-icon nzType="mail"></span>Gửi xác nhận
+                </button>
+              </ng-template>
+              <nz-descriptions nzBordered [nzColumn]="1">
+                <nz-descriptions-item nzTitle="Trạng thái">
+                  <nz-tag [nzColor]="getStatusColor(booking.status)">{{ booking.status | statusVietnamese }}</nz-tag>
+                </nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Thanh toán">
+                  {{ booking.paymentMethod || 'Chưa có' }}
+                </nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Tổng cộng">
+                  <strong class="text-lg text-red-600">{{ booking.totalAmount | currencyVnd }}</strong>
+                </nz-descriptions-item>
+              </nz-descriptions>
+            </nz-card>
           </div>
         </div>
-        <div class="mt-4 pt-4 border-t dark:border-gray-700 text-center">
-          <button nz-button nzType="default" nzBlock (click)="openMailModal()">
-             <i nz-icon nzType="mail" nzTheme="outline"></i> Gửi xác nhận cho khách hàng
-          </button>
-        </div>
       </div>
-    </div>
 
-    <!-- Cột phải (Thông tin khách hàng & Đoàn) -->
-    <div class="md:col-span-5 space-y-6">
-      <!-- Card chỉnh sửa thông tin người đặt -->
-      <div class="p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
-        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">Thông tin người đặt</h4>
-        <form nz-form [formGroup]="bookerForm" (ngSubmit)="onSaveChanges()">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+      <!-- Cột phải: Thông tin người đặt -->
+      <div nz-col [nzXs]="24" [nzLg]="8">
+        <nz-card nzTitle="Thông tin người đặt">
+          <form nz-form [formGroup]="bookerForm" (ngSubmit)="onSaveChanges()">
             <nz-form-item>
               <nz-form-label nzRequired>Họ và tên</nz-form-label>
               <nz-form-control nzErrorTip="Vui lòng nhập họ và tên.">
@@ -111,243 +99,204 @@
                 <input nz-input formControlName="phone" />
               </nz-form-control>
             </nz-form-item>
-             <nz-form-item>
+            <nz-form-item>
               <nz-form-label nzRequired>Địa chỉ</nz-form-label>
               <nz-form-control nzErrorTip="Vui lòng nhập địa chỉ.">
                 <input nz-input formControlName="address" />
               </nz-form-control>
             </nz-form-item>
-            <nz-form-item class="md:col-span-2">
+            <nz-form-item>
               <nz-form-label>Hạn thanh toán</nz-form-label>
               <nz-form-control nzErrorTip="Hạn thanh toán không được là ngày trong quá khứ.">
-                <input type="datetime-local" nz-input formControlName="paymentDeadline" />
+                <input type="datetime-local" class="ant-input" formControlName="paymentDeadline" />
               </nz-form-control>
             </nz-form-item>
-          </div>
-          <div class="mt-4 text-right">
-            <button nz-button nzType="primary" type="submit" [disabled]="bookerForm.invalid || bookerForm.pristine">
-              Lưu thay đổi
-            </button>
-          </div>
-        </form>
+            <div class="mt-4 text-right">
+              <button nz-button nzType="primary" type="submit" [nzLoading]="isSubmitting"
+                [disabled]="bookerForm.invalid || bookerForm.pristine">
+                Lưu thay đổi
+              </button>
+            </div>
+          </form>
+        </nz-card>
       </div>
 
-      <!-- Card danh sách khách trong đoàn -->
-      <div class="p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
-        <div class="flex justify-between items-center mb-4">
-          <h4 class="font-semibold text-gray-800 dark:text-gray-300">Danh sách đoàn ({{booking.customers.length}} người)</h4>
-          <button nz-button nzType="default" (click)="openAddCustomerModal()">
-            <i nz-icon nzType="plus" nzTheme="outline"></i> Thêm
-          </button>
-        </div>
-        <div class="w-full overflow-x-auto">
-          <nz-table [nzData]="booking.customers" [nzFrontPagination]="false" [nzShowPagination]="false">
+      <!-- Danh sách khách trong đoàn -->
+      <div nz-col [nzSpan]="24">
+        <nz-card nzTitle="Danh sách đoàn ({{booking.customers.length}} người)" [nzExtra]="addCustomerBtn">
+          <ng-template #addCustomerBtn>
+            <button nz-button nzType="default" (click)="openAddCustomerModal()">
+              <span nz-icon nzType="plus"></span> Thêm khách hàng
+            </button>
+          </ng-template>
+          <nz-table [nzData]="booking.customers" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="small">
             <thead>
               <tr>
-                <th>Họ tên</th><th>Loại khách</th><th>Ngày sinh</th><th>Hành động</th>
+                <th>Họ tên</th>
+                <th>Loại khách</th>
+                <th>Ngày sinh</th>
+                <th>Hành động</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let customer of booking.customers">
-                <td>{{customer.fullName}}</td><td>{{customer.paxType}}</td><td>{{customer.dateOfBirth | formatDate}}</td>
+                <td>{{customer.fullName}}</td>
+                <td>{{customer.paxType | titlecase}}</td>
+                <td>{{customer.dateOfBirth | formatDate}}</td>
                 <td>
                   <a (click)="openEditCustomerModal(customer)">Sửa</a>
                   <nz-divider nzType="vertical"></nz-divider>
-                  <a (click)="onDeleteCustomer(customer.id)" class="text-red-500">Xóa</a>
+                  <a nz-popconfirm nzPopconfirmTitle="Bạn chắc chắn muốn xóa khách hàng này?"
+                    (nzOnConfirm)="onDeleteCustomer(customer.id)" class="text-red-500">Xóa</a>
                 </td>
               </tr>
-              <tr *ngIf="booking.customers.length === 0"><td colspan="4" class="text-center">Chưa có khách hàng nào trong đoàn.</td></tr>
             </tbody>
           </nz-table>
-        </div>
+        </nz-card>
       </div>
     </div>
   </div>
-</div>
+</nz-spin>
 
-<!-- MODAL GỬI MAIL -->
-<nz-modal
-  [(nzVisible)]="isMailModalOpen"
-  nzTitle="Soạn Email Xác Nhận"
-  (nzOnCancel)="closeMailModal()"
-  (nzOnOk)="onSendMail()"
-  [nzOkLoading]="isSendingMail"
-  nzOkText="Gửi Email"
-  nzCancelText="Hủy"
->
-  <ng-container *nzModalContent>
-    <form nz-form [formGroup]="mailForm">
-      <nz-form-item>
-        <nz-form-label>Gửi đến</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="email" />
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-label>Tiêu đề</nz-form-label>
-        <nz-form-control nzErrorTip="Vui lòng nhập tiêu đề!">
-          <input nz-input formControlName="subject" />
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-label>Nội dung</nz-form-label>
-        <nz-form-control nzErrorTip="Vui lòng nhập nội dung!">
-          <textarea nz-input formControlName="content" [nzAutosize]="{ minRows: 10, maxRows: 15 }"></textarea>
-        </nz-form-control>
-      </nz-form-item>
-    </form>
-  </ng-container>
-</nz-modal>
+<!-- MODALS -->
+<ng-container *ngIf="booking">
+  <!-- MODAL GỬI MAIL -->
+  <nz-modal [(nzVisible)]="isMailModalOpen" nzTitle="Soạn Email Xác Nhận" (nzOnCancel)="closeMailModal()"
+    (nzOnOk)="onSendMail()" [nzOkLoading]="isSendingMail" nzOkText="Gửi Email" nzCancelText="Hủy">
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="mailForm">
+        <nz-form-item>
+          <nz-form-label>Gửi đến</nz-form-label>
+          <nz-form-control><input nz-input formControlName="email" /></nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired>Tiêu đề</nz-form-label>
+          <nz-form-control nzErrorTip="Vui lòng nhập tiêu đề!"><input nz-input formControlName="subject" /></nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired>Nội dung</nz-form-label>
+          <nz-form-control nzErrorTip="Vui lòng nhập nội dung!">
+            <textarea nz-input formControlName="content" [nzAutosize]="{ minRows: 10, maxRows: 15 }"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
 
-<!-- ========================================================== -->
-<!-- MỚI: MODAL THÊM KHÁCH HÀNG -->
-<!-- ========================================================== -->
-<nz-modal
-  [(nzVisible)]="isAddCustomerModalOpen"
-  [nzWidth]="800"
-  nzTitle="Thêm khách hàng mới vào đoàn"
-  (nzOnCancel)="closeAddCustomerModal()"
-  (nzOnOk)="onSubmitAddCustomer()"
-  [nzOkLoading]="isSubmitting"
-  nzOkText="Thêm vào đoàn"
-  nzCancelText="Hủy"
-  [nzOkDisabled]="addCustomerForm.invalid"
->
-  <ng-container *nzModalContent>
-    <form [formGroup]="addCustomerForm">
-      <div class="max-h-[60vh] overflow-y-auto -mx-6 px-6 py-4">
-        <div formArrayName="customers">
+  <!-- MODAL THÊM KHÁCH HÀNG -->
+  <nz-modal [(nzVisible)]="isAddCustomerModalOpen" [nzWidth]="800" nzTitle="Thêm khách hàng mới vào đoàn"
+    (nzOnCancel)="closeAddCustomerModal()" (nzOnOk)="onSubmitAddCustomer()" [nzOkLoading]="isSubmitting"
+    nzOkText="Thêm vào đoàn" nzCancelText="Hủy" [nzOkDisabled]="addCustomerForm.invalid">
+    <ng-container *nzModalContent>
+      <form [formGroup]="addCustomerForm">
+        <div class="max-h-[60vh] overflow-y-auto -mx-6 px-6 py-4" formArrayName="customers">
           <div *ngFor="let customer of customersArray.controls; let i=index" [formGroupName]="i"
-               class="p-4 mb-4 border rounded-lg dark:border-gray-700 relative">
-
+            class="p-4 mb-4 border rounded-lg relative">
             <div class="flex justify-between items-center mb-2">
-              <h4 class="font-semibold text-gray-700 dark:text-gray-200">Khách hàng {{i + 1}}</h4>
+              <h4 class="font-semibold">Khách hàng {{i + 1}}</h4>
               <button *ngIf="customersArray.length > 1" nz-button nzType="text" nzDanger
-                      (click)="removeCustomerFromAddForm(i)" type="button">
-                <i nz-icon nzType="delete" nzTheme="outline"></i> Xóa
+                (click)="removeCustomerFromAddForm(i)" type="button">
+                <span nz-icon nzType="delete"></span> Xóa
               </button>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4">
-              <nz-form-item>
-                <nz-form-label nzRequired>Họ và tên</nz-form-label>
-                <nz-form-control [nzErrorTip]="fullNameErrorTpl">
-                  <input nz-input formControlName="fullName" placeholder="Nguyễn Văn A" />
-                  <ng-template #fullNameErrorTpl let-control>
-                    <ng-container *ngIf="control.hasError('required')">Vui lòng nhập họ tên.</ng-container>
-                  </ng-template>
-                </nz-form-control>
-              </nz-form-item>
-
-              <nz-form-item>
-                <nz-form-label nzRequired>Ngày sinh</nz-form-label>
-                <nz-form-control [nzErrorTip]="dobErrorTpl">
-                  <input type="date" nz-input formControlName="dateOfBirth" />
-                   <ng-template #dobErrorTpl let-control>
-                    <ng-container *ngIf="control.hasError('required')">Vui lòng chọn ngày sinh.</ng-container>
-                    <ng-container *ngIf="control.hasError('noFutureDate')">Ngày sinh không hợp lệ.</ng-container>
-                  </ng-template>
-                </nz-form-control>
-              </nz-form-item>
-
-              <nz-form-item>
-                <nz-form-label nzRequired>Giới tính</nz-form-label>
-                <nz-form-control>
-                  <nz-select formControlName="gender">
-                    <nz-option nzValue="MALE" nzLabel="Nam"></nz-option>
-                    <nz-option nzValue="FEMALE" nzLabel="Nữ"></nz-option>
-                    <nz-option nzValue="OTHER" nzLabel="Khác"></nz-option>
-                  </nz-select>
-                </nz-form-control>
-              </nz-form-item>
-
-              <nz-form-item>
-                <nz-form-label nzRequired>Loại khách</nz-form-label>
-                <nz-form-control>
-                  <nz-select formControlName="paxType">
-                    <nz-option nzValue="ADULT" nzLabel="Người lớn"></nz-option>
-                    <nz-option nzValue="CHILD" nzLabel="Trẻ em"></nz-option>
-                    <nz-option nzValue="INFANT" nzLabel="Trẻ nhỏ"></nz-option>
-                    <nz-option nzValue="TODDLER" nzLabel="Em bé"></nz-option>
-                  </nz-select>
-                </nz-form-control>
-              </nz-form-item>
-
-              <div class="md:col-span-2">
-                <nz-checkbox-wrapper>
-                  <label nz-checkbox formControlName="singleRoom">Phụ thu phòng đơn</label>
-                </nz-checkbox-wrapper>
+            <div nz-row [nzGutter]="16">
+              <div nz-col [nzSpan]="12">
+                <nz-form-item><nz-form-label nzRequired>Họ và tên</nz-form-label>
+                  <nz-form-control nzErrorTip="Vui lòng nhập họ tên.">
+                    <input nz-input formControlName="fullName" placeholder="Nguyễn Văn A" />
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col [nzSpan]="12">
+                <nz-form-item><nz-form-label nzRequired>Ngày sinh</nz-form-label>
+                  <nz-form-control [nzErrorTip]="dobErrorTpl">
+                    <input type="date" class="ant-input" formControlName="dateOfBirth" />
+                    <ng-template #dobErrorTpl let-control>
+                      <ng-container *ngIf="control.hasError('required')">Vui lòng chọn ngày sinh.</ng-container>
+                      <ng-container *ngIf="control.hasError('noFutureDate')">Ngày sinh không hợp lệ.</ng-container>
+                    </ng-template>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col [nzSpan]="12">
+                <nz-form-item><nz-form-label nzRequired>Giới tính</nz-form-label>
+                  <nz-form-control>
+                    <nz-select formControlName="gender">
+                      <nz-option nzValue="MALE" nzLabel="Nam"></nz-option>
+                      <nz-option nzValue="FEMALE" nzLabel="Nữ"></nz-option>
+                      <nz-option nzValue="OTHER" nzLabel="Khác"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col [nzSpan]="12">
+                <nz-form-item><nz-form-label nzRequired>Loại khách</nz-form-label>
+                  <nz-form-control>
+                    <nz-select formControlName="paxType">
+                      <nz-option nzValue="ADULT" nzLabel="Người lớn"></nz-option>
+                      <nz-option nzValue="CHILD" nzLabel="Trẻ em"></nz-option>
+                      <nz-option nzValue="INFANT" nzLabel="Trẻ nhỏ"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col [nzSpan]="24">
+                <label nz-checkbox formControlName="singleRoom">Phụ thu phòng đơn</label>
               </div>
             </div>
           </div>
         </div>
         <button nz-button nzType="dashed" (click)="addMoreCustomer()" type="button" class="mt-2 w-full">
-          <i nz-icon nzType="plus"></i> Thêm khách hàng khác
+          <span nz-icon nzType="plus"></span> Thêm khách hàng khác
         </button>
-      </div>
-    </form>
-  </ng-container>
-</nz-modal>
+      </form>
+    </ng-container>
+  </nz-modal>
 
-<!-- ========================================================== -->
-<!-- MỚI: MODAL SỬA KHÁCH HÀNG -->
-<!-- ========================================================== -->
-<nz-modal
-  [(nzVisible)]="isEditCustomerModalOpen"
-  nzTitle="Chỉnh sửa thông tin khách hàng"
-  (nzOnCancel)="closeEditCustomerModal()"
-  (nzOnOk)="onSubmitEditCustomer()"
-  [nzOkLoading]="isSubmitting"
-  nzOkText="Lưu thay đổi"
-  nzCancelText="Hủy"
-  [nzOkDisabled]="editCustomerForm.invalid"
->
-  <ng-container *nzModalContent>
-    <form nz-form [formGroup]="editCustomerForm" class="py-4">
-      <nz-form-item>
-        <nz-form-label nzRequired>Họ và tên</nz-form-label>
-        <nz-form-control nzErrorTip="Vui lòng nhập họ tên.">
-          <input nz-input formControlName="fullName" />
-        </nz-form-control>
-      </nz-form-item>
-
-      <div class="grid grid-cols-2 gap-x-4">
+  <!-- MODAL SỬA KHÁCH HÀNG -->
+  <nz-modal [(nzVisible)]="isEditCustomerModalOpen" nzTitle="Chỉnh sửa thông tin khách hàng"
+    (nzOnCancel)="closeEditCustomerModal()" (nzOnOk)="onSubmitEditCustomer()" [nzOkLoading]="isSubmitting"
+    nzOkText="Lưu thay đổi" nzCancelText="Hủy" [nzOkDisabled]="editCustomerForm.invalid">
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="editCustomerForm" class="py-4">
         <nz-form-item>
-          <nz-form-label nzRequired>Giới tính</nz-form-label>
+          <nz-form-label nzRequired>Họ và tên</nz-form-label>
+          <nz-form-control nzErrorTip="Vui lòng nhập họ tên."><input nz-input formControlName="fullName" /></nz-form-control>
+        </nz-form-item>
+        <div nz-row [nzGutter]="16">
+          <div nz-col [nzSpan]="12">
+            <nz-form-item><nz-form-label nzRequired>Giới tính</nz-form-label>
+              <nz-form-control>
+                <nz-select formControlName="gender">
+                  <nz-option nzValue="MALE" nzLabel="Nam"></nz-option>
+                  <nz-option nzValue="FEMALE" nzLabel="Nữ"></nz-option>
+                  <nz-option nzValue="OTHER" nzLabel="Khác"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzSpan]="12">
+            <nz-form-item><nz-form-label nzRequired>Ngày sinh</nz-form-label>
+              <nz-form-control nzErrorTip="Ngày sinh không hợp lệ.">
+                <input type="date" class="ant-input" formControlName="dateOfBirth" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+        <nz-form-item>
+          <nz-form-label nzRequired>Loại khách</nz-form-label>
           <nz-form-control>
-            <nz-select formControlName="gender">
-              <nz-option nzValue="MALE" nzLabel="Nam"></nz-option>
-              <nz-option nzValue="FEMALE" nzLabel="Nữ"></nz-option>
-              <nz-option nzValue="OTHER" nzLabel="Khác"></nz-option>
+            <nz-select formControlName="paxType">
+              <nz-option nzValue="ADULT" nzLabel="Người lớn"></nz-option>
+              <nz-option nzValue="CHILD" nzLabel="Trẻ em"></nz-option>
+              <nz-option nzValue="INFANT" nzLabel="Trẻ nhỏ"></nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
-
         <nz-form-item>
-          <nz-form-label nzRequired>Ngày sinh</nz-form-label>
-          <nz-form-control nzErrorTip="Ngày sinh không hợp lệ.">
-            <input type="date" nz-input formControlName="dateOfBirth" />
-          </nz-form-control>
+          <nz-form-control><label nz-checkbox formControlName="singleRoom">Phụ thu phòng đơn</label></nz-form-control>
         </nz-form-item>
-      </div>
-
-      <nz-form-item>
-        <nz-form-label nzRequired>Loại khách</nz-form-label>
-        <nz-form-control>
-          <nz-select formControlName="paxType">
-            <nz-option nzValue="ADULT" nzLabel="Người lớn"></nz-option>
-            <nz-option nzValue="CHILD" nzLabel="Trẻ em"></nz-option>
-            <nz-option nzValue="INFANT" nzLabel="Trẻ nhỏ"></nz-option>
-            <nz-option nzValue="TODDLER" nzLabel="Em bé"></nz-option>
-          </nz-select>
-        </nz-form-control>
-      </nz-form-item>
-
-      <nz-form-item>
-        <nz-form-control>
-          <label nz-checkbox formControlName="singleRoom">Phụ thu phòng đơn</label>
-        </nz-form-control>
-      </nz-form-item>
-    </form>
-  </ng-container>
-</nz-modal>
+      </form>
+    </ng-container>
+  </nz-modal>
+</ng-container>

@@ -1,0 +1,62 @@
+<div class="container mx-auto px-4 py-6">
+  <h1 class="text-2xl font-semibold mb-4">Check-in tour đã hoàn thành</h1>
+
+  <!-- FILTER BAR (giống pattern RequestBooking) -->
+  <div class="flex flex-wrap justify-center items-center gap-3 mb-4">
+    <label class="text text-gray-600">Tìm kiếm:</label>
+    <input class="border rounded px-3 py-2"
+           placeholder="Tên tour..."
+           [ngModel]="name()"
+           (ngModelChange)="name.set($event); page.set(0); fetch()" /> <!-- change -->
+
+    <label class="text text-gray-600 ml-4">Ngày khởi hành:</label>
+    <input type="date"
+           class="border rounded px-3 py-2"
+           [ngModel]="departDate()"
+           (ngModelChange)="departDate.set($event); page.set(0); fetch()" /> <!-- change -->
+
+    <button type="button"
+            class="px-3 py-2 text-sm text-blue-600 border rounded hover:bg-blue-200"
+            (click)="resetFilters()">
+      Xóa lọc
+    </button>
+  </div>
+
+  <!-- LOADING / ERROR -->
+  <div *ngIf="loading()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div *ngFor="let _ of [1,2,3,4,5,6]" class="h-48 rounded-2xl bg-gray-100 animate-pulse"></div>
+  </div>
+  <div *ngIf="!loading() && errorMsg()" class="text-red-600">{{ errorMsg() }}</div>
+
+  <!-- EMPTY -->
+  <div *ngIf="!loading() && !errorMsg() && total() === 0" class="text-gray-500">
+    Không có kết quả phù hợp.
+  </div>
+
+  <!-- LIST -->
+  <div *ngIf="!loading() && !errorMsg() && total() > 0"
+       class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <article *ngFor="let b of rows()" class="rounded-2xl shadow p-4 hover:shadow-md transition">
+      <h3 class="text-base font-semibold mb-1 line-clamp-2">{{ b.tourName }}</h3>
+      <div class="text-sm opacity-70">Mã đặt: <span class="font-medium">{{ b.bookingCode }}</span></div>
+      <div class="text-sm">Khởi hành: {{ b.departureDate | date:'dd/MM/yyyy' }}</div>
+      <div class="text-sm mb-3">Tổng tiền: <span class="font-semibold text-red-500">{{ b.totalAmount | currencyVnd }}</span></div>
+
+      <button class="w-full rounded-xl px-4 py-2 bg-blue-600 text-white hover:bg-blue-700"
+              (click)="openPhotos(b)">
+        Tải ảnh
+      </button>
+    </article>
+  </div>
+
+  <!-- PAGINATION -->
+  <app-pagination
+    *ngIf="!loading() && total() > size()"
+    class="mt-6"
+    [currentPage]="page()"
+    [totalItems]="total()"
+    [pageSize]="size()"
+    [siblingCount]="1"
+    (pageChange)="onPageChange($event)">
+  </app-pagination>
+</div>

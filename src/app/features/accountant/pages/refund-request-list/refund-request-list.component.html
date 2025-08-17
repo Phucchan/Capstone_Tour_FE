@@ -1,16 +1,14 @@
 <!-- Ghi chú: Áp dụng layout container căn giữa và nền xám. -->
-<div class="bg-gray-50 p-4 sm:p-6 lg:p-8 min-h-screen">
-  <div class="container mx-auto">
+<div class="bg-gray-50 min-h-screen">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Page Header -->
-    <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-      <div>
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
-          Yêu cầu Hoàn tiền
-        </h1>
-        <p class="text-sm text-gray-600 mt-1">
-          Duyệt và xử lý các yêu cầu hoàn tiền từ khách hàng.
-        </p>
-      </div>
+    <div class="mb-6">
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
+        Yêu cầu Hoàn tiền
+      </h1>
+      <p class="text-sm text-gray-600 mt-1">
+        Duyệt và xử lý các yêu cầu hoàn tiền từ khách hàng.
+      </p>
     </div>
 
     <!-- Main Content Card -->
@@ -23,7 +21,7 @@
             <input
               type="text"
               nz-input
-              placeholder="Tìm kiếm..."
+              placeholder="Tìm theo mã tour, tên KH..."
               [(ngModel)]="searchTerm"
               (ngModelChange)="onSearchChange($event)"
             />
@@ -38,30 +36,29 @@
 
       <!-- Table Wrapper -->
       <div class="overflow-x-auto">
-        <nz-table
-          #refundTable
-          [nzData]="refunds.items"
-          [nzFrontPagination]="false"
-          [nzLoading]="isLoading"
-          [nzTotal]="refunds.total"
-          [nzPageSize]="refunds.size"
-          [nzPageIndex]="refunds.page + 1"
-          (nzPageIndexChange)="onPageChange($event)"
-          [nzShowPagination]="false"
-          [nzBordered]="false"
-          class="min-w-full"
-        >
-          <thead>
-            <tr class="bg-gray-50">
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Mã Tour</th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tên Khách Hàng</th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ngày đi</th>
-              <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Trạng thái</th>
-              <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Hành động</th>
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Thông tin Tour</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tên Khách Hàng</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ngày đi</th>
+              <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Trạng thái</th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Hành động</th>
             </tr>
           </thead>
-          <tbody>
-            <tr *ngFor="let data of refundTable.data" class="border-b border-gray-200 hover:bg-gray-50">
+          <!-- Loading Skeleton -->
+          <tbody *ngIf="isLoading">
+             <tr *ngFor="let i of [1,2,3,4,5]">
+              <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded animate-pulse"></div></td>
+              <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded animate-pulse"></div></td>
+              <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded animate-pulse"></div></td>
+              <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded animate-pulse"></div></td>
+              <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded animate-pulse"></div></td>
+            </tr>
+          </tbody>
+          <!-- Data Body -->
+          <tbody *ngIf="!isLoading" class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let data of refunds.items" class="hover:bg-gray-50 transition-colors duration-150">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-semibold text-gray-900">{{ data.tourCode }}</div>
                 <div class="text-xs text-gray-500">{{ data.tourName }}</div>
@@ -72,24 +69,24 @@
                 <nz-tag [nzColor]="getStatusColor(data.status)">{{ data.status }}</nz-tag>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <a (click)="viewDetail(data.bookingId)" class="text-indigo-600 hover:text-indigo-800 cursor-pointer inline-flex items-center gap-1">
+                <a (click)="viewDetail(data.bookingId)" class="text-indigo-600 hover:text-indigo-800 cursor-pointer inline-flex items-center gap-1 font-semibold">
                   <i nz-icon nzType="eye" nzTheme="outline"></i>
                   <span>Xem chi tiết</span>
                 </a>
               </td>
             </tr>
             <!-- Empty State -->
-            <tr *ngIf="!isLoading && refunds.total === 0">
+            <tr *ngIf="refunds.total === 0">
               <td colspan="5" class="text-center py-16">
-                <nz-empty nzNotFoundImage="simple" nzNotFoundContent="Không có dữ liệu"></nz-empty>
+                <nz-empty nzNotFoundImage="simple" nzNotFoundContent="Không có yêu cầu hoàn tiền nào"></nz-empty>
               </td>
             </tr>
           </tbody>
-        </nz-table>
+        </table>
       </div>
 
       <!-- Pagination -->
-      <div *ngIf="refunds.total > refunds.size" class="flex justify-end p-4 sm:p-6">
+      <div *ngIf="refunds.total > refunds.size" class="flex justify-end p-4 sm:p-6 border-t border-gray-200">
         <app-pagination
           [currentPage]="refunds.page + 1"
           [totalItems]="refunds.total"

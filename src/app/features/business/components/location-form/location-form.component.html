@@ -1,40 +1,38 @@
-<!-- src/app/features/business/components/location-form/location-form.component.html -->
-<form [formGroup]="locationForm" (ngSubmit)="onSubmit()">
-  <div class="grid gap-4 mb-4 sm:grid-cols-2">
-    <!-- Tên Địa điểm -->
-    <div class="sm:col-span-2">
-      <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tên Địa điểm</label>
-      <input type="text" id="name" formControlName="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="VD: Vịnh Hạ Long">
-      <div *ngIf="f['name'].touched && f['name'].errors" class="text-red-500 text-xs mt-1">
-        <span *ngIf="f['name'].errors?.['required']">Tên địa điểm là bắt buộc.</span>
-        <span *ngIf="f['name'].errors?.['minlength']">Tên phải có ít nhất 3 ký tự.</span>
-      </div>
-    </div>
+<form nz-form [formGroup]="locationForm" (ngSubmit)="onSubmit()">
+  <!-- Image Upload -->
+  <nz-form-item>
+    <nz-form-label>Ảnh đại diện</nz-form-label>
+    <nz-form-control [nzErrorTip]="!locationToEdit && !selectedFile ? 'Vui lòng chọn ảnh' : ''">
+      <nz-upload
+        nzListType="picture-card"
+        [nzFileList]="fileList"
+        [nzBeforeUpload]="beforeUpload"
+        [nzShowUploadList]="{ showPreviewIcon: false, showRemoveIcon: true }"
+      >
+        <div *ngIf="!imagePreview">
+          <span nz-icon nzType="plus"></span>
+          <div class="ant-upload-text">Tải ảnh</div>
+        </div>
+        <img *ngIf="imagePreview" [src]="imagePreview" class="w-full h-full object-cover" alt="Preview"/>
+      </nz-upload>
+    </nz-form-control>
+  </nz-form-item>
 
-    <!-- URL Hình ảnh -->
-    <div class="sm:col-span-2">
-      <label for="image" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">URL Hình ảnh</label>
-      <input type="text" id="image" formControlName="image" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="https://example.com/image.jpg">
-      <div *ngIf="f['image'].touched && f['image'].errors" class="text-red-500 text-xs mt-1">
-        <span *ngIf="f['image'].errors?.['required']">URL hình ảnh là bắt buộc.</span>
-      </div>
-    </div>
+  <!-- Location Name -->
+  <nz-form-item>
+    <nz-form-label nzRequired>Tên địa điểm</nz-form-label>
+    <nz-form-control nzErrorTip="Vui lòng nhập tên địa điểm (ít nhất 3 ký tự)">
+      <input nz-input formControlName="name" placeholder="Ví dụ: Vịnh Hạ Long" />
+    </nz-form-control>
+  </nz-form-item>
 
-    <!-- Mô tả -->
-    <div class="sm:col-span-2">
-      <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Mô tả</label>
-      <textarea id="description" formControlName="description" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Viết mô tả chi tiết về địa điểm..."></textarea>
-      <div *ngIf="f['description'].touched && f['description'].errors" class="text-red-500 text-xs mt-1">
-        <span *ngIf="f['description'].errors?.['required']">Mô tả là bắt buộc.</span>
-      </div>
-    </div>
-  </div>
-  <button type="submit" [disabled]="isSubmitting" class="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-    <svg *ngIf="!isSubmitting" class="mr-1 -ml-1 w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
-    <svg *ngIf="isSubmitting" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-    </svg>
-    {{ isSubmitting ? 'Đang lưu...' : 'Lưu địa điểm' }}
-  </button>
+  <!-- Description -->
+  <nz-form-item>
+    <nz-form-label nzRequired>Mô tả</nz-form-label>
+    <nz-form-control nzErrorTip="Vui lòng nhập mô tả">
+      <textarea nz-input formControlName="description" placeholder="Nhập mô tả chi tiết về địa điểm..." [nzAutosize]="{ minRows: 4, maxRows: 6 }"></textarea>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Form Actions are handled by the parent modal component -->
 </form>

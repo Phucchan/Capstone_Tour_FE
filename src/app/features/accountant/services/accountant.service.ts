@@ -4,7 +4,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
-import { PagingDTO } from '../../../core/models/paging.model';
+import { Paging } from '../../../core/models/paging.model';
 import { BookingRefund } from '../models/booking-refund.model';
 import { BookingRefundDetail } from '../models/booking-refund-detail.model';
 import { RefundBillRequest } from '../models/refund-bill-request.model';
@@ -28,7 +28,7 @@ export class AccountantService {
     search: string | null,
     page: number,
     size: number
-  ): Observable<PagingDTO<BookingRefund>> {
+  ): Observable<Paging<BookingRefund>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
@@ -36,7 +36,7 @@ export class AccountantService {
       params = params.set('search', search);
     }
     return this.http
-      .get<ApiResponse<PagingDTO<BookingRefund>>>(this.refundApiUrl, { params })
+      .get<ApiResponse<Paging<BookingRefund>>>(this.refundApiUrl, { params })
       .pipe(map((response) => response.data));
   }
 
@@ -75,7 +75,7 @@ export class AccountantService {
     search: string | null,
     page: number,
     size: number
-  ): Observable<PagingDTO<BookingList>> {
+  ): Observable<Paging<BookingList>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
@@ -83,7 +83,7 @@ export class AccountantService {
       params = params.set('search', search);
     }
     return this.http
-      .get<ApiResponse<PagingDTO<BookingList>>>(this.bookingApiUrl, { params })
+      .get<ApiResponse<Paging<BookingList>>>(this.bookingApiUrl, { params })
       .pipe(map((response) => response.data));
   }
 

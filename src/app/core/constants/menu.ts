@@ -63,8 +63,8 @@ export const MENU_ITEMS: MenuItem[] = [
       },
       {
         icon: 'assets/icons/heroicons/outline/request-quote-svgrepo-com.svg',
-        label: 'Yêu cầu đặt Tour',
-        route: '/business/request-bookings', // <-- Sửa 'request-booking' thành 'request-bookings'
+        label: 'Yêu cầu tạo Tour',
+        route: '/business/request-bookings', // Khớp với routing
         roles: [ROLES.BUSINESS_DEPARTMENT],
       },
       {
@@ -96,6 +96,12 @@ export const MENU_ITEMS: MenuItem[] = [
         route: '/coordinator/service-types', // Chính xác
         roles: [ROLES.SERVICE_COORDINATOR],
       },
+      {
+        icon: 'assets/icons/heroicons/outline/ticket.svg', // Có thể chọn icon khác phù hợp hơn
+        label: 'Phê duyệt Dịch vụ',
+        route: '/coordinator/service-approval', // Trỏ đến route mới
+        roles: [ROLES.SERVICE_COORDINATOR],
+      },
     ],
   },
 
@@ -116,7 +122,7 @@ export const MENU_ITEMS: MenuItem[] = [
 
       {
         icon: 'assets/icons/heroicons/outline/request-quote-svgrepo-com.svg',
-        label: 'Yêu cầu tùy chỉnh',
+        label: 'Yêu cầu đặt tour',
         route: '/seller/requests',
         roles: [ROLES.SELLER],
       },

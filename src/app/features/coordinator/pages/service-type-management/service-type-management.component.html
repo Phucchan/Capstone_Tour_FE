@@ -1,0 +1,86 @@
+<!--
+  FILE: src/app/features/coordinator/pages/service-type-management/service-type-management.component.html
+  MÔ TẢ: Giao diện đã được chuyển đổi sang sử dụng các component của NG-ZORRO, bao gồm cả Modal.
+-->
+
+<!-- 1. Breadcrumb -->
+<nz-breadcrumb>
+  <nz-breadcrumb-item>Điều phối viên</nz-breadcrumb-item>
+  <nz-breadcrumb-item>Quản lý Loại Dịch vụ</nz-breadcrumb-item>
+</nz-breadcrumb>
+
+<!-- 2. Page Header -->
+<nz-page-header class="site-page-header" nzTitle="Quản lý Loại Dịch vụ">
+  <nz-page-header-extra>
+    <button nz-button nzType="primary" (click)="openAddModal()">
+      <span nz-icon nzType="plus"></span>
+      Thêm Loại Dịch vụ
+    </button>
+  </nz-page-header-extra>
+</nz-page-header>
+
+<!-- 3. Card chứa bảng dữ liệu -->
+<div class="p-6 bg-white rounded-lg shadow-md">
+  <nz-table #basicTable [nzData]="serviceTypes" [nzLoading]="isLoading" nzBordered
+    [nzNoResult]="'Không có loại dịch vụ nào.'">
+    <thead>
+      <tr>
+        <th nzWidth="30%">Mã dịch vụ</th>
+        <th>Tên loại dịch vụ</th>
+        <th nzWidth="20%" nzAlign="center">Trạng thái</th>
+        <th nzWidth="15%" nzAlign="center">Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let st of basicTable.data">
+        <td>{{ st.code }}</td>
+        <td>{{ st.name }}</td>
+        <td nzAlign="center">
+          <nz-tag [nzColor]="st.deleted ? 'red' : 'green'">
+            {{ st.deleted ? 'Vô hiệu hóa' : 'Hoạt động' }}
+          </nz-tag>
+        </td>
+        <td nzAlign="center">
+          <nz-space>
+            <button nz-button nzType="default" nzShape="circle" nz-tooltip="Chỉnh sửa" (click)="openEditModal(st)">
+              <span nz-icon nzType="edit"></span>
+            </button>
+            <!-- [SỬA LỖI] Sử dụng đúng cú pháp cho nz-tooltip -->
+            <button nz-button nzType="default" nzShape="circle"
+              [attr.nz-tooltip]="st.deleted ? 'Kích hoạt lại' : 'Vô hiệu hóa'" nz-popconfirm
+              [nzPopconfirmTitle]="'Bạn chắc chắn muốn ' + (st.deleted ? 'kích hoạt' : 'vô hiệu hóa') + ' loại dịch vụ này?'"
+              (nzOnConfirm)="toggleStatus(st)">
+              <span nz-icon [nzType]="st.deleted ? 'check-circle' : 'stop'"></span>
+            </button>
+          </nz-space>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</div>
+
+<!--
+  4. Modal Thêm/Sửa.
+-->
+<!-- [SỬA LỖI] Sử dụng đúng thuộc tính [nzOkLoading] thay vì [nzConfirmLoading] -->
+<nz-modal [(nzVisible)]="isModalVisible" [nzTitle]="isEditMode ? 'Cập nhật Loại Dịch vụ' : 'Thêm mới Loại Dịch vụ'"
+  (nzOnCancel)="handleCancel()" (nzOnOk)="onSubmit()" [nzOkLoading]="isSubmitting">
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="serviceTypeForm">
+      <!-- Mã dịch vụ -->
+      <nz-form-item>
+        <nz-form-label nzRequired>Mã dịch vụ</nz-form-label>
+        <nz-form-control nzErrorTip="Vui lòng nhập mã dịch vụ!">
+          <input nz-input formControlName="code" placeholder="Ví dụ: HOTEL, RESTAURANT" />
+        </nz-form-control>
+      </nz-form-item>
+      <!-- Tên loại dịch vụ -->
+      <nz-form-item>
+        <nz-form-label nzRequired>Tên loại dịch vụ</nz-form-label>
+        <nz-form-control nzErrorTip="Vui lòng nhập tên loại dịch vụ!">
+          <input nz-input formControlName="name" placeholder="Ví dụ: Khách sạn, Nhà hàng" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

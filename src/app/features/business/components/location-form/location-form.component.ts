@@ -1,6 +1,13 @@
-// src/app/features/business/components/location-form/location-form.component.ts
-
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  OnChanges,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -8,96 +15,164 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs';
+import { finalize } from 'rxjs/operators';
+
+import { LocationDTO } from '../../../../core/models/location.model';
 import { LocationService } from '../../services/location.service';
-import {
-  LocationDTO,
-  LocationRequestDTO,
-  GeneralResponse,
-} from '../../../../core/models/location.model';
+
+// NG-ZORRO Imports
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzUploadFile, NzUploadModule } from 'ng-zorro-antd/upload';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 
 @Component({
   selector: 'app-location-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    // --- NG-ZORRO ---
+    NzFormModule,
+    NzInputModule,
+    NzButtonModule,
+    NzUploadModule,
+    NzIconModule,
+  ],
   templateUrl: './location-form.component.html',
 })
-export class LocationFormComponent implements OnInit {
+export class LocationFormComponent implements OnInit, OnChanges {
+  // --- Inputs & Outputs ---
   @Input() locationToEdit: LocationDTO | null = null;
   @Output() formSaved = new EventEmitter<boolean>();
+  @Output() formCancelled = new EventEmitter<void>();
 
+  // --- Injections ---
+  private fb = inject(FormBuilder);
+  private locationService = inject(LocationService);
+  private message = inject(NzMessageService);
+
+  // --- State ---
   locationForm: FormGroup;
   isSubmitting = false;
+  imagePreview: string | ArrayBuffer | null = null;
+  fileList: NzUploadFile[] = [];
+  // FIX: Changed from private to public to be accessible in the template
+  public selectedFile: File | null = null;
 
-  constructor(
-    private fb: FormBuilder,
-    private locationService: LocationService
-  ) {
+  constructor() {
     this.locationForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       description: ['', [Validators.required]],
-      image: ['', [Validators.required]],
     });
   }
 
   ngOnInit(): void {
-    // Nếu có dữ liệu truyền vào (chế độ sửa), điền vào form
-    if (this.locationToEdit) {
-      this.locationForm.patchValue(this.locationToEdit);
+    this.updateForm();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['locationToEdit']) {
+      this.updateForm();
     }
   }
 
-  /**
-   * Xử lý khi người dùng nhấn nút "Lưu".
-   */
+  updateForm(): void {
+    this.selectedFile = null;
+    this.imagePreview = null;
+    this.fileList = [];
+    if (this.locationToEdit) {
+      this.locationForm.patchValue({
+        name: this.locationToEdit.name,
+        description: this.locationToEdit.description,
+      });
+      if (this.locationToEdit.image) {
+        this.imagePreview = this.locationToEdit.image;
+        this.fileList = [
+          {
+            uid: '-1',
+            name: 'image.png',
+            status: 'done',
+            url: this.locationToEdit.image,
+          },
+        ];
+      }
+    } else {
+      this.locationForm.reset();
+    }
+  }
+
+  beforeUpload = (file: NzUploadFile): boolean => {
+    const isJpgOrPng =
+      file.type === 'image/jpeg' ||
+      file.type === 'image/png' ||
+      file.type === 'image/webp';
+    if (!isJpgOrPng) {
+      this.message.error('Chỉ có thể tải lên file JPG/PNG/WEBP!');
+      return false;
+    }
+    const isLt5M = file.size! / 1024 / 1024 < 5;
+    if (!isLt5M) {
+      this.message.error('Ảnh phải nhỏ hơn 5MB!');
+      return false;
+    }
+
+    this.selectedFile = file as unknown as File;
+    const reader = new FileReader();
+    // FIX: Handle potential null value from e.target
+    reader.onload = (e) => (this.imagePreview = e.target?.result ?? null);
+    reader.readAsDataURL(this.selectedFile);
+
+    return false;
+  };
+
   onSubmit(): void {
     if (this.locationForm.invalid) {
-      this.locationForm.markAllAsTouched();
+      Object.values(this.locationForm.controls).forEach((control) => {
+        if (control.invalid) {
+          control.markAsDirty();
+          control.updateValueAndValidity({ onlySelf: true });
+        }
+      });
+      return;
+    }
+    if (!this.locationToEdit && !this.selectedFile) {
+      this.message.error('Vui lòng chọn ảnh đại diện.');
       return;
     }
 
     this.isSubmitting = true;
-    const formData: LocationRequestDTO = this.locationForm.value;
+    const formData = new FormData();
+    formData.append('name', this.locationForm.controls['name'].value);
+    formData.append(
+      'description',
+      this.locationForm.controls['description'].value
+    );
 
-    let saveObservable: Observable<GeneralResponse<LocationDTO>>;
-
-    // Kiểm tra xem đang ở chế độ sửa hay thêm mới
-    if (this.locationToEdit) {
-      // Chế độ SỬA: gọi API update
-      saveObservable = this.locationService.updateLocation(
-        this.locationToEdit.id,
-        formData
-      );
-    } else {
-      // Chế độ THÊM MỚI: gọi API create
-      saveObservable = this.locationService.createLocation(formData);
+    if (this.selectedFile) {
+      formData.append('file', this.selectedFile, this.selectedFile.name);
     }
 
-    // Subscribe vào observable đã được chọn
-    saveObservable.subscribe({
-      next: (response) => {
-        if (response.statusCode === 200) {
-          console.log(
-            `Location ${
-              this.locationToEdit ? 'updated' : 'created'
-            } successfully!`
-          );
-          this.formSaved.emit(true); // Gửi sự kiện thành công
-        } else {
-          console.error(`Failed to save location:`, response.message);
-          this.formSaved.emit(false); // Gửi sự kiện thất bại
-        }
-        this.isSubmitting = false;
+    const apiCall = this.locationToEdit
+      ? this.locationService.updateLocation(this.locationToEdit.id, formData)
+      : this.locationService.createLocation(formData);
+
+    apiCall.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
+      next: () => {
+        this.message.success('Lưu địa điểm thành công!');
+        this.formSaved.emit(true);
       },
       error: (err) => {
         console.error('API error:', err);
-        this.isSubmitting = false;
-        this.formSaved.emit(false); // Gửi sự kiện thất bại
+        this.message.error(err.error?.message || 'Không thể lưu địa điểm.');
+        this.formSaved.emit(false);
       },
     });
   }
 
-  get f() {
-    return this.locationForm.controls;
+  cancel(): void {
+    this.formCancelled.emit();
   }
 }

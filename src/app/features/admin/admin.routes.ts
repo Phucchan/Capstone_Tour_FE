@@ -13,7 +13,7 @@ export const ADMIN_ROUTES: Routes = [
     path: 'list-customer',
     // Sử dụng lazy loading cho standalone component
     loadComponent: () =>
-      import('./list-customer/list-customer.component').then(
+      import('./pages/list-customer/list-customer.component').then(
         (m) => m.ListCustomerComponent
       ),
   },
@@ -27,7 +27,7 @@ export const ADMIN_ROUTES: Routes = [
   {
     path: 'post-staff-detail',
     loadComponent: () =>
-      import('./post-staff-detail/post-staff-detail.component').then(
+      import('./pages/post-staff-detail/post-staff-detail.component').then(
         (m) => m.PostStaffDetailComponent
       ),
   },

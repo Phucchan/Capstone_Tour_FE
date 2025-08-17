@@ -1,10 +1,10 @@
 /*
 ----------------------------------------------------------------
 -- File: src/app/features/accountant/components/create-bill-modal/create-bill-modal.component.ts
--- Ghi chú: Component cho modal tạo phiếu thu/chi.
+-- Ghi chú: Component cho modal tạo phiếu thu/chi. (ĐÃ SỬA LỖI TRIỆT ĐỂ)
 ----------------------------------------------------------------
 */
-import { Component, Input, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -18,10 +18,18 @@ import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzMessageService } from 'ng-zorro-antd/message';
+// *** THAY ĐỔI 1: Import NZ_MODAL_DATA ***
+import { NZ_MODAL_DATA } from 'ng-zorro-antd/modal';
 import { AccountantService } from '../../services/accountant.service';
 import { PaymentMethod, PaymentType } from '../../../../core/models/enums';
 import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
 import { BookingSettlement } from '../../models/booking-settlement.model';
+
+// Interface để định nghĩa cấu trúc dữ liệu được truyền vào
+interface CreateBillModalData {
+  bookingDetail: BookingSettlement;
+  billType: PaymentType;
+}
 
 @Component({
   selector: 'app-create-bill-modal',
@@ -36,27 +44,13 @@ import { BookingSettlement } from '../../models/booking-settlement.model';
     NzDatePickerModule,
   ],
   templateUrl: './create-bill-modal.component.html',
+
 })
-export class CreateBillModalComponent {
-  // Ghi chú: Sử dụng setter cho cả 2 @Input để đảm bảo form chỉ được tạo khi có đủ dữ liệu.
-  @Input() set bookingDetail(value: BookingSettlement) {
-    this._bookingDetail = value;
-    this.tryInitializeForm();
-  }
-  get bookingDetail(): BookingSettlement {
-    return this._bookingDetail;
-  }
-  private _bookingDetail!: BookingSettlement;
+export class CreateBillModalComponent implements OnInit {
+  // *** THAY ĐỔI 2: Xóa @Input, inject NZ_MODAL_DATA để lấy dữ liệu ***
+  private modalData: CreateBillModalData = inject(NZ_MODAL_DATA);
 
-  @Input() set billType(value: PaymentType) {
-    this._billType = value;
-    this.tryInitializeForm();
-  }
-  get billType(): PaymentType {
-    return this._billType;
-  }
-  private _billType!: PaymentType;
-
+  // Các service khác không thay đổi
   private fb = inject(FormBuilder);
   private accountantService = inject(AccountantService);
   private messageService = inject(NzMessageService);
@@ -65,36 +59,47 @@ export class CreateBillModalComponent {
   validateForm!: FormGroup;
   paymentMethods = Object.values(PaymentMethod);
 
+  // Lấy bookingDetail và billType từ modalData đã inject
+  get bookingDetail(): BookingSettlement {
+    return this.modalData.bookingDetail;
+  }
+
+  get billType(): PaymentType {
+    return this.modalData.billType;
+  }
+
+  ngOnInit(): void {
+    this.initializeForm();
+  }
+
+  private initializeForm(): void {
+    const currentUser = this.currentUserService.getCurrentUser();
+    this.validateForm = this.fb.group({
+      // *** THAY ĐỔI 3: Sử dụng getter để lấy dữ liệu, đảm bảo an toàn ***
+      payTo: [this.isReceipt() ? 'Công ty' : null, [Validators.required]],
+      paidBy: [
+        this.isReceipt() ? null : currentUser?.fullName || '',
+        [Validators.required],
+      ],
+      createdDate: [new Date(), [Validators.required]],
+      paymentMethod: [PaymentMethod.BANK_TRANSFER, [Validators.required]],
+      note: [null],
+      content: [
+        `Thanh toán cho booking #${this.bookingDetail.bookingCode}`,
+        [Validators.required],
+      ],
+      amount: [null, [Validators.required, Validators.min(1)]],
+    });
+  }
+
   isReceipt(): boolean {
-    return this._billType === PaymentType.RECEIPT;
+    return this.billType === PaymentType.RECEIPT;
   }
 
   formatterVND = (value: number): string =>
     value ? `${value.toLocaleString('vi-VN')} ₫` : '';
   parserVND = (value: string): number =>
     parseFloat(value.replace(' ₫', '').replace(/,/g, ''));
-
-  // Ghi chú: Hàm này sẽ kiểm tra và chỉ khởi tạo form khi cả 2 input đều đã sẵn sàng.
-  private tryInitializeForm(): void {
-    if (this._bookingDetail && this._billType) {
-      const currentUser = this.currentUserService.getCurrentUser();
-      this.validateForm = this.fb.group({
-        payTo: [this.isReceipt() ? 'Công ty' : null, [Validators.required]],
-        paidBy: [
-          this.isReceipt() ? null : currentUser?.fullName || '',
-          [Validators.required],
-        ],
-        createdDate: [new Date(), [Validators.required]],
-        paymentMethod: [PaymentMethod.BANK_TRANSFER, [Validators.required]],
-        note: [null],
-        content: [
-          `Thanh toán cho booking #${this.bookingDetail.bookingCode}`,
-          [Validators.required],
-        ],
-        amount: [null, [Validators.required, Validators.min(1)]],
-      });
-    }
-  }
 
   async submitForm(): Promise<BookingSettlement | null> {
     if (this.validateForm.valid) {

@@ -55,7 +55,7 @@
                     </div>
                     <div>
                         <label class="block font-semibold">Điện thoại *</label>
-                        <input type="tel"  maxlength="10" class="w-full border p-2 rounded mt-1" formControlName="phone"
+                        <input type="tel" maxlength="10" class="w-full border p-2 rounded mt-1" formControlName="phone"
                             placeholder="Nhập số điện thoại">
                         <p *ngIf="
                             bookingForm.get('phone')?.invalid &&
@@ -73,6 +73,22 @@
                             bookingForm.get('email')?.touched
                           " class="text-red-500 text-sm">
                             Thông tin bắt buộc
+                        </p>
+                        <!-- CHANGE: SEND CODE + VERIFY INPUT -->
+                        <div class="mt-2 flex items-center gap-2">
+                            <button type="button" (click)="sendVerificationCode()"
+                                [disabled]="sendingCode || codeCooldown>0 || bookingForm.get('email')?.invalid"
+                                class="px-3 py-2 rounded border border-blue-500 text-blue-600 hover:bg-blue-50 disabled:opacity-50">
+                                {{ codeCooldown>0 ? ('Gửi lại (' + codeCooldown + 's)') : (sendingCode ? 'Đang gửi...' :
+                                'Gửi mã') }}
+                            </button>
+
+                            <input formControlName="verificationCode" maxlength="6" inputmode="numeric"
+                                placeholder="Mã 6 chữ số" class="flex-1 border p-2 rounded" />
+                        </div>
+                        <p *ngIf="bookingForm.get('verificationCode')?.invalid && bookingForm.get('verificationCode')?.touched"
+                            class="text-red-500 text-sm mt-1">
+                            Vui lòng nhập mã 6 chữ số.
                         </p>
                     </div>
                     <div>
@@ -382,7 +398,8 @@
                             class="inline-flex items-center justify-between w-full p-5 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 dark:peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
                             <div class="block">
                                 <div class="w-full text-lg font-semibold">Banking</div>
-                                <div class="w-full">Sau khi chuyển khoản, vui lòng kiểm tra email didau&#64;gmail.com để nhận
+                                <div class="w-full">Sau khi chuyển khoản, vui lòng kiểm tra email didau&#64;gmail.com để
+                                    nhận
                                     xác nhận từ chúng tôi.</div>
                                 <div class="w-full mt-5">
                                     <p><strong>STK:</strong> 4270992718 - TRAN QUANG PHUC</p>
@@ -441,6 +458,9 @@
                             {{tourDetails?.tourThemeName}}
                         </span>
                     </p>
+                    <p *ngIf="tourSchedule?.hasDiscount"
+                        class="text-sm text-center rounded-full bg-red-500 text-white font-semibold mb-2 w-[40px]">-{{
+                        tourSchedule?.discountPercent }}%</p> <!-- CHANGE -->
                     <p class="text-gray-500 italic">🆔 Mã tour: {{ tourDetails?.code }}</p>
                     <p class="text-gray-500">
                         🎟️ Ngày đi: {{tourSchedule?.departureDate | date: 'dd/MM/yyyy'}}
@@ -451,10 +471,20 @@
                         <strong>{{tourDetails?.durationDays}}N{{tourDetails?.durationDays - 1}}Đ</strong>
                     </p>
                 </div>
-                <p class="font-semibold flex justify-between text-xl mb-4"><span>👥 Khách hàng</span> <span
-                        class="text-red-600">{{total | currencyVnd}}</span></p>
+                <div class="mb-4 flex justify-between items-start">
+                    <span class="font-semibold text-xl">👥 Khách hàng</span>
+                    <!-- Cột giá bên phải (xếp dọc) -->
+                    <div class="flex flex-col items-end">
+                        <span *ngIf="tourSchedule?.hasDiscount" class="text-sm text-gray-400 line-through">
+                            {{ tourSchedule?.price | currencyVnd }}
+                        </span>
+                        <span class="text-red-600 text-2xl font-bold">
+                            {{ tourSchedule?.finalPrice | currencyVnd }}
+                        </span>
+                    </div>
+                </div>
                 <p class="flex justify-between mb-2"><span>🧑 Người lớn: </span> <span>{{numberAdults}} x
-                        {{tourSchedule?.price |currencyVnd}}</span></p>
+                        {{tourSchedule?.finalPrice | currencyVnd}}</span></p>
                 @if(numberChildren > 0) {
                 <p class="flex justify-between mb-2">
                     <span>👶 Trẻ em:</span> <span>{{numberChildren}} x {{childrenPrice |currencyVnd}}</span>

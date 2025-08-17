@@ -31,7 +31,7 @@ export interface TourSchedule {
   endDate: string;
   coordinator?: UserBasic;
   tourPax?: TourPaxOption;
-  price?: number;
+  price: number;
   extraHotelCost?: number;
   availableSeats?: number;
 }

@@ -180,7 +180,7 @@ body { margin: 0; font-family: "Helvetica Neue", sans-serif; }
 .fc .fc-daygrid-day-frame {
   background-color: #faf9f7;
   border-radius: 5%;
-  width: 60%;
+  width: 65%;
   aspect-ratio: 1/1;
   margin: auto;
 }
@@ -207,6 +207,11 @@ body { margin: 0; font-family: "Helvetica Neue", sans-serif; }
 .fc .fc-scroller-liquid-absolute, .fc .fc-scroller {
   overflow:  hidden !important;
 }
+
+
+/* CHANGE: style cho event trên calendar khi có giảm giá */
+/* CHANGE: event gọn, trung tính, không nền rực rỡ */
+
 
 input {
   border: 1px solid #D1D5DB
@@ -340,12 +345,21 @@ select:focus {
   gap: 1rem !important;
 }
 
-/* Lớp nền mờ của modal */
-.ant-modal-mask {
-  z-index: 1050 !important;
+app-booking-settlement .ant-tabs-nav {
+  @apply mb-4;
+  /* Thêm khoảng cách dưới cho thanh điều hướng tab */
 }
 
-/* Lớp bao bọc nội dung modal */
-.ant-modal-wrap {
-  z-index: 1050 !important;
+app-booking-settlement .ant-tabs-tab {
+  @apply text-sm font-semibold text-gray-500 px-4 py-2;
+}
+
+app-booking-settlement .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  @apply text-indigo-600;
+  /* Đổi màu chữ của tab đang được chọn */
+}
+
+app-booking-settlement .ant-tabs-ink-bar {
+  @apply bg-indigo-600 h-1;
+  /* Đổi màu và độ dày của thanh trượt dưới tab */
 }

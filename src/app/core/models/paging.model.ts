@@ -1,8 +1,8 @@
 /*
   File: src/app/core/models/paging.model.ts
-  Lý do: Tạo model PagingDTO để dùng chung trong toàn dự án.
+  Lý do: Tạo model Paging để dùng chung trong toàn dự án.
 */
-export interface PagingDTO<T> {
+export interface Paging<T> {
   items: T[];
   total: number;
   page: number;

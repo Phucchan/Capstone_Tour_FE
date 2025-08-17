@@ -12,7 +12,7 @@ import {
   switchMap,
   first,
 } from 'rxjs/operators';
-import { AdminService } from '../../../../src/app/features/admin/admin.service';
+import { AdminService } from '../../features/admin/services/admin.service';
 
 export class CustomValidators {
   /**

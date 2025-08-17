@@ -1,40 +1,37 @@
+/*
+ * FILE: src/app/features/business/pages/dashboard/dashboard.component.ts
+ * MÔ TẢ:
+ * - Thêm các module NG-ZORRO cần thiết cho Dashboard.
+ * - Cập nhật form lọc ngày để sử dụng nz-range-picker.
+ */
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import {
-  AbstractControl,
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidationErrors,
-  ValidatorFn,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
 import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import {
+  catchError,
+  finalize,
+  debounceTime,
+  distinctUntilChanged,
+  startWith,
+} from 'rxjs/operators';
+
+// --- [THAY ĐỔI] Import các module của NG-ZORRO ---
+import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzStatisticModule } from 'ng-zorro-antd/statistic';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzListModule } from 'ng-zorro-antd/list';
+import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 
 import { DashboardService } from '../../services/dashboard.service';
 import {
   TourRevenue,
   MonthlyRevenue,
-  BookingStats,
 } from '../../../../core/models/dashboard.model';
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
-
-//Tạo một custom validator function
-export const dateRangeValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
-  const startDate = control.get('startDate')?.value;
-  const endDate = control.get('endDate')?.value;
-
-  // Chỉ validate khi cả hai ngày đều có giá trị
-  if (startDate && endDate) {
-    const isError = new Date(endDate) < new Date(startDate);
-    // Nếu ngày kết thúc nhỏ hơn ngày bắt đầu, trả về lỗi
-    return isError ? { dateRange: true } : null;
-  }
-
-  // Nếu không có lỗi, trả về null
-  return null;
-};
 
 @Component({
   selector: 'app-dashboard',
@@ -43,7 +40,15 @@ export const dateRangeValidator: ValidatorFn = (control: AbstractControl): Valid
     CommonModule,
     ReactiveFormsModule,
     NgxChartsModule,
-    SpinnerComponent,
+    // --- [THAY ĐỔI] Thêm các module NG-ZORRO vào imports ---
+    NzGridModule,
+    NzCardModule,
+    NzStatisticModule,
+    NzDatePickerModule,
+    NzSpinModule,
+    NzListModule,
+    NzAlertModule,
+    NzIconModule,
   ],
   providers: [CurrencyPipe],
   templateUrl: './dashboard.component.html',
@@ -57,131 +62,120 @@ export class DashboardComponent implements OnInit {
   error: string | null = null;
   filterForm!: FormGroup;
 
-  // --- Data Properties ---
+  // Data Properties
   totalRevenue: number = 0;
   totalBookings: number = 0;
   totalNewUsers: number = 0;
   topTours: TourRevenue[] = [];
-
   monthlyRevenueData: any[] = [];
   bookingStatsData: any[] = [];
 
-  // --- Chart Configuration ---
+  // Chart Configuration
   chartColorScheme: Color = {
     name: 'business',
     selectable: true,
     group: ScaleType.Ordinal,
     domain: ['#3B82F6', '#10B981', '#F97316', '#EF4444', '#8B5CF6'],
   };
-
   pieChartColorScheme: Color = {
     name: 'bookingStats',
     selectable: true,
     group: ScaleType.Ordinal,
-    domain: ['#10B981', '#F97316', '#EF4444'], // Green for New, Orange for Returning, Red for Cancelled
+    domain: ['#10B981', '#F97316', '#EF4444'],
   };
 
   ngOnInit(): void {
     const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
 
-    this.filterForm = this.fb.group(
-      {
-        startDate: [this.formatDate(firstDayOfMonth)],
-        endDate: [this.formatDate(today)],
-      },
-      {
-        //Thêm custom validator vào form group
-        validators: dateRangeValidator,
-      }
-    );
-
-    this.fetchDashboardData();
-
-    // Chỉ fetch lại data khi form hợp lệ
-    this.filterForm.valueChanges.subscribe(() => {
-      if (this.filterForm.valid) {
-        this.fetchDashboardData();
-      }
+    // --- [THAY ĐỔI] Cập nhật form để dùng với nz-range-picker ---
+    this.filterForm = this.fb.group({
+      dateRange: [[thirtyDaysAgo, today]],
     });
+
+    this.filterForm.valueChanges
+      .pipe(
+        startWith(this.filterForm.value), // Lấy dữ liệu ngay lần đầu
+        debounceTime(400),
+        distinctUntilChanged(
+          (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
+        )
+      )
+      .subscribe((value) => {
+        if (value.dateRange && value.dateRange[0] && value.dateRange[1]) {
+          this.fetchDashboardData(value.dateRange[0], value.dateRange[1]);
+        }
+      });
   }
 
-  fetchDashboardData(): void {
-    //Chỉ fetch khi form hợp lệ
-    if (this.filterForm.invalid) {
-      return;
-    }
-
+  fetchDashboardData(startDate: Date, endDate: Date): void {
     this.isLoading = true;
     this.error = null;
-    //Vô hiệu hóa form khi đang tải dữ liệu
-    this.filterForm.disable();
 
-    const { startDate, endDate } = this.filterForm.value;
+    const start = this.formatDate(startDate);
+    const end = this.formatDate(endDate);
 
     forkJoin({
       revenue: this.dashboardService
-        .getTotalRevenue(startDate, endDate)
+        .getTotalRevenue(start, end)
         .pipe(catchError(() => of({ data: 0 }))),
       bookings: this.dashboardService
-        .getTotalBookings(startDate, endDate)
+        .getTotalBookings(start, end)
         .pipe(catchError(() => of({ data: 0 }))),
       newUsers: this.dashboardService
-        .getTotalNewUsers(startDate, endDate)
+        .getTotalNewUsers(start, end)
         .pipe(catchError(() => of({ data: 0 }))),
       topTours: this.dashboardService
-        .getTopToursByRevenue(5, startDate, endDate)
+        .getTopToursByRevenue(5, start, end)
         .pipe(catchError(() => of({ data: [] }))),
       monthlyRevenue: this.dashboardService
-        .getMonthlyRevenueSummary(startDate, endDate)
+        .getMonthlyRevenueSummary(start, end)
         .pipe(catchError(() => of({ data: [] }))),
       bookingStats: this.dashboardService
-        .getBookingStats(startDate, endDate)
+        .getBookingStats(start, end)
         .pipe(
           catchError(() =>
             of({ data: { cancelledBookings: 0, returningCustomers: 0 } })
           )
         ),
-    }).subscribe({
-      next: (results) => {
-        this.totalRevenue = results.revenue.data ?? 0;
-        this.totalBookings = results.bookings.data ?? 0;
-        this.totalNewUsers = results.newUsers.data ?? 0;
-        this.topTours = results.topTours.data ?? [];
+    })
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (results) => {
+          this.totalRevenue = results.revenue.data ?? 0;
+          this.totalBookings = results.bookings.data ?? 0;
+          this.totalNewUsers = results.newUsers.data ?? 0;
+          this.topTours = results.topTours.data ?? [];
 
-        this.monthlyRevenueData = (results.monthlyRevenue.data ?? []).map(
-          (item: MonthlyRevenue) => ({
-            name: `Tháng ${item.month}/${item.year}`,
-            value: item.revenue,
-          })
-        );
+          this.monthlyRevenueData = (results.monthlyRevenue.data ?? []).map(
+            (item: MonthlyRevenue) => ({
+              name: `Tháng ${item.month}/${item.year}`,
+              value: item.revenue,
+            })
+          );
 
-        const stats = results.bookingStats.data ?? {
-          cancelledBookings: 0,
-          returningCustomers: 0,
-        };
-        const newCustomerBookings =
-          this.totalBookings - (stats.returningCustomers ?? 0);
+          const stats = results.bookingStats.data ?? {
+            cancelledBookings: 0,
+            returningCustomers: 0,
+          };
+          const newCustomerBookings =
+            this.totalBookings - (stats.returningCustomers ?? 0);
 
-        this.bookingStatsData = [
-          {
-            name: 'Khách hàng mới',
-            value: newCustomerBookings > 0 ? newCustomerBookings : 0,
-          },
-          { name: 'Khách quay lại', value: stats.returningCustomers ?? 0 },
-          { name: 'Booking đã hủy', value: stats.cancelledBookings ?? 0 },
-        ];
-
-        this.isLoading = false;
-        this.filterForm.enable(); // Bật lại form sau khi tải xong
-      },
-      error: (err) => {
-        this.error = 'Không thể tải dữ liệu dashboard. Vui lòng thử lại.';
-        this.isLoading = false;
-        this.filterForm.enable(); // Bật lại form nếu có lỗi
-        console.error(err);
-      },
-    });
+          this.bookingStatsData = [
+            {
+              name: 'Khách hàng mới',
+              value: newCustomerBookings > 0 ? newCustomerBookings : 0,
+            },
+            { name: 'Khách quay lại', value: stats.returningCustomers ?? 0 },
+            { name: 'Booking đã hủy', value: stats.cancelledBookings ?? 0 },
+          ];
+        },
+        error: (err) => {
+          this.error = 'Không thể tải dữ liệu dashboard. Vui lòng thử lại.';
+          console.error('An error occurred while fetching data:', err);
+        },
+      });
   }
 
   yAxisTickFormat = (val: number): string => {

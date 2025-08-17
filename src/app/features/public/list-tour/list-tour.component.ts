@@ -15,6 +15,7 @@ import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { WishlistService } from "../../customer/services/wishlist.service";
 import { CurrentUserService } from "../../../core/services/user-storage/current-user.service";
+import { NgSelectModule } from "@ng-select/ng-select";
 
 
 
@@ -33,6 +34,7 @@ import { CurrentUserService } from "../../../core/services/user-storage/current-
     PaginationComponent,
     IconTransportPipe,
     SkeletonComponent,
+    NgSelectModule
   ],
 })
 export class ListTourComponent implements OnInit, OnDestroy {
@@ -56,6 +58,7 @@ export class ListTourComponent implements OnInit, OnDestroy {
     departId: undefined as number | undefined,
     destId: undefined as number | undefined,
     date: undefined as string | undefined,
+    name: undefined as string | undefined
   };
 
   departLocations: any[] = [];
@@ -84,6 +87,10 @@ export class ListTourComponent implements OnInit, OnDestroy {
       .subscribe((params) => {
         const paramDestId = +(params.get("destId") ?? 0);
         if (paramDestId) {
+          if (this.preventDoubleFetch) {
+            this.preventDoubleFetch = false; // change: chỉ cho fetch 1 lần
+            return;
+          }
           // Nếu khác id cũ mới fetch lại tours
           if (this.filters.destId !== paramDestId) {
             this.filters.destId = paramDestId;
@@ -115,6 +122,7 @@ export class ListTourComponent implements OnInit, OnDestroy {
         date: this.filters.date,
         page: this.page,
         size: this.size,
+        name: this.filters.name,
         sortField: this.getSortField(),
         sortDirection: this.getSortDirection(),
 
@@ -156,6 +164,12 @@ export class ListTourComponent implements OnInit, OnDestroy {
     } else if (this.sort === "price_desc") {
       this.tours = [...this.tours].sort((a, b) => b.startingPrice - a.startingPrice);
     }
+  }
+
+  clearNameFilter(): void {
+    this.filters.name = undefined;
+    this.page = 0;
+    this.fetchFilteredTours(); // gọi API lại để reset danh sách
   }
 
 
@@ -228,6 +242,7 @@ export class ListTourComponent implements OnInit, OnDestroy {
     this.page = 0;
     this.fetchFilteredTours();
   }
+  preventDoubleFetch = false;
 
   // Áp dụng bộ lọc (khi bấm nút "Áp dụng")
   applyFilters(): void {
@@ -236,6 +251,7 @@ export class ListTourComponent implements OnInit, OnDestroy {
       this.filters.destId &&
       this.filters.destId !== +(this.route.snapshot.paramMap.get("destId") ?? 0)
     ) {
+      this.preventDoubleFetch = true;
       this.router.navigate(["/tours/location", this.filters.destId]);
     } else {
       this.fetchFilteredTours();

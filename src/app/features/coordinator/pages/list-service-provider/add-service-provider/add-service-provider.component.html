@@ -1,0 +1,136 @@
+<!--
+  FILE: src/app/features/coordinator/pages/list-service-provider/add-service-provider/add-service-provider.component.html
+  MÔ TẢ: Giao diện form đã được chuyển đổi sang sử dụng các component của NG-ZORRO.
+-->
+
+<!-- 1. Breadcrumb: Giúp người dùng định vị -->
+<nz-breadcrumb>
+  <nz-breadcrumb-item>
+    <a routerLink="/coordinator/service-providers">Quản lý Nhà cung cấp</a>
+  </nz-breadcrumb-item>
+  <nz-breadcrumb-item>{{ pageTitle }}</nz-breadcrumb-item>
+</nz-breadcrumb>
+
+<!-- 2. Page Header: Tiêu đề trang và nút quay lại -->
+<nz-page-header class="site-page-header" [nzTitle]="pageTitle" nzBackIcon (nzBack)="onCancel()">
+</nz-page-header>
+
+<!-- 3. Vùng chứa form, được bao bọc bởi nz-spin để hiển thị trạng thái loading -->
+<div class="p-6 bg-white rounded-lg shadow-md">
+  <nz-spin [nzSpinning]="isLoading">
+    <!-- Thông báo lỗi chung -->
+    <nz-alert *ngIf="errorMessage" nzType="error" [nzMessage]="errorMessage" nzShowIcon class="mb-4"></nz-alert>
+
+    <!-- Form được xây dựng bằng các component của NG-ZORRO -->
+    <form nz-form [formGroup]="partnerForm" (ngSubmit)="onSubmit()">
+      <div nz-row [nzGutter]="24">
+        <!-- Tên Nhà cung cấp -->
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Tên Nhà cung cấp</nz-form-label>
+            <nz-form-control nzErrorTip="Vui lòng nhập tên nhà cung cấp!">
+              <input nz-input formControlName="name" placeholder="Nhập tên..." />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <!-- Tên người liên hệ -->
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>Tên người liên hệ</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="contactName" placeholder="Nhập tên..." />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <!-- Số điện thoại -->
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Số điện thoại</nz-form-label>
+            <nz-form-control nzErrorTip="Vui lòng nhập số điện thoại!">
+              <input nz-input formControlName="contactPhone" placeholder="0901234567" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <!-- Email -->
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Email</nz-form-label>
+            <nz-form-control [nzErrorTip]="emailErrorTpl">
+              <input nz-input formControlName="contactEmail" placeholder="example@company.com" />
+              <ng-template #emailErrorTpl let-control>
+                <ng-container *ngIf="control.hasError('required')">Vui lòng nhập email!</ng-container>
+                <ng-container *ngIf="control.hasError('email')">Email không đúng định dạng!</ng-container>
+              </ng-template>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <!-- Website -->
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>Website</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="websiteUrl" placeholder="https://example.com" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <!-- Logo URL -->
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>URL Logo</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="logoUrl" placeholder="https://example.com/logo.png" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <!-- Địa điểm -->
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Địa điểm</nz-form-label>
+            <nz-form-control nzErrorTip="Vui lòng chọn địa điểm!">
+              <nz-select formControlName="locationId" nzPlaceHolder="Chọn địa điểm" nzShowSearch nzAllowClear>
+                <nz-option *ngFor="let loc of locationOptions" [nzLabel]="loc.name" [nzValue]="loc.id"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <!-- Danh mục dịch vụ -->
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Danh mục dịch vụ</nz-form-label>
+            <nz-form-control nzErrorTip="Vui lòng chọn danh mục dịch vụ!">
+              <nz-select formControlName="serviceTypeId" nzPlaceHolder="Chọn danh mục" nzShowSearch nzAllowClear>
+                <nz-option *ngFor="let st of serviceTypeOptions" [nzLabel]="st.name" [nzValue]="st.id"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <!-- Mô tả -->
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>Mô tả</nz-form-label>
+            <nz-form-control>
+              <textarea nz-input formControlName="description" [nzAutosize]="{ minRows: 3, maxRows: 5 }"
+                placeholder="Viết mô tả ngắn về nhà cung cấp..."></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <!-- Các nút chức năng -->
+      <div class="flex items-center justify-end gap-4 mt-4 pt-6 border-t">
+        <button nz-button type="button" (click)="onCancel()">Hủy</button>
+        <button nz-button nzType="primary" type="submit" [nzLoading]="isSaving">
+          {{ isEditMode ? 'Cập nhật' : 'Tạo mới' }}
+        </button>
+      </div>
+    </form>
+  </nz-spin>
+</div>

@@ -11,7 +11,7 @@
       <!-- Page Header: Bao gồm nút quay lại, tiêu đề và các nút hành động chính -->
       <div class="mb-6">
         <!-- Nút quay lại -->
-        <a routerLink="/accountant/bookings" class="text-sm text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-2 mb-4">
+        <a routerLink="/accountant/bookings" class="text-sm text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-2 mb-4 font-semibold">
           <i nz-icon nzType="arrow-left"></i>
           Quay lại danh sách
         </a>
@@ -36,34 +36,34 @@
         </div>
       </div>
 
-      <!-- Grid Layout: Chia làm 2 cột chính -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Grid Layout: Chia làm 2 cột chính, tăng khoảng cách giữa các cột -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Cột trái: Chứa thông tin chính -->
-        <div class="lg:col-span-2 flex flex-col gap-6">
+        <div class="lg:col-span-2 flex flex-col gap-8">
           <!-- Card: Thông tin Booking -->
           <div class="bg-white rounded-lg shadow-md">
             <div class="p-6 border-b border-gray-200">
                 <h3 class="text-xl font-semibold text-gray-800">Thông tin Booking</h3>
             </div>
-            <!-- Ghi chú: Thay thế nz-descriptions bằng dl/dt/dd để kiểm soát spacing tốt hơn -->
+            <!-- Ghi chú: Thay thế nz-descriptions bằng dl/dt/dd để kiểm soát spacing và alignment tốt hơn -->
             <dl class="divide-y divide-gray-200">
-              <div class="px-6 py-4 grid grid-cols-3 gap-4">
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <dt class="text-sm font-medium text-gray-500">Tên Tour</dt>
-                <dd class="text-sm text-gray-900 col-span-2 font-semibold">{{ detail.tourName }}</dd>
+                <dd class="text-sm text-gray-900 sm:col-span-2 font-semibold">{{ detail.tourName }}</dd>
               </div>
-              <div class="px-6 py-4 grid grid-cols-3 gap-4">
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <dt class="text-sm font-medium text-gray-500">Trạng thái</dt>
-                <dd class="text-sm text-gray-900 col-span-2">
+                <dd class="text-sm text-gray-900 sm:col-span-2">
                    <nz-tag [nzColor]="getStatusColor(detail.status)">{{ detail.status }}</nz-tag>
                 </dd>
               </div>
-              <div class="px-6 py-4 grid grid-cols-3 gap-4">
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <dt class="text-sm font-medium text-gray-500">Ngày đi</dt>
-                <dd class="text-sm text-gray-900 col-span-2">{{ detail.startDate | formatDate }}</dd>
+                <dd class="text-sm text-gray-900 sm:col-span-2">{{ detail.startDate | formatDate }}</dd>
               </div>
-              <div class="px-6 py-4 grid grid-cols-3 gap-4">
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <dt class="text-sm font-medium text-gray-500">Ngày về</dt>
-                <dd class="text-sm text-gray-900 col-span-2">{{ detail.endDate | formatDate }}</dd>
+                <dd class="text-sm text-gray-900 sm:col-span-2">{{ detail.endDate | formatDate }}</dd>
               </div>
             </dl>
           </div>
@@ -71,9 +71,10 @@
           <!-- Card: Chi tiết Dịch vụ -->
           <div class="bg-white rounded-lg shadow-md overflow-hidden">
              <div class="p-6 border-b border-gray-200">
-                <h3 class="text-xl font-semibold text-gray-800">Chi tiết Dịch vụ</h3>
+                <h3 class="text-xl font-semibold text-gray-800">Chi tiết Dịch vụ & Chi phí</h3>
             </div>
             <div class="overflow-x-auto">
+              <!-- Ghi chú: Áp dụng style table nhất quán -->
               <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                   <tr>
@@ -104,7 +105,8 @@
             <div class="p-6 border-b border-gray-200">
                 <h3 class="text-xl font-semibold text-gray-800">Quản lý Phiếu</h3>
             </div>
-            <nz-tabset class="custom-tabset">
+            <!-- Ghi chú: Thêm một chút padding cho nội dung bên trong tab -->
+            <nz-tabset nzCentered>
               <nz-tab nzTitle="Phiếu Thu">
                 <div class="p-4">
                   <app-bill-table [bills]="detail.receiptBills" (markPaid)="markBillAsPaid($event)"></app-bill-table>

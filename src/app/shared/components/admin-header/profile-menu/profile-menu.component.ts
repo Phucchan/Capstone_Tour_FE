@@ -2,9 +2,10 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AngularSvgIconModule } from 'angular-svg-icon';
-import { RouterLink } from '@angular/router';
 import { UserStorageService } from '../../../../core/services/user-storage/user-storage.service';
 import { Router } from '@angular/router';
+import { SocketSerivce } from '../../../../core/services/socket/socket.service';
+import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
 
 @Component({
   selector: 'app-profile-menu',
@@ -45,7 +46,9 @@ export class ProfileMenuComponent implements OnInit {
 
   constructor(
     private userStorageService: UserStorageService,
-    private router : Router
+    private router : Router,
+    private socketService: SocketSerivce,
+    private currentUserService: CurrentUserService,
   ) {}
 
   ngOnInit(): void {
@@ -58,7 +61,13 @@ export class ProfileMenuComponent implements OnInit {
 
   onLogout() {
       UserStorageService.signOut(this.userStorageService);
-      this.isLoggedIn = false;
-      this.router.navigate(['/homepage']);
+    if (!this.user && !this.user.id) {
+      console.error('No user is currently logged in.');
+      return;
     }
+    this.socketService.disconnect(this.user);
+    this.userStorageService.logout();
+    this.currentUserService.clearCurrentUser();
+    this.router.navigate(['/homepage']);
+  }
 }

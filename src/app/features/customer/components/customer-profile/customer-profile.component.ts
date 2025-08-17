@@ -36,7 +36,7 @@ export class CustomerProfileComponent {
   ) { }
   /** Lấy thông tin người dùng từ service */
   ngOnInit(): void {
-    const userId = this.currentUserService.getCurrentUser().id;
+    const userId = this.currentUserService.getCurrentUser()?.id;
     if (userId) {
       this.customerService.getUserProfile(userId).subscribe(res => {
         this.currentUser = res.data;
@@ -89,7 +89,7 @@ export class CustomerProfileComponent {
 
     this.customerService.updateProfile(userId, updateData).subscribe({
       next: () => {
-        this.customerService.getUserProfile(userId!).subscribe(res => {
+        this.customerService.getUserProfile(userId).subscribe(res => {
           this.currentUser = res.data;
           this.profileForm.patchValue(res.data);
           this.isEditMode = false;
@@ -101,7 +101,7 @@ export class CustomerProfileComponent {
             timer: 1500
           });
         });
-       
+
       },
       error: () => {
         Swal.fire({
@@ -135,4 +135,3 @@ export interface UserProfile {
   points: number;
 }
 
- 

@@ -1,14 +1,19 @@
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import {
+  Component,
+  Inject,
+  PLATFORM_ID,
+  OnInit,
+  OnDestroy,
+  inject,
+} from '@angular/core';
 import { Event, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { AdminSidebarComponent } from '../../../shared/components/admin-sidebar/admin-sidebar.component';
 import { AdminHeaderComponent } from '../../../shared/components/admin-header/admin-header.component';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { StyleManagerService } from '../../../core/services/style-manager.service';
 
 @Component({
   selector: 'app-layout',
-  // QUAN TRỌNG: Component này không phải là 'standalone: true'
-  // Nếu nó là một phần của NgModule (ví dụ: AdminModule), bạn cần khai báo nó trong module đó.
-  // Giả sử nó là standalone để sửa lỗi, chúng ta cần thêm 'standalone: true' và 'imports'.
   standalone: true,
   imports: [
     CommonModule,
@@ -17,11 +22,13 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
     AdminHeaderComponent,
   ],
   templateUrl: './layout.component.html',
-  // styleUrl không phải là thuộc tính hợp lệ, nên dùng 'styleUrls'
   styleUrls: ['./layout.component.css'],
 })
-export class LayoutComponent {
+export class LayoutComponent implements OnInit, OnDestroy {
   private mainContent: HTMLElement | null = null;
+  private styleManager = inject(StyleManagerService);
+  private readonly adminThemeId = 'admin-theme';
+  private readonly zorroThemeId = 'ng-zorro-theme';
 
   constructor(
     private router: Router,
@@ -39,6 +46,16 @@ export class LayoutComponent {
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.mainContent = document.getElementById('main-content');
+
+      this.styleManager.loadStyle('ng-zorro-antd.min.css');
+      this.styleManager.loadStyle('assets/styles/admin-theme.css');
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.styleManager.removeStyle('ng-zorro-antd.min.css');
+      this.styleManager.removeStyle('assets/styles/admin-theme.css');
     }
   }
 }
