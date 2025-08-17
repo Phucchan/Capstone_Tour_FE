@@ -1,90 +1,112 @@
-
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { finalize } from 'rxjs/operators';
+
+// NG-ZORRO Imports
+import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzAvatarModule } from 'ng-zorro-antd/avatar';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzDividerModule } from 'ng-zorro-antd/divider'; // SỬA LỖI 2: Thêm NzDividerModule
+
 import { BlogManagementService } from '../../services/blog-management.service';
 import { BlogManagerDTO, PagingDTO } from '../../models/blog.model';
-import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-blog-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    NzTableModule,
+    NzCardModule,
+    NzButtonModule,
+    NzIconModule,
+    NzAvatarModule,
+    NzTagModule,
+    NzDropDownModule,
+    NzPopconfirmModule,
+    NzDividerModule, // SỬA LỖI 2: Thêm NzDividerModule
+  ],
   templateUrl: './blog-list.component.html',
 })
 export class BlogListComponent implements OnInit {
-  blogPaging: PagingDTO<BlogManagerDTO> | null = null;
-  isLoading = false;
-  error: string | null = null;
+  // Injected services
+  private blogService = inject(BlogManagementService);
+  private router = inject(Router);
+  private modal = inject(NzModalService);
+  private message = inject(NzMessageService);
 
-  currentPage = 0;
-  pageSize = 10;
-
-  constructor(
-    private blogService: BlogManagementService,
-    private router: Router
-  ) {}
+  // Component state
+  blogPaging: PagingDTO<BlogManagerDTO> = {
+    items: [],
+    page: 0,
+    size: 10,
+    total: 0,
+  };
+  isLoading = true;
 
   ngOnInit(): void {
-    this.loadBlogs();
+    // Initial data load is handled by onQueryParamsChange
   }
 
-  loadBlogs(): void {
+  loadBlogs(page: number, size: number): void {
     this.isLoading = true;
-    this.error = null;
     this.blogService
-      .getBlogs(this.currentPage, this.pageSize)
+      .getBlogs(page, size)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (response) => {
           if (response && response.data) {
             this.blogPaging = response.data;
           } else {
-            this.blogPaging = null;
-            this.error =
-              response.message || 'Không thể tải danh sách bài viết.';
+            this.message.error(
+              response.message || 'Không thể tải danh sách bài viết.'
+            );
           }
         },
         error: (err) => {
-          this.error = err.error?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.';
+          this.message.error(
+            err.error?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.'
+          );
           console.error(err);
         },
       });
   }
 
-  onDelete(blogId: number): void {
-    if (confirm('Bạn có chắc chắn muốn xóa bài viết này không?')) {
-      this.blogService.deleteBlog(blogId).subscribe({
-        next: (response) => {
-          alert(response.message || 'Xóa bài viết thành công!');
-          this.currentPage = 0;
-          this.loadBlogs();
-        },
-        error: (err) => {
-          this.error = err.error?.message || 'Xóa bài viết thất bại.';
-          console.error(err);
-        },
-      });
-    }
+  onQueryParamsChange(params: NzTableQueryParams): void {
+    const { pageSize, pageIndex } = params;
+    // pageIndex in nz-table is 1-based, API is 0-based
+    this.loadBlogs(pageIndex - 1, pageSize);
+  }
+
+  // SỬA LỖI 3: Bỏ 'private' để template có thể truy cập
+  deleteBlog(blogId: number): void {
+    this.blogService.deleteBlog(blogId).subscribe({
+      next: (response) => {
+        this.message.success(response.message || 'Xóa bài viết thành công!');
+        // Reload data at current page
+        this.loadBlogs(this.blogPaging.page, this.blogPaging.size);
+      },
+      error: (err) => {
+        this.message.error(err.error?.message || 'Xóa bài viết thất bại.');
+        console.error(err);
+      },
+    });
   }
 
   goToCreatePage(): void {
-    this.router.navigate(['/marketing/blogs/new']);
+    this.router.navigate(['/marketing/blogs/create']);
   }
 
   goToEditPage(blogId: number): void {
     this.router.navigate(['/marketing/blogs/edit', blogId]);
-  }
-
-  onPageChange(page: number): void {
-    if (
-      page >= 0 &&
-      (!this.blogPaging ||
-        page < Math.ceil(this.blogPaging.total / this.pageSize))
-    ) {
-      this.currentPage = page;
-      this.loadBlogs();
-    }
   }
 
   handleImageError(event: any): void {

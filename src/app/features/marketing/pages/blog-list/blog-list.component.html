@@ -1,216 +1,81 @@
-<div class="container mx-auto p-4 sm:p-6 lg:p-8">
-  <!-- Header -->
-  <div class="sm:flex sm:items-center sm:justify-between mb-8">
-    <div>
-      <h1 class="text-2xl font-bold text-gray-900">Quản Lý Blog</h1>
-      <p class="mt-1 text-sm text-gray-600">
-        Xem, tạo mới, chỉnh sửa và quản lý tất cả các bài viết.
-      </p>
-    </div>
-    <div class="mt-4 sm:mt-0">
-      <button
-        (click)="goToCreatePage()"
-        type="button"
-        class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-      >
-        <svg
-          class="-ml-0.5 mr-1.5 h-5 w-5"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path
-            d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"
-          />
-        </svg>
-        Tạo bài viết mới
-      </button>
-    </div>
-  </div>
+<nz-card nzTitle="Quản Lý Blog" [nzExtra]="extraTemplate">
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="goToCreatePage()">
+      <i nz-icon nzType="plus"></i>Tạo bài viết mới
+    </button>
+  </ng-template>
 
-  <!-- Loading and Error States -->
-  <div *ngIf="isLoading" class="text-center py-10">
-    <p>Đang tải dữ liệu...</p>
-  </div>
-  <div
-    *ngIf="error"
-    class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
-    role="alert"
+  <nz-table
+    #basicTable
+    [nzData]="blogPaging.items"
+    [nzFrontPagination]="false"
+    [nzLoading]="isLoading"
+    [nzTotal]="blogPaging.total"
+    [nzPageSize]="blogPaging.size"
+    [nzPageIndex]="blogPaging.page + 1"
+    (nzQueryParams)="onQueryParamsChange($event)"
   >
-    <strong class="font-bold">Lỗi!</strong>
-    <span class="block sm:inline">{{ error }}</span>
-  </div>
+    <thead>
+      <tr>
+        <th nzWidth="40%">Tiêu đề</th>
+        <th>Tác giả</th>
+        <th>Tags</th>
+        <th>Trạng thái</th>
+        <th nzAlign="right">Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let blog of basicTable.data">
+        <td>
+          <div class="flex items-center">
+            <nz-avatar
+              nzShape="square"
+              [nzSize]="40"
+              [nzSrc]="blog.thumbnailImageUrl"
+              (error)="handleImageError($event)">
+            </nz-avatar>
+            <div class="ml-4">
+              <div class="font-medium text-gray-900" [title]="blog.title">
+                {{ blog.title }}
+              </div>
+              <div class="text-gray-500" [title]="blog.description">
+                {{ blog.description | slice:0:50 }}{{ blog.description.length > 50 ? '...' : '' }}
+              </div>
+            </div>
+          </div>
+        </td>
+        <td>{{ blog.authorName }}</td>
+        <td>
+          <ng-container *ngIf="blog.tags && blog.tags.length > 0; else noTags">
+            <nz-tag *ngFor="let tag of blog.tags" [nzColor]="'blue'">{{ tag }}</nz-tag>
+          </ng-container>
+          <ng-template #noTags>
+            <span>-</span>
+          </ng-template>
+        </td>
+        <td>
+          <nz-tag *ngIf="!blog.deleted" [nzColor]="'green'">Đã xuất bản</nz-tag>
+          <nz-tag *ngIf="blog.deleted" [nzColor]="'red'">Đã xóa</nz-tag>
+        </td>
+        <td nzAlign="right">
+          <button nz-button nzType="link" (click)="goToEditPage(blog.id)">Sửa</button>
+          <nz-divider nzType="vertical"></nz-divider>
 
-  <!-- Blog List Table -->
-  <div
-    *ngIf="!isLoading && blogPaging && blogPaging.items.length > 0"
-    class="flow-root"
-  >
-    <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-      <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-        <div
-          class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg"
-        >
-          <table class="min-w-full divide-y divide-gray-300">
-            <thead class="bg-gray-50">
-              <tr>
-                <th
-                  scope="col"
-                  class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
-                >
-                  Tiêu đề
-                </th>
-                <th
-                  scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                >
-                  Tác giả
-                </th>
-                <th
-                  scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                >
-                  Tags
-                </th>
-                <th
-                  scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                >
-                  Trạng thái
-                </th>
-                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                  <span class="sr-only">Hành động</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 bg-white">
-              <tr *ngFor="let blog of blogPaging.items">
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                  <div class="flex items-center">
-                    <div class="h-10 w-10 flex-shrink-0">
-                      <img class="h-10 w-10 rounded-md object-cover" [src]="blog.thumbnailImageUrl" alt="{{blog.title}}" title="{{blog.title}}" (error)="handleImageError($event)">
-                    </div>
-                    <div class="ml-4">
-                      <div
-                        class="font-medium text-gray-900"
-                        [title]="blog.title"
-                      >
-                        {{ blog.title }}
-                      </div>
-                      <div
-                        class="text-gray-500 truncate w-64"
-                        [title]="blog.description"
-                      >
-                        {{ blog.description }}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                  {{ blog.authorName }}
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                  <ng-container
-                    *ngIf="blog.tags && blog.tags.length > 0; else noTags"
-                  >
-                    <span
-                      *ngFor="let tag of blog.tags"
-                      class="mr-2 inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10"
-                      >{{ tag }}</span
-                    >
-                  </ng-container>
-                  <ng-template #noTags>
-                    <span>-</span>
-                  </ng-template>
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                  <span
-                    *ngIf="!blog.deleted"
-                    class="inline-flex items-center rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700"
-                    >Đã xuất bản</span
-                  >
-                  <span
-                    *ngIf="blog.deleted"
-                    class="inline-flex items-center rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-700"
-                    >Đã xóa</span
-                  >
-                </td>
-                <td
-                  class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6"
-                >
-                  <button
-                    (click)="goToEditPage(blog.id)"
-                    class="text-indigo-600 hover:text-indigo-900"
-                  >
-                    Sửa
-                  </button>
-                  <button
-                    (click)="onDelete(blog.id)"
-                    [disabled]="blog.deleted"
-                    class="ml-4"
-                    [ngClass]="{
-                      'text-red-600 hover:text-red-900': !blog.deleted,
-                      'text-gray-400 cursor-not-allowed': blog.deleted
-                    }"
-                  >
-                    Xóa
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Empty State -->
-  <div
-    *ngIf="!isLoading && (!blogPaging || blogPaging.items.length === 0)"
-    class="text-center py-10"
-  >
-    <h3 class="mt-2 text-sm font-medium text-gray-900">
-      Không có bài viết nào
-    </h3>
-    <p class="mt-1 text-sm text-gray-500">
-      Hãy bắt đầu bằng cách tạo một bài viết mới.
-    </p>
-  </div>
-
-  <!-- Pagination -->
-  <nav
-    *ngIf="!isLoading && blogPaging && blogPaging.total > pageSize"
-    class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-8 rounded-lg shadow-sm"
-    aria-label="Pagination"
-  >
-    <div class="hidden sm:block">
-      <p class="text-sm text-gray-700">
-        Hiển thị
-        <span class="font-medium">{{ blogPaging.page * pageSize + 1 }}</span>
-        đến
-        <span class="font-medium">{{
-          blogPaging.page * pageSize + blogPaging.items.length
-        }}</span>
-        của
-        <span class="font-medium">{{ blogPaging.total }}</span>
-        kết quả
-      </p>
-    </div>
-    <div class="flex flex-1 justify-between sm:justify-end">
-      <button
-        (click)="onPageChange(currentPage - 1)"
-        [disabled]="currentPage === 0"
-        class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        Trước
-      </button>
-      <button
-        (click)="onPageChange(currentPage + 1)"
-        [disabled]="(currentPage + 1) * pageSize >= blogPaging.total"
-        class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        Sau
-      </button>
-    </div>
-  </nav>
-</div>
+          <!-- SỬA LỖI: Sử dụng lại [disabled] cho button -->
+          <button
+            nz-button
+            nzType="link"
+            nzDanger
+            nz-popconfirm
+            nzPopconfirmTitle="Bạn có chắc chắn muốn xóa?"
+            nzPopconfirmPlacement="topRight"
+            (nzOnConfirm)="deleteBlog(blog.id)"
+            [disabled]="blog.deleted"
+          >
+            Xóa
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>

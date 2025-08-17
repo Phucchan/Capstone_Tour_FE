@@ -1,10 +1,4 @@
-/*
-================================================================
-File: src/app/features/marketing/pages/blog-form/blog-form.component.ts
-Description: Component logic for the blog creation and editing form.
-================================================================
-*/
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -16,8 +10,20 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { EditorComponent } from '@tinymce/tinymce-angular';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+
+// NG-ZORRO Imports
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzMessageService } from 'ng-zorro-antd/message';
+
 import { BlogManagementService } from '../../services/blog-management.service';
-import { BlogManagerRequestDTO } from '../../models/blog.model';
+import { BlogManagerRequestDTO, BlogDetailDTO } from '../../models/blog.model'; // Import BlogDetailDTO
 
 @Component({
   selector: 'app-blog-form',
@@ -25,17 +31,41 @@ import { BlogManagerRequestDTO } from '../../models/blog.model';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    EditorComponent, // FIX: Added EditorComponent to imports
+    EditorComponent,
+    NzFormModule,
+    NzInputModule,
+    NzButtonModule,
+    NzCardModule,
+    NzGridModule,
+    NzSpinModule,
+    NzAlertModule,
+    NzSelectModule,
   ],
   templateUrl: './blog-form.component.html',
 })
 export class BlogFormComponent implements OnInit, OnDestroy {
+  // Injected services
+  private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private blogService = inject(BlogManagementService);
+  private message = inject(NzMessageService);
+
+  // Component state
   blogForm: FormGroup;
   isEditMode = false;
   blogId: number | null = null;
   isLoading = false;
   error: string | null = null;
   private subscriptions = new Subscription();
+
+  // Placeholder for tag options
+  tagOptions = [
+    { label: 'Du lịch', value: 1 },
+    { label: 'Ẩm thực', value: 2 },
+    { label: 'Kinh nghiệm', value: 3 },
+    { label: 'Văn hóa', value: 4 },
+  ];
 
   // TinyMCE configuration
   tinymceConfig = {
@@ -49,18 +79,13 @@ export class BlogFormComponent implements OnInit, OnDestroy {
     menubar: false,
   };
 
-  constructor(
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
-    private router: Router,
-    private blogService: BlogManagementService
-  ) {
+  constructor() {
     this.blogForm = this.fb.group({
       title: ['', [Validators.required, Validators.maxLength(255)]],
       description: ['', [Validators.required, Validators.maxLength(500)]],
       thumbnailImageUrl: ['', [Validators.required]],
       content: ['', [Validators.required]],
-      tagIds: [[]], // Placeholder for tags
+      tagIds: [[]],
     });
   }
 
@@ -83,13 +108,15 @@ export class BlogFormComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           if (response.statusCode === 200) {
-            const blog = response.data;
+            // SỬA LỖI 1: Thêm kiểu dữ liệu tường minh cho 'blog'
+            const blog: BlogDetailDTO = response.data;
             this.blogForm.patchValue({
               title: blog.title,
               description: blog.description,
               thumbnailImageUrl: blog.thumbnailImageUrl,
               content: blog.content,
-              // tagIds: blog.tags.map(tag => tag.id) // This needs adjustment based on how tags are fetched
+              // Giờ đây 'tag' sẽ được nhận diện là object, không còn lỗi
+              tagIds: blog.tags.map((tag) => tag.id),
             });
           } else {
             this.error = response.message;
@@ -105,18 +132,19 @@ export class BlogFormComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (this.blogForm.invalid) {
-      this.blogForm.markAllAsTouched();
+      Object.values(this.blogForm.controls).forEach((control) => {
+        control.markAsDirty();
+        control.updateValueAndValidity();
+      });
       return;
     }
 
     this.isLoading = true;
     this.error = null;
 
-    // TODO: Replace with actual logged-in user ID and tag IDs from a tag-input component
     const requestData: BlogManagerRequestDTO = {
       ...this.blogForm.value,
       authorId: 1, // Hardcoded author ID, replace with actual user ID
-      tagIds: [1, 2], // Hardcoded tag IDs
     };
 
     const operation =
@@ -128,7 +156,11 @@ export class BlogFormComponent implements OnInit, OnDestroy {
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: () => {
-          // alert(`Bài viết đã được ${this.isEditMode ? 'cập nhật' : 'tạo'} thành công!`);
+          this.message.success(
+            `Bài viết đã được ${
+              this.isEditMode ? 'cập nhật' : 'tạo'
+            } thành công!`
+          );
           this.router.navigate(['/marketing/blogs']);
         },
         error: (err) => {
