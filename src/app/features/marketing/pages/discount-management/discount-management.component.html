@@ -1,0 +1,117 @@
+<!-- src/app/features/marketing/pages/discount-management/discount-management.component.html -->
+
+<nz-card nzTitle="Quản Lý Khuyến Mãi Tour">
+  <!-- Toolbar: Search and Add Button -->
+  <div class="flex justify-between mb-4">
+    <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton">
+      <input
+        type="text"
+        nz-input
+        placeholder="Tìm kiếm theo tên tour..."
+        [(ngModel)]="searchKeyword"
+        (keyup.enter)="onSearch()"
+      />
+    </nz-input-group>
+    <ng-template #suffixIconButton>
+      <button nz-button nzType="primary" nzSearch (click)="onSearch()"><i nz-icon nzType="search"></i></button>
+    </ng-template>
+
+    <button nz-button nzType="primary" (click)="showCreateModal()">
+      <i nz-icon nzType="plus"></i>Thêm Mới
+    </button>
+  </div>
+
+  <!-- Data Table -->
+  <nz-table
+    #basicTable
+    [nzData]="data.items"
+    [nzLoading]="isLoading"
+    [nzTotal]="data.total"
+    [nzPageIndex]="data.page + 1"
+    [nzPageSize]="data.size"
+    [nzFrontPagination]="false"
+    (nzPageIndexChange)="onPageIndexChange($event)"
+  >
+    <thead>
+      <tr>
+        <th>Tên Tour</th>
+        <th>% Giảm Giá</th>
+        <th>Ngày Bắt Đầu</th>
+        <th>Ngày Kết Thúc</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of basicTable.data">
+        <td>{{ item.tourName }}</td>
+        <td>{{ item.discountPercent / 100 | percent }}</td>
+        <td>{{ item.startDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+        <td>{{ item.endDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<!-- Create/Edit Modal -->
+<nz-modal
+  [(nzVisible)]="isModalVisible"
+  [nzTitle]="'Tạo Mới Chương Trình Khuyến Mãi'"
+  (nzOnCancel)="handleCancel()"
+  (nzOnOk)="handleOk()"
+  [nzOkLoading]="isModalLoading"
+  nzOkText="Lưu"
+  nzCancelText="Hủy"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="discountForm">
+      <!-- Tour Schedule Select -->
+      <nz-form-item>
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="scheduleId">Lịch trình Tour</nz-form-label>
+        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Vui lòng chọn một lịch trình tour!">
+          <nz-select
+            nzShowSearch
+            nzServerSearch
+            nzPlaceHolder="Nhập tên tour để tìm kiếm..."
+            formControlName="scheduleId"
+            (nzOnSearch)="onScheduleSearch($event)"
+            [nzLoading]="isScheduleSearching"
+          >
+            <nz-option
+              *ngFor="let schedule of tourSchedules"
+              [nzLabel]="schedule.tourName + ' - ' + (schedule.departureDate | date: 'dd/MM/yyyy')"
+              [nzValue]="schedule.id">
+            </nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <!-- Discount Percent -->
+      <nz-form-item>
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="discountPercent">% Giảm giá</nz-form-label>
+        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Vui lòng nhập % giảm giá (1-100)!">
+          <nz-input-number
+            formControlName="discountPercent"
+            [nzMin]="1"
+            [nzMax]="100"
+            [nzStep]="1"
+            [nzPlaceHolder]="'10'"
+            class="w-full"
+          ></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+
+      <!-- Date Range -->
+      <nz-form-item>
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="dateRange">Thời gian áp dụng</nz-form-label>
+        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Vui lòng chọn thời gian áp dụng!">
+          <nz-range-picker
+            formControlName="dateRange"
+            nzShowTime
+            nzFormat="dd-MM-yyyy HH:mm"
+            [nzDisabledDate]="disabledDate"
+            class="w-full"
+          ></nz-range-picker>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

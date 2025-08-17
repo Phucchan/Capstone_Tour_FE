@@ -27,14 +27,15 @@ export interface BlogManagerDTO {
   deleted: boolean;
 }
 
-export interface BlogDetailManagerDTO {
+// SỬA LỖI 1: Đổi tên từ BlogDetailManagerDTO thành BlogDetailDTO
+export interface BlogDetailDTO {
   id: number;
   title: string;
   description: string;
   content: string;
   thumbnailImageUrl: string;
   authorName: string;
-  tags: string[];
+  tags: Tag[]; // Giả định backend trả về mảng object Tag
   deleted: boolean;
 }
 
