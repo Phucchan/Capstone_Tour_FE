@@ -156,7 +156,6 @@ export class SellerBookingService {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
-    // SỬA: Dùng đúng apiUrl cho request-bookings
     return this.http.get<ApiResponse<Paging<RequestBookingSummary>>>(
       this.requestApiUrl,
       { params }
@@ -166,18 +165,25 @@ export class SellerBookingService {
   approveRequestBooking(
     requestId: number
   ): Observable<ApiResponse<RequestBookingDetail>> {
-    // SỬA: Dùng đúng apiUrl cho request-bookings
     return this.http.patch<ApiResponse<RequestBookingDetail>>(
       `${this.requestApiUrl}/${requestId}/approve`,
       {}
     );
   }
-
+  rejectRequestBooking(
+    id: number,
+    reason: string
+  ): Observable<ApiResponse<RequestBookingDetail>> {
+    const payload = { reason: reason };
+    return this.http.patch<ApiResponse<RequestBookingDetail>>(
+      `${this.requestApiUrl}/${id}/reject`,
+      payload
+    );
+  }
   // ==================================================
   // CÁC PHƯƠNG THỨC LIÊN QUAN ĐẾN EMAIL
   // ==================================================
 
-  // MỚI: Thêm phương thức gửi email tùy chỉnh theo kế hoạch
   sendCustomEmail(data: SellerMailRequest): Observable<ApiResponse<string>> {
     return this.http.post<ApiResponse<string>>(this.mailApiUrl, data);
   }
