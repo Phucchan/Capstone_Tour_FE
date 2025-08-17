@@ -7,7 +7,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EditorComponent } from '@tinymce/tinymce-angular';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
@@ -23,7 +22,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzMessageService } from 'ng-zorro-antd/message';
 
 import { BlogManagementService } from '../../services/blog-management.service';
-import { BlogManagerRequestDTO, BlogDetailDTO } from '../../models/blog.model'; // Import BlogDetailDTO
+import { BlogManagerRequestDTO, BlogDetailDTO } from '../../models/blog.model';
 
 @Component({
   selector: 'app-blog-form',
@@ -31,7 +30,7 @@ import { BlogManagerRequestDTO, BlogDetailDTO } from '../../models/blog.model'; 
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    EditorComponent,
+    // EditorComponent has been removed
     NzFormModule,
     NzInputModule,
     NzButtonModule,
@@ -67,17 +66,7 @@ export class BlogFormComponent implements OnInit, OnDestroy {
     { label: 'Văn hóa', value: 4 },
   ];
 
-  // TinyMCE configuration
-  tinymceConfig = {
-    base_url: '/tinymce',
-    suffix: '.min',
-    plugins:
-      'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
-    toolbar:
-      'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
-    height: 500,
-    menubar: false,
-  };
+  // TinyMCE configuration has been removed
 
   constructor() {
     this.blogForm = this.fb.group({
@@ -108,14 +97,12 @@ export class BlogFormComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           if (response.statusCode === 200) {
-            // SỬA LỖI 1: Thêm kiểu dữ liệu tường minh cho 'blog'
             const blog: BlogDetailDTO = response.data;
             this.blogForm.patchValue({
               title: blog.title,
               description: blog.description,
               thumbnailImageUrl: blog.thumbnailImageUrl,
               content: blog.content,
-              // Giờ đây 'tag' sẽ được nhận diện là object, không còn lỗi
               tagIds: blog.tags.map((tag) => tag.id),
             });
           } else {
