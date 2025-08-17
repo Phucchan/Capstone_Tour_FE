@@ -107,12 +107,15 @@ export class ListStaffComponent implements OnInit {
 
   toggleStatus(staff: UserFullInformation): void {
     const action = staff.deleted ? 'Mở khóa' : 'Khóa';
+
+    // Gửi đi trạng thái quản lý tài khoản, không phải trạng thái chat
     const newStatus = staff.deleted ? 'ACTIVE' : 'INACTIVE';
 
     this.adminService.changeUserStatus(staff.id, { newStatus }).subscribe({
       next: () => {
         this.message.success(`${action} tài khoản thành công!`);
-        this.loadStaff(this.paging ? this.paging.page + 1 : 1);
+        // Cập nhật giao diện ngay lập tức
+        staff.deleted = !staff.deleted;
       },
       error: (err) => {
         console.error(`Failed to change status for staff ${staff.id}`, err);

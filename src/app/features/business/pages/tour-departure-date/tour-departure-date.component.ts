@@ -52,9 +52,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
     CurrencyVndPipe,
-    // --- NG-ZORRO ---
     NzPageHeaderModule,
     NzButtonModule,
     NzTableModule,

@@ -4,12 +4,12 @@ import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 
-import { BlogService } from '../../../core/services/blog.service';
-import { BlogPaginationData, BlogItem } from '../../../core/models/blog.model';
+import { BlogService } from '../../../../core/services/blog.service';
+import { BlogPaginationData, BlogItem } from '../../../../core/models/blog.model';
 
 import { BlogCardComponent } from '../components/blog-card.component';
-import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
-import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-blog-list',

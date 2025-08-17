@@ -6,9 +6,9 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
-import { BlogService } from '../../../core/services/blog.service';
-import { BlogDetail } from '../../../core/models/blog.model';
-import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
+import { BlogService } from '../../../../core/services/blog.service';
+import { BlogDetail } from '../../../../core/models/blog.model';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 
 @Component({
   selector: 'app-blog-detail',

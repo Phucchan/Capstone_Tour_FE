@@ -31,8 +31,6 @@ import { LocationFormComponent } from '../../components/location-form/location-f
   imports: [
     CommonModule,
     FormsModule,
-    LocationFormComponent,
-    // --- [THAY ĐỔI] Thêm các module NG-ZORRO ---
     NzTableModule,
     NzButtonModule,
     NzInputModule,

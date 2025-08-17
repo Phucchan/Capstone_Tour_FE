@@ -2,7 +2,7 @@
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common'; // Import CommonModule
 import { RouterModule } from '@angular/router'; // Import RouterModule
-import { BlogItem } from '../../../core/models/blog.model';
+import { BlogItem } from '../../../../core/models/blog.model';
 
 @Component({
   selector: 'app-blog-card',
