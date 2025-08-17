@@ -22,12 +22,12 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzMessageService } from 'ng-zorro-antd/message';
 
-import { AdminService } from '../services/admin.service';
-import { UserFullInformation } from '../models/user.model';
-import { Paging } from '../../../core/models/paging.model';
-import { AvatarComponent } from '../../../shared/components/avatar/avatar.component';
-import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { StatusVietnamesePipe } from '../../../shared/pipes/status-vietnamese.pipe';
+import { AdminService } from '../../services/admin.service';
+import { UserFullInformation } from '../../models/user.model';
+import { Paging } from '../../../../core/models/paging.model';
+import { AvatarComponent } from '../../../../shared/components/avatar/avatar.component';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { StatusVietnamesePipe } from '../../../../shared/pipes/status-vietnamese.pipe';
 
 @Component({
   selector: 'app-list-staff',
