@@ -11,6 +11,8 @@ import {
   TourDayManagerDTO,
   TourDayManagerCreateRequestDTO,
   ServiceTypeShortDTO,
+  ServiceInfoDTO,
+  PartnerServiceCreateDTO,
 } from '../models/tour.model';
 import { Paging } from '../../core/models/paging.model';
 import { environment } from '../../../environments/environment';
@@ -167,6 +169,19 @@ export class TourService {
     const url = `${this.toursApiUrl}/${tourId}/days/${dayId}/services/${serviceId}`;
     return this.http
       .delete<ApiResponse<TourDayManagerDTO>>(url)
+      .pipe(map((res) => res.data));
+  }
+  /**
+   * Thêm hàm này để gọi API tạo dịch vụ mới
+   */
+  createServiceForTourDay(
+    tourId: number,
+    dayId: number,
+    payload: PartnerServiceCreateDTO
+  ): Observable<ServiceInfoDTO> {
+    const url = `${this.toursApiUrl}/${tourId}/days/${dayId}/services`;
+    return this.http
+      .post<ApiResponse<ServiceInfoDTO>>(url, payload)
       .pipe(map((res) => res.data));
   }
 }

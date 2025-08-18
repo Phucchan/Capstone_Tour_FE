@@ -15,7 +15,7 @@
           <button (click)="updateStatus(view.request.id, 'ACCEPTED')" nz-button nzType="primary">Chấp nhận</button>
         </div>
         <div *ngIf="view.request.status === RequestBookingStatus.ACCEPTED">
-          <button (click)="createTour(view.request.id)" nz-button nzType="primary">
+          <button (click)="createTour(view.request)" nz-button nzType="primary">
             <i nz-icon nzType="plus-circle" nzTheme="outline"></i>
             Tạo Tour từ Yêu cầu
           </button>
