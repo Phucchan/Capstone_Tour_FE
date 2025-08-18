@@ -2,7 +2,7 @@
 
 import { CostType } from './enums';
 
-// THÊM: Interface cho thông tin request booking lồng trong tour detail
+// Interface cho thông tin request booking lồng trong tour detail
 export interface RequestBookingInfo {
   id: number;
   startDate: string;
@@ -40,7 +40,7 @@ export interface TourDetail {
   departLocation: TourOption;
   destinations: TourOption[];
   themes: TourOption[];
-  // THÊM: Thêm thuộc tính để nhận dữ liệu request booking
+  // Thêm thuộc tính để nhận dữ liệu request booking
   requestBooking?: RequestBookingInfo | null;
 }
 
@@ -153,14 +153,14 @@ export interface TourDayManagerDTO {
   description: string | null;
   location: TourOption | null;
   serviceTypes: ServiceTypeShortDTO[];
-  services?: PartnerServiceShortDTO[];
+  services?: ServiceInfoDTO[];
 }
 
 export interface TourDayManagerCreateRequestDTO {
   title: string;
   locationId: number | null;
   description?: string;
-  serviceTypeIds: number[];
+  // serviceTypeIds: number[]; // Trường này không còn cần thiết khi quản lý dịch vụ trực tiếp
 }
 
 export interface ServiceInfoDTO {
@@ -168,6 +168,13 @@ export interface ServiceInfoDTO {
   name: string;
   partnerName: string;
   serviceTypeName: string;
+}
+
+export interface PartnerServiceCreateDTO {
+  name: string;
+  serviceTypeId: number;
+  partnerId: number;
+  description?: string;
 }
 
 export interface TourCostSummary {
