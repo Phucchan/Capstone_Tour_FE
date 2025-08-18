@@ -1,7 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-// [SỬA LỖI] Xóa import NumberPipe không hợp lệ. CommonModule đã bao gồm các pipe cơ bản.
 import { CommonModule } from '@angular/common';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import {
   debounceTime,
   distinctUntilChanged,
@@ -24,10 +29,15 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 
 // --- Imports từ project của bạn ---
 import { ServiceApprovalService } from '../../services/service-approval.service';
-import { ServiceInfo } from '../../models/service-approval.model';
+import {
+  ServiceInfo,
+  PendingServiceUpdateRequest,
+} from '../../models/service-approval.model';
 import { Paging } from '../../../../core/models/paging.model';
 import { ApiResponse } from '../../../../core/models/api-response.model';
 
@@ -37,7 +47,6 @@ import { ApiResponse } from '../../../../core/models/api-response.model';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    // [SỬA LỖI] Xóa NumberPipe khỏi mảng imports.
     NzTableModule,
     NzButtonModule,
     NzIconModule,
@@ -49,8 +58,9 @@ import { ApiResponse } from '../../../../core/models/api-response.model';
     NzBreadCrumbModule,
     NzEmptyModule,
     NzGridModule,
+    NzModalModule,
+    NzInputNumberModule,
   ],
-  // [SỬA LỖI] Xóa providers: [NumberPipe] không cần thiết.
   templateUrl: './service-approval.component.html',
 })
 export class ServiceApprovalComponent implements OnInit {
@@ -66,12 +76,25 @@ export class ServiceApprovalComponent implements OnInit {
   // Tìm kiếm
   filterForm: FormGroup;
 
+  // Logic cho Modal
+  isModalVisible = false;
+  isSubmitting = false;
+  selectedService: ServiceInfo | null = null;
+  approvalForm: FormGroup;
+
   constructor(
     private serviceApprovalService: ServiceApprovalService,
-    private message: NzMessageService
+    private message: NzMessageService,
+    private fb: FormBuilder // Inject FormBuilder
   ) {
     this.filterForm = new FormGroup({
       keyword: new FormControl(''),
+    });
+
+    // Khởi tạo form cho modal
+    this.approvalForm = this.fb.group({
+      nettPrice: [null, [Validators.required, Validators.min(0)]],
+      sellingPrice: [null, [Validators.required, Validators.min(0)]],
     });
   }
 
@@ -130,9 +153,65 @@ export class ServiceApprovalComponent implements OnInit {
         finalize(() => (this.isLoading = false))
       );
   }
+  // Mở modal và điền dữ liệu của dịch vụ được chọn vào form
+  openApprovalModal(service: ServiceInfo): void {
+    this.selectedService = service;
+    this.approvalForm.patchValue({
+      nettPrice: service.nettPrice,
+      sellingPrice: service.sellingPrice,
+    });
+    this.isModalVisible = true;
+  }
 
-  approveService(serviceId: number): void {
-    this.updateStatus(serviceId, 'ACTIVE');
+  // Xử lý khi nhấn nút "Duyệt và Lưu" trên modal
+  handleModalOk(): void {
+    if (this.approvalForm.valid && this.selectedService) {
+      this.isSubmitting = true;
+      const formValues = this.approvalForm.value;
+
+      const request: PendingServiceUpdateRequest = {
+        newStatus: 'ACTIVE',
+        nettPrice: formValues.nettPrice,
+        sellingPrice: formValues.sellingPrice,
+      };
+
+      this.serviceApprovalService
+        .updateServiceStatus(this.selectedService.id, request)
+        .pipe(
+          finalize(() => {
+            this.isSubmitting = false;
+          })
+        )
+        .subscribe({
+          next: (response) => {
+            if (response && response.data) {
+              this.message.success(`Phê duyệt dịch vụ thành công!`);
+              this.isModalVisible = false;
+              this.loadPendingServices().subscribe();
+            } else {
+              this.message.error(
+                response.message || `Lỗi khi phê duyệt dịch vụ.`
+              );
+            }
+          },
+          error: (err) => {
+            this.message.error(err.message || `Đã có lỗi xảy ra.`);
+          },
+        });
+    } else {
+      Object.values(this.approvalForm.controls).forEach((control) => {
+        if (control.invalid) {
+          control.markAsDirty();
+          control.updateValueAndValidity({ onlySelf: true });
+        }
+      });
+    }
+  }
+
+  // Xử lý khi đóng modal
+  handleModalCancel(): void {
+    this.isModalVisible = false;
+    this.selectedService = null;
   }
 
   rejectService(serviceId: number): void {
@@ -167,4 +246,10 @@ export class ServiceApprovalComponent implements OnInit {
         },
       });
   }
+
+  // Hàm định dạng và phân tích giá trị tiền tệ cho nz-input-number
+  formatterVND = (value: number): string =>
+    `₫ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  parserVND = (value: string): number =>
+    parseFloat(value.replace(/₫\s?|(,*)/g, ''));
 }

@@ -4,7 +4,7 @@
   <ng-container *ngIf="tourDetail$ | async as tour">
     <nz-page-header [nzTitle]="'Xây dựng Lịch trình'" [nzSubtitle]="tour.name" (nzBack)="goBack()">
       <nz-page-header-extra>
-        <a [routerLink]="['/business/tours/form/', tourId]" nz-button>Về trang chi tiết</a>
+        <a [routerLink]="['/business/tours/', tourId]" nz-button>Về trang chi tiết</a>
         <button nz-button nzType="primary" (click)="openAddModal()">
           <span nz-icon nzType="plus"></span>
           Thêm ngày mới

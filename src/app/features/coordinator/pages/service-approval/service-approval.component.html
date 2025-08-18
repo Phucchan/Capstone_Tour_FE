@@ -54,11 +54,9 @@
         <td nzAlign="right">{{ service.sellingPrice | number }}</td>
         <td nzAlign="center">
           <nz-space>
-            <!-- Nút Duyệt -->
-            <button nz-button nzType="primary" nzSize="small"
-              nz-popconfirm nzPopconfirmTitle="Bạn chắc chắn muốn DUYỆT dịch vụ này?"
-              (nzOnConfirm)="approveService(service.id)">
-              Duyệt
+           <!-- Nút mở Modal để xử lý -->
+            <button nz-button nzType="primary" nzSize="small" (click)="openApprovalModal(service)">
+              Xử lý
             </button>
             <!-- Nút Từ chối -->
             <button nz-button nzDanger nzType="default" nzSize="small"
@@ -73,9 +71,7 @@
   </nz-table>
 
   <!--
-    [SỬA LỖI] Giao diện khi không có dữ liệu.
-    - Xóa binding [nzContent] không hợp lệ.
-    - Đặt nội dung hiển thị trực tiếp bên trong thẻ <nz-empty>.
+    Giao diện khi không có dữ liệu.
   -->
   <nz-empty *ngIf="!isLoading && (services.length === 0 || errorMessage)">
       <ng-container *ngIf="errorMessage; else noDataTpl">
@@ -86,3 +82,44 @@
       </ng-template>
   </nz-empty>
 </div>
+<!-- 5. Modal để nhập giá và duyệt -->
+<nz-modal
+  [(nzVisible)]="isModalVisible"
+  [nzTitle]="'Xử lý phê duyệt dịch vụ: ' + (selectedService?.name || '')"
+  (nzOnCancel)="handleModalCancel()"
+  (nzOnOk)="handleModalOk()"
+  [nzOkLoading]="isSubmitting"
+  nzOkText="Duyệt và Lưu"
+  nzCancelText="Hủy bỏ"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="approvalForm" *ngIf="selectedService">
+      <nz-form-item>
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired>Giá Net</nz-form-label>
+        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Vui lòng nhập giá net!">
+          <nz-input-number
+            formControlName="nettPrice"
+            [nzMin]="0"
+            [nzStep]="1000"
+            class="w-full"
+            [nzFormatter]="formatterVND"
+            [nzParser]="parserVND"
+          ></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired>Giá Bán</nz-form-label>
+        <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Vui lòng nhập giá bán!">
+          <nz-input-number
+            formControlName="sellingPrice"
+            [nzMin]="0"
+            [nzStep]="1000"
+            class="w-full"
+            [nzFormatter]="formatterVND"
+            [nzParser]="parserVND"
+          ></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
