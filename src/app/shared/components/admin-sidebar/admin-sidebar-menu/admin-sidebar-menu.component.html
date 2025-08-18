@@ -1,3 +1,5 @@
+<!-- src/app/shared/components/admin-sidebar/admin-sidebar-menu/admin-sidebar-menu.component.html -->
+
 <!-- Sử dụng async pipe để hiển thị menu từ Observable đã được lọc theo role -->
 <div *ngFor="let menu of menuItems$ | async">
   <!-- Hiển thị tên nhóm menu -->
@@ -9,12 +11,11 @@
   <div *ngFor="let item of menu.items">
     <!-- MỤC CÓ MENU CON -->
     <div *ngIf="item.children && item.children.length > 0">
-      <!-- (click)="toggleMenu(item)" giờ đã hoạt động vì 'item' là SubMenuItem -->
       <div
         class="group flex cursor-pointer items-center justify-between rounded-md px-4 py-2 text-sm hover:bg-gray-100"
         (click)="toggleMenu(item)">
         <div class="flex items-center gap-2">
-          <svg-icon [src]="item.icon || ''" [svgClass]="'h-5 w-5 text-gray-500 group-hover:text-gray-800'"></svg-icon>
+          <svg-icon [src]="item.icon || ''" [svgClass]="'h-5 w-5 fill-current text-gray-500 group-hover:text-gray-800'"></svg-icon>
           <span *ngIf="layoutService.showSideBar" class="font-medium text-gray-500 group-hover:text-gray-800">
             {{ item.label }}
           </span>
@@ -34,7 +35,7 @@
     <div *ngIf="!item.children || item.children.length === 0">
       <a [routerLink]="item.route" routerLinkActive="bg-gray-100 text-gray-800 font-bold"
         class="group flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800">
-        <svg-icon [src]="item.icon || ''" [svgClass]="'h-5 w-5'"></svg-icon>
+        <svg-icon [src]="item.icon || ''" [svgClass]="'h-5 w-5 fill-current'"></svg-icon>
         <span *ngIf="layoutService.showSideBar">{{ item.label }}</span>
       </a>
     </div>
