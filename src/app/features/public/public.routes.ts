@@ -14,6 +14,7 @@ import { CUSTOMER_ROUTES } from '../customer/customer.routes';
 import { ListTourDiscountComponent } from './list-tour-discount/list-tour-discount.component';
 import { CheckinListComponent } from '../customer/components/checkin/checkin-list/checkin-list.component';
 import { CheckinPhotosComponent } from '../customer/components/checkin/checkin-photo/checkin-photo.component';
+import { VoucherPageComponent } from '../customer/components/voucher-page/voucher-page.component';
 
 export const PUBLIC_ROUTES: Route[] = [
   {
@@ -84,7 +85,7 @@ export const PUBLIC_ROUTES: Route[] = [
         path: 'checkin/:bookingId',
         component: CheckinPhotosComponent,
         canActivate: [AuthGuard]
-      }
+      },
 
 
     ],

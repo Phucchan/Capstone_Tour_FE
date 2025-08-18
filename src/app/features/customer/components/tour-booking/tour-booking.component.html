@@ -412,24 +412,15 @@
 
                 <!-- Mandatory Terms -->
                 <h2 class="text-lg font-semibold mb-4 mt-5">Điều khoản bắt buộc</h2>
-                <p class="max-h-[350px] border border-gray-300 p-3 rounded-md mb-4" rows="3">
+                <p class="max-h-[350px] border border-gray-300 p-3 rounded-md mb-4 whitespace-pre-line">
                     ĐIỀU KHOẢN THỎA THUẬN SỬ DỤNG DỊCH VỤ DU LỊCH NỘI ĐỊA
-
                     Quý khách cần đọc những điều khoản dưới đây trước khi đăng ký và trải nghiệm dịch vụ do Vietravel tổ
                     chức. Việc Quý khách tiếp tục sử dụng trang web này xác nhận việc Quý khách đã chấp thuận và tuân
-                    thủ
-                    những điều khoản dưới đây.
-
+                    thủ những điều khoản dưới đây.
                     Nội dung dưới đây gồm có 02 phần:
-
-                    Phần I: Điều kiện bán vé các chương trình du lịch nội địa
-
-                    Phần II: Chính sách bảo vệ dữ liệu cá nhân
-
-                    Chi tiết nội dung như sau:
-
                     PHẦN I: ĐIỀU KIỆN BÁN VÉ CÁC CHƯƠNG TRÌNH DU LỊCH NỘI ĐỊA
-
+                    Phần II: Chính sách bảo vệ dữ liệu cá nhân
+                    Chi tiết nội dung như sau:
                 </p>
 
                 <label class="flex items-center space-x-2 mt-12">
@@ -511,7 +502,107 @@
                     <span>📍 Phòng đơn:</span> <span>0 VND</span>
                     }
                 </p>
+                <div class="flex items-center justify-between py-3 px-2 bg-gray-50 rounded border border-gray-100 mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">🏷️</span>
+                        <span class="font-semibold">MÃ GIẢM GIÁ</span>
+                    </div>
+
+                    <button type="button" class="flex items-center gap-1 text-red-600 font-semibold hover:underline"
+                        (click)="openVoucherModal()">
+                        <span class="text-lg leading-none"></span>Áp mã giảm giá
+                    </button>
+                </div>
+
                 <hr class="my-4">
+
+                <!-- ====== MÃ GIẢM GIÁ (ROW Ở TRÊN NÚT ĐẶT TOUR) ====== --><!-- CHANGE -->
+
+                <!-- Nếu đã chọn userVoucherId thì hiện nhãn nhỏ -->
+                <div *ngIf="bookingForm.get('userVoucherId')?.value"
+                    class="mb-4 text-sm text-green-700 flex justify-between items-center">
+                    <div>
+                        ✅ Đã áp dụng mã:
+                        <strong>{{ appliedVoucherCode || '—' }}</strong>
+                        <span class="ml-2 text-red-600">
+                            ( -{{ voucherDiscount | currencyVnd }} )
+                        </span>
+                    </div>
+
+                    <button type="button" class="text-blue-600 hover:underline ml-4" (click)="clearVoucher()">
+                        Hủy
+                    </button>
+                </div>
+
+                <!-- ====== POPUP NHẬP MÃ ====== -->
+                <div *ngIf="showVoucherModal" class="fixed inset-0 z-50 flex items-center justify-center">
+                    <!-- backdrop -->
+                    <div class="absolute inset-0 bg-black/40" (click)="closeVoucherModal()"></div>
+
+                    <!-- modal -->
+                    <div class="relative bg-white w-[92%] max-w-[560px] rounded-xl shadow-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-2xl font-bold">Sử dụng mã giảm giá</h3>
+                            <button type="button"
+                                class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100"
+                                (click)="closeVoucherModal()">✕</button>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <input type="text" [(ngModel)]="voucherInput"  [ngModelOptions]="{ standalone: true }" placeholder="Thêm mã giảm giá"
+                                class="flex-1 border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500" />
+                            <button type="button" class="px-4 py-2 rounded-lg text-white disabled:opacity-50"
+                                [class.bg-blue-500]="voucherInput.trim().length"
+                                [class.bg-gray-300]="!voucherInput.trim().length"
+                                [disabled]="!voucherInput.trim().length" (click)="applyVoucher()">
+                                SỬ DỤNG
+                            </button>
+                        </div>
+
+                        <!-- CHANGE: danh sách mã của user -->
+                        <div class="mt-5">
+                            <h4 class="text-sm font-semibold mb-2">Mã của bạn</h4>
+
+                            <ng-container *ngIf="userVouchers?.length; else noUserVoucher">
+                                <div class="max-h-64 overflow-auto space-y-2">
+                                    <div *ngFor="let v of userVouchers"
+                                        class="border rounded-lg p-3 flex items-center justify-between"
+                                        [ngClass]="{'opacity-50': !isVoucherActive(v)}">
+                                        <div>
+                                            <p class="font-semibold tracking-wider">{{ v.code }}</p>
+                                            <p class="text-xs text-gray-600">Giảm: {{ v.discountAmount | currencyVnd }}
+                                            </p>
+                                            <p class="text-xs text-gray-500">
+                                                Hiệu lực: {{ v.validFrom | date:'dd/MM/yyyy' }} - {{ v.validTo |
+                                                date:'dd/MM/yyyy' }}
+                                            </p>
+                                            <p class="text-xs mt-1"
+                                                [ngClass]="isVoucherActive(v) ? 'text-green-600' : 'text-red-500'">
+                                                {{ isVoucherActive(v) ? 'Có thể sử dụng' : 'Hết hạn / đã dùng' }}
+                                            </p>
+                                        </div>
+
+                                        <button type="button" class="px-3 py-1 rounded text-white"
+                                            [class.bg-blue-500]="isVoucherActive(v)"
+                                            [class.bg-gray-300]="!isVoucherActive(v)" [disabled]="!isVoucherActive(v)"
+                                            (click)="applyVoucherDirect(v)">
+                                            Dùng
+                                        </button>
+                                    </div>
+                                </div>
+                            </ng-container>
+
+                            <ng-template #noUserVoucher>
+                                <div class="text-sm text-gray-500">Bạn chưa có mã nào.</div>
+                            </ng-template>
+                        </div>
+
+                        <p class="text-xs text-gray-600 mt-4">
+                            * Đã hiển thị hết mã ưu đãi bạn có thể sử dụng
+                        </p>
+                    </div>
+                </div>
+
                 <input type="text" formControlName="total" class="w-full border p-2 rounded mt-1" hidden>
                 <p class="font-semibold text-xl flex justify-between"><span>Tổng số tiền:</span> <span
                         class="text-red-600">{{total |currencyVnd}} </span></p>

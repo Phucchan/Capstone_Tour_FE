@@ -234,7 +234,7 @@
             <button type="button" (click)="policyOpen.tour = !policyOpen.tour"
               class="w-full flex items-center justify-between p-4 text-left rounded-lg hover:bg-gray-50">
               <span class="font-semibold text-lg ">Điều khoản Tour</span>
-              <svg [class.rotate-180]="policyOpen.tour" class="w-4 h-4 transition-transform">
+              <svg [class.rotate-180]="!policyOpen.tour" class="w-4 h-4 transition-transform">
                 <use href="#chev"></use>
               </svg>
             </button>
@@ -251,7 +251,7 @@
             <button type="button" (click)="policyOpen.booking = !policyOpen.booking"
               class="w-full flex items-center justify-between p-4 text-left rounded-lg hover:bg-gray-50">
               <span class="font-semibold text-lg ">Điều khoản Đặt chỗ</span>
-              <svg [class.rotate-180]="policyOpen.booking" class="w-4 h-4 transition-transform">
+              <svg [class.rotate-180]="!policyOpen.booking" class="w-4 h-4 transition-transform">
                 <use href="#chev"></use>
               </svg>
             </button>
@@ -268,7 +268,7 @@
             <button type="button" (click)="policyOpen.cancel = !policyOpen.cancel"
               class="w-full flex items-center justify-between p-4 text-left rounded-lg hover:bg-gray-50">
               <span class="font-semibold text-lg ">Chính sách Hủy</span>
-              <svg [class.rotate-180]="policyOpen.cancel" class="w-4 h-4 transition-transform">
+              <svg [class.rotate-180]="!policyOpen.cancel" class="w-4 h-4 transition-transform">
                 <use href="#chev"></use>
               </svg>
             </button>
@@ -285,7 +285,7 @@
             <button type="button" (click)="policyOpen.price = !policyOpen.price"
               class="w-full flex items-center justify-between p-4 text-left rounded-lg hover:bg-gray-50">
               <span class="font-semibold text-lg ">Giá tour & Phụ phí</span>
-              <svg [class.rotate-180]="policyOpen.price" class="w-4 h-4 transition-transform">
+              <svg [class.rotate-180]="!policyOpen.price" class="w-4 h-4 transition-transform">
                 <use href="#chev"></use>
               </svg>
             </button>

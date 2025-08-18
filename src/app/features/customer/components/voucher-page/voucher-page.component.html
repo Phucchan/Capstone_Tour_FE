@@ -1,0 +1,121 @@
+
+<!-- change -->
+<div class="max-w-[1100px] mx-auto p-4 md:p-6">
+  <h2 class="text-2xl text-blue-700 font-bold mb-4">Mã giảm giá</h2>
+
+  <!-- change: Bọc phần danh sách & sidebar trong layout 2 cột -->
+<div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+
+  <!-- LEFT: Danh sách voucher công khai + phân trang -->
+  <div>
+    <div class="bg-white border border-gray-100 rounded-lg w-[700px] overflow-hidden">
+      <div class="px-4 py-3 bg-gray-100 font-semibold">Mã giảm giá hiện có</div>
+
+      <div *ngIf="isLoading" class="p-4 text-gray-500">Đang tải...</div>
+
+      <div *ngIf="!isLoading && vouchers.length === 0" class="p-4 text-gray-500">
+        Không có voucher nào.
+      </div>
+
+      <div *ngIf="!isLoading && vouchers.length > 0" class="divide-y">
+        <div *ngFor="let v of vouchers" class="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <div class="text-lg font-semibold text-gray-800">{{ v.name || ('Voucher ' + v.code) }}</div>
+            <div class="text-sm text-gray-600">Mã: <strong>{{ v.code }}</strong></div>
+            <div class="text-sm text-gray-600">
+              Giảm: <strong>{{ v.discountAmount | number }}</strong>
+              (đơn tối thiểu: {{ v.minOrderValue | number }})
+            </div>
+            <div class="text-sm text-gray-600">
+              Hiệu lực: {{ v.validFrom | date:'dd/MM/yyyy' }} - {{ v.validTo | date:'dd/MM/yyyy' }}
+            </div>
+            <div class="text-sm text-gray-600">Yêu cầu điểm: <strong>{{ v.pointsRequired | number }}</strong></div>
+            <div class="mt-1">
+              <span class="px-2 py-1 text-xs rounded"
+                    [ngClass]="(v.voucherStatus==='ACTIVE') ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'">
+               {{ getStatusLabel(v.voucherStatus) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button
+              class="px-4 py-2 rounded text-white"
+              [class.bg-blue-600]="canRedeem(v)"
+              [class.bg-gray-400]="!canRedeem(v)"
+              [disabled]="!canRedeem(v) || redeemingId===v.id"
+              (click)="redeem(v)">
+              {{ redeemingId===v.id ? 'Đang đổi...' : 'Đổi voucher' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- change: Pagination 0-based -->
+    <app-pagination
+      class="mt-4"
+      [currentPage]="page"
+      [totalItems]="total"
+      [pageSize]="size"
+      [siblingCount]="1"
+      (pageChange)="onPageChange($event)">
+    </app-pagination>
+
+    <!-- change: “Voucher của tôi” hiển thị ở DƯỚI danh sách khi màn hình nhỏ -->
+    <div class="lg:hidden mt-8">
+      <div class="bg-white border rounded-lg overflow-hidden">
+        <div class="px-4 py-3 bg-gray-100 font-semibold flex items-center justify-between">
+          <span>Voucher của tôi</span>
+          <span class="text-sm text-gray-500">{{ myVouchers.length }}</span>
+        </div>
+
+        <div *ngIf="myVouchers.length === 0" class="p-4 text-gray-500">
+          Bạn chưa có voucher nào.
+        </div>
+
+        <div *ngIf="myVouchers.length > 0" class="divide-y">
+          <div *ngFor="let uv of myVouchers" class="p-4">
+            <div class="text-base font-semibold text-gray-800">{{ uv.name || ('Voucher ' + uv.code) }}</div>
+            <div class="text-sm text-gray-600">Mã: <strong>{{ uv.code }}</strong></div>
+            <div class="text-sm text-gray-600">Giảm: <strong>{{ uv.discountAmount | number }}</strong></div>
+            <span class="inline-block mt-1 px-2 py-0.5 text-xs rounded bg-blue-50 text-blue-700">Của tôi</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Sidebar “Voucher của tôi” (desktop) -->
+  <aside class="hidden lg:block w-full sticky top-24 self-start">
+    <!-- change: hộp điểm -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4" title="Nhận điểm thông qua đặt tour và lưu dấu hành trình">
+      <div class="text-sm text-gray-700" >Điểm hiện có</div>
+      <div class="text-2xl font-bold text-blue-700">{{ points | number }}</div>
+    </div>
+
+    <!-- change: cột dọc voucher của tôi -->
+    <div class="bg-white border rounded-lg overflow-hidden">
+      <div class="px-4 py-3 bg-gray-100 font-semibold flex items-center justify-between">
+        <span>Voucher của tôi</span>
+        <span class="text-sm text-gray-500">{{ myVouchers.length }}</span>
+      </div>
+
+      <div *ngIf="myVouchers.length === 0" class="p-4 text-gray-500">
+        Bạn chưa có voucher nào.
+      </div>
+
+      <!-- cuộn độc lập trong sidebar -->
+      <div *ngIf="myVouchers.length > 0" class="max-h-[70vh] overflow-y-auto divide-y">
+        <div *ngFor="let uv of myVouchers" class="p-4">
+          <div class="text-base font-semibold text-gray-800">{{ uv.name || ('Voucher ' + uv.code) }}</div>
+          <div class="text-sm text-gray-600">Mã: <strong>{{ uv.code }}</strong></div>
+          <div class="text-sm text-gray-600">Giảm: <strong>{{ uv.discountAmount | number }}</strong></div>
+          <span class="inline-block mt-1 px-2 py-0.5 text-xs rounded bg-blue-50 text-blue-700">Của tôi</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+</div>
