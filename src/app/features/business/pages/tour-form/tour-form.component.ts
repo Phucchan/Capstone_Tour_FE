@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common'; // THÊM: CurrencyPipe
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
@@ -8,8 +8,9 @@ import {
   FormsModule,
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Observable, of } from 'rxjs';
-import { map, switchMap, tap, finalize } from 'rxjs/operators';
+import { Observable, of, throwError } from 'rxjs';
+import { map, switchMap, tap, finalize, catchError } from 'rxjs/operators';
+
 
 // Core Services & Models
 import { TourService } from '../../../../core/services/tour.service';
@@ -17,8 +18,13 @@ import { RequestBookingService } from '../../services/request-booking.service';
 import {
   TourOptionsData,
   TourDetail,
+  TourPaxRequestDTO,
 } from '../../../../core/models/tour.model';
 import { RequestBookingDetail } from '../../models/request-booking.model';
+import { TourDepartureService } from '../../../../core/services/tour-departure.service';
+import { TourScheduleCreateRequest } from '../../../../core/models/tour-schedule.model';
+import { TourPaxService } from '../../../../core/services/tour-pax.service';
+import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
 
 // NG-ZORRO Imports
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -36,6 +42,7 @@ import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
+import { NzSpaceModule } from 'ng-zorro-antd/space';
 
 @Component({
   selector: 'app-tour-form',
@@ -45,6 +52,7 @@ import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
     ReactiveFormsModule,
     FormsModule,
     CurrencyPipe,
+    RouterLink,
     NzFormModule,
     NzInputModule,
     NzSelectModule,
@@ -58,7 +66,8 @@ import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
     NzInputNumberModule,
     NzIconModule,
     NzAlertModule,
-    NzDescriptionsModule, // THÊM: NzDescriptionsModule
+    NzDescriptionsModule,
+    NzSpaceModule,
   ],
   templateUrl: './tour-form.component.html',
 })
@@ -69,7 +78,10 @@ export class TourFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private tourService = inject(TourService);
   private requestBookingService = inject(RequestBookingService);
+  private tourDepartureService = inject(TourDepartureService);
   private message = inject(NzMessageService);
+  private tourPaxService = inject(TourPaxService);
+  private currentUserService = inject(CurrentUserService);
 
   // --- State ---
   tourForm!: FormGroup;
@@ -90,6 +102,13 @@ export class TourFormComponent implements OnInit {
   isCustomRequestMode = false;
   requestBookingId: number | null = null;
   requestBookingDetail$: Observable<RequestBookingDetail> | null = null;
+  private requestStartDate: string | null = null;
+  private requestEndDate: string | null = null;
+
+  //Getter để lấy trạng thái tour
+  get tourStatus(): string {
+    return this.tourForm.get('tourStatus')?.value;
+  }
 
   constructor() {
     this.buildForm();
@@ -99,7 +118,8 @@ export class TourFormComponent implements OnInit {
     this.route.queryParamMap.subscribe((queryParams) => {
       const requestBookingIdParam = queryParams.get('requestBookingId');
       const tourTypeParam = queryParams.get('tourType');
-
+      this.requestStartDate = queryParams.get('startDate');
+      this.requestEndDate = queryParams.get('endDate');
       if (requestBookingIdParam && tourTypeParam === 'CUSTOM') {
         this.setupCustomRequestMode(+requestBookingIdParam);
       } else {
@@ -268,17 +288,126 @@ export class TourFormComponent implements OnInit {
 
     apiCall.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
       next: (createdTour: TourDetail) => {
-        this.message.success(
-          this.isEditMode
-            ? 'Cập nhật tour thành công!'
-            : `Tạo tour thành công! Mã tour: ${createdTour.code}`
-        );
-        this.router.navigate(['/business/tours', createdTour.id, 'schedule']);
+        if (
+          this.isCustomRequestMode &&
+          this.requestStartDate &&
+          this.requestEndDate
+        ) {
+          this.publishAndCreateSchedule(createdTour);
+        } else {
+          this.message.success(
+            this.isEditMode
+              ? 'Cập nhật tour thành công!'
+              : `Tạo tour thành công! Mã tour: ${createdTour.code}`
+          );
+          this.router.navigate(['/business/tours', createdTour.id, 'schedule']);
+        }
       },
       error: (err: any) => {
         console.error('Lỗi khi lưu tour:', err);
         this.message.error('Có lỗi xảy ra khi lưu tour.');
       },
+    });
+  }
+
+  //Hàm mới để publish tour trước khi tạo schedule
+  private publishAndCreateSchedule(tour: TourDetail): void {
+    // Tạo payload để cập nhật trạng thái tour
+    const formValue = this.tourForm.getRawValue();
+    const tourUpdateData = {
+      name: formValue.name,
+      description: formValue.description,
+      tourType: formValue.tourType,
+      tourStatus: 'PUBLISHED', // Đặt trạng thái là PUBLISHED
+      departLocationId: formValue.departLocationId,
+      destinationLocationIds: formValue.destinationLocationIds,
+      tourThemeIds: formValue.tourThemeIds,
+    };
+
+    const formData = new FormData();
+    formData.append(
+      'tourData',
+      new Blob([JSON.stringify(tourUpdateData)], { type: 'application/json' })
+    );
+
+    // Bước 1: Cập nhật tour sang trạng thái PUBLISHED
+    this.tourService.updateTourWithFile(tour.id, formData).subscribe({
+      next: () => {
+        // Bước 2: Sau khi publish thành công, tiến hành tạo schedule
+        this.autoCreateSchedule(tour.id);
+      },
+      error: (err) => {
+        console.error('Lỗi khi cập nhật trạng thái tour sang PUBLISHED:', err);
+        this.message.error(
+          'Tạo tour thành công nhưng không thể chuyển sang trạng thái công khai.'
+        );
+        this.router.navigate(['/business/tours', tour.id]);
+      },
+    });
+  }
+
+  // Hàm mới để tự động tạo lịch trình (ngày khởi hành)
+  private autoCreateSchedule(tourId: number): void {
+    const currentUser = this.currentUserService.getCurrentUser();
+    if (!currentUser || !currentUser.id) {
+      this.message.error(
+        'Không thể xác định người dùng hiện tại. Vui lòng đăng nhập lại.'
+      );
+      return;
+    }
+    const coordinatorId = currentUser.id;
+
+    this.requestBookingDetail$!.pipe(
+      switchMap((requestDetail) => {
+        const totalGuests =
+          requestDetail.adults +
+          requestDetail.children +
+          requestDetail.infants +
+          requestDetail.toddlers;
+
+        const paxPayload: TourPaxRequestDTO = {
+          minQuantity: totalGuests,
+          maxQuantity: totalGuests,
+          manualPrice: true,
+        };
+
+        return this.tourPaxService.createTourPax(tourId, paxPayload);
+      }),
+      switchMap((newPax) => {
+        if (!newPax || !newPax.id) {
+          return throwError(() => new Error('Tạo gói giá thất bại.'));
+        }
+        const tourPaxId = newPax.id;
+
+        // Chuyển đổi ngày sang định dạng ISO đầy đủ (YYYY-MM-DDTHH:mm:ss)
+        const departureDateISO = new Date(this.requestStartDate!).toISOString();
+
+        const schedulePayload: TourScheduleCreateRequest = {
+          departureDate: departureDateISO,
+          coordinatorId: coordinatorId,
+          tourPaxId: tourPaxId,
+        };
+
+        return this.tourDepartureService.createTourSchedule(
+          tourId,
+          schedulePayload
+        );
+      }),
+      catchError((err) => {
+        console.error('Lỗi trong chuỗi tự động tạo lịch trình:', err);
+        this.message.warning(
+          'Tạo tour thành công nhưng không thể tự động tạo ngày khởi hành. Vui lòng thêm thủ công.'
+        );
+        this.router.navigate(['/business/tours', tourId, 'departure-dates']);
+        return of(null);
+      })
+    ).subscribe((result) => {
+      if (result) {
+        this.message.success(
+          `Tạo tour thành công và đã tự động thêm ngày khởi hành!`
+        );
+        this.router.navigate(['/business/tours', tourId, 'departure-dates']);
+      }
     });
   }
 

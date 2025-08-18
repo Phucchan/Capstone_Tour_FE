@@ -2,11 +2,31 @@
 <div class="container mx-auto p-4 sm:p-6 lg:p-8">
   <nz-page-header [nzTitle]="pageTitle" (nzBack)="goBack()">
     <nz-page-header-extra>
-      <!-- ... các button khác ... -->
-      <button form="tourForm" type="submit" nz-button nzType="primary" [nzLoading]="isSubmitting" [disabled]="tourForm.invalid">
-        <span nz-icon nzType="save"></span>
-        {{ isEditMode ? 'Lưu thay đổi' : 'Lưu & Tiếp tục' }}
-      </button>
+    <nz-space>
+        <!--Các nút điều hướng chỉ hiển thị ở chế độ edit và tour đã published -->
+         <ng-container *ngIf="isEditMode">
+          <!-- Các nút này luôn hiển thị ở chế độ chỉnh sửa -->
+          <a [routerLink]="['/business/tours', tourId, 'costing']" nz-button>
+            <span nz-icon nzType="dollar-circle" nzTheme="outline"></span>
+            Chiết tính
+          </a>
+          <a [routerLink]="['/business/tours', tourId, 'schedule']" nz-button>
+            <span nz-icon nzType="schedule" nzTheme="outline"></span>
+            Lịch trình
+          </a>
+          <!-- Nút này chỉ hiển thị khi tour đã được công khai -->
+          <a *ngIf="tourStatus === 'PUBLISHED'" [routerLink]="['/business/tours', tourId, 'departure-dates']" nz-button>
+            <span nz-icon nzType="calendar" nzTheme="outline"></span>
+            Ngày khởi hành
+          </a>
+        </ng-container>
+
+        <!-- Nút Lưu -->
+        <button form="tourForm" type="submit" nz-button nzType="primary" [nzLoading]="isSubmitting" [disabled]="isEditMode && tourForm.pristine">
+          <span nz-icon nzType="save"></span>
+          {{ isEditMode ? 'Lưu thay đổi' : 'Lưu & Tiếp tục' }}
+        </button>
+      </nz-space>
     </nz-page-header-extra>
   </nz-page-header>
 

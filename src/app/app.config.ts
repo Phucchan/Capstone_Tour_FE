@@ -47,6 +47,13 @@ import {
   LeftOutline,
   RightOutline,
   DownOutline,
+  DollarCircleTwoTone,
+  FileTwoTone,
+  SaveOutline,
+  ScheduleOutline,
+  CalendarOutline,
+  EnvironmentOutline,
+  ArrowLeftOutline,
 } from '@ant-design/icons-angular/icons';
 
 registerLocaleData(vi);
@@ -76,6 +83,13 @@ const icons = [
   LeftOutline,
   RightOutline,
   DownOutline,
+  DollarCircleTwoTone,
+  FileTwoTone,
+  SaveOutline,
+  ScheduleOutline,
+  CalendarOutline,
+  EnvironmentOutline,
+  ArrowLeftOutline,
 ];
 
 export const appConfig: ApplicationConfig = {

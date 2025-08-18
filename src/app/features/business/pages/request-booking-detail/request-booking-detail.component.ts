@@ -174,9 +174,14 @@ export class RequestBookingDetailComponent implements OnInit {
     });
   }
 
-  createTour(id: number): void {
+  createTour(request: RequestBookingDetail): void {
     this.router.navigate(['/business/tours/new'], {
-      queryParams: { requestBookingId: id, tourType: 'CUSTOM' },
+      queryParams: {
+        requestBookingId: request.id,
+        tourType: 'CUSTOM',
+        startDate: request.startDate,
+        endDate: request.endDate,
+      },
     });
   }
 
