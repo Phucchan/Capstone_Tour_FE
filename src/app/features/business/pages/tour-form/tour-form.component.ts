@@ -92,6 +92,7 @@ export class TourFormComponent implements OnInit {
   tourId: number | null = null;
   tourOptions$!: Observable<TourOptionsData>;
   durationDays = 0;
+  private initialTourData: TourDetail | null = null;
 
   // --- File Upload State ---
   selectedFile: File | null = null;
@@ -185,6 +186,7 @@ export class TourFormComponent implements OnInit {
       next: (data) => {
         this.tourOptions$ = of(data.options);
         if (this.isEditMode && data.detail) {
+          this.initialTourData = data.detail;
           this.patchFormWithTourData(data.detail);
         }
         this.isLoading = false;
@@ -286,129 +288,101 @@ export class TourFormComponent implements OnInit {
         ? this.tourService.updateTourWithFile(this.tourId, formData)
         : this.tourService.createTourWithFile(formData);
 
-    apiCall.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
-      next: (createdTour: TourDetail) => {
-        if (
-          this.isCustomRequestMode &&
-          this.requestStartDate &&
-          this.requestEndDate
-        ) {
-          this.publishAndCreateSchedule(createdTour);
-        } else {
-          this.message.success(
-            this.isEditMode
-              ? 'Cập nhật tour thành công!'
-              : `Tạo tour thành công! Mã tour: ${createdTour.code}`
-          );
-          this.router.navigate(['/business/tours', createdTour.id, 'schedule']);
-        }
-      },
-      error: (err: any) => {
-        console.error('Lỗi khi lưu tour:', err);
-        this.message.error('Có lỗi xảy ra khi lưu tour.');
-      },
-    });
+     apiCall.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
+       next: (savedTour: TourDetail) => {
+         const newStatus = formValue.tourStatus;
+         const oldStatus = this.initialTourData?.tourStatus;
+
+         if (this.isEditMode) {
+           this.message.success('Cập nhật tour thành công!');
+           // Logic kiểm tra việc publish tour custom
+           if (
+             newStatus === 'PUBLISHED' &&
+             oldStatus !== 'PUBLISHED' &&
+             savedTour.tourType === 'CUSTOM' &&
+             savedTour.requestBooking
+           ) {
+             this.autoCreateSchedule(
+               savedTour.id,
+               savedTour.requestBooking.startDate,
+               savedTour.requestBooking.endDate
+             );
+           }
+         } else {
+           this.message.success(
+             `Tạo tour thành công! Mã tour: ${savedTour.code}`
+           );
+           this.router.navigate(['/business/tours', savedTour.id, 'schedule']);
+         }
+       },
+       error: (err: any) => {
+         console.error('Lỗi khi lưu tour:', err);
+         this.message.error('Có lỗi xảy ra khi lưu tour.');
+       },
+     });
   }
 
-  //Hàm mới để publish tour trước khi tạo schedule
-  private publishAndCreateSchedule(tour: TourDetail): void {
-    // Tạo payload để cập nhật trạng thái tour
-    const formValue = this.tourForm.getRawValue();
-    const tourUpdateData = {
-      name: formValue.name,
-      description: formValue.description,
-      tourType: formValue.tourType,
-      tourStatus: 'PUBLISHED', // Đặt trạng thái là PUBLISHED
-      departLocationId: formValue.departLocationId,
-      destinationLocationIds: formValue.destinationLocationIds,
-      tourThemeIds: formValue.tourThemeIds,
-    };
-
-    const formData = new FormData();
-    formData.append(
-      'tourData',
-      new Blob([JSON.stringify(tourUpdateData)], { type: 'application/json' })
-    );
-
-    // Bước 1: Cập nhật tour sang trạng thái PUBLISHED
-    this.tourService.updateTourWithFile(tour.id, formData).subscribe({
-      next: () => {
-        // Bước 2: Sau khi publish thành công, tiến hành tạo schedule
-        this.autoCreateSchedule(tour.id);
-      },
-      error: (err) => {
-        console.error('Lỗi khi cập nhật trạng thái tour sang PUBLISHED:', err);
-        this.message.error(
-          'Tạo tour thành công nhưng không thể chuyển sang trạng thái công khai.'
-        );
-        this.router.navigate(['/business/tours', tour.id]);
-      },
-    });
-  }
-
-  // Hàm mới để tự động tạo lịch trình (ngày khởi hành)
-  private autoCreateSchedule(tourId: number): void {
+  // Hàm nhận thêm ngày tháng làm tham số
+  private autoCreateSchedule(
+    tourId: number,
+    startDate: string,
+    endDate: string
+  ): void {
     const currentUser = this.currentUserService.getCurrentUser();
     if (!currentUser || !currentUser.id) {
-      this.message.error(
-        'Không thể xác định người dùng hiện tại. Vui lòng đăng nhập lại.'
-      );
+      this.message.error('Không thể xác định người dùng hiện tại.');
       return;
     }
     const coordinatorId = currentUser.id;
 
-    this.requestBookingDetail$!.pipe(
-      switchMap((requestDetail) => {
-        const totalGuests =
-          requestDetail.adults +
-          requestDetail.children +
-          requestDetail.infants +
-          requestDetail.toddlers;
-
-        const paxPayload: TourPaxRequestDTO = {
-          minQuantity: totalGuests,
-          maxQuantity: totalGuests,
-          manualPrice: true,
-        };
-
-        return this.tourPaxService.createTourPax(tourId, paxPayload);
-      }),
-      switchMap((newPax) => {
-        if (!newPax || !newPax.id) {
-          return throwError(() => new Error('Tạo gói giá thất bại.'));
+    // Lấy thông tin request một lần nữa để biết số lượng khách
+    this.requestBookingService
+      .getRequestDetail(this.requestBookingId!)
+      .pipe(
+        switchMap((requestDetail) => {
+          const totalGuests =
+            requestDetail.adults +
+            requestDetail.children +
+            requestDetail.infants +
+            requestDetail.toddlers;
+          const paxPayload: TourPaxRequestDTO = {
+            minQuantity: totalGuests > 0 ? totalGuests : 1, // Đảm bảo min > 0
+            maxQuantity: totalGuests > 0 ? totalGuests : 1,
+            manualPrice: true,
+          };
+          return this.tourPaxService.createTourPax(tourId, paxPayload);
+        }),
+        switchMap((newPax) => {
+          if (!newPax || !newPax.id) {
+            return throwError(() => new Error('Tạo gói giá thất bại.'));
+          }
+          const tourPaxId = newPax.id;
+          const departureDateISO = new Date(startDate).toISOString();
+          const schedulePayload: TourScheduleCreateRequest = {
+            departureDate: departureDateISO,
+            coordinatorId: coordinatorId,
+            tourPaxId: tourPaxId,
+          };
+          return this.tourDepartureService.createTourSchedule(
+            tourId,
+            schedulePayload
+          );
+        }),
+        catchError((err) => {
+          console.error('Lỗi trong chuỗi tự động tạo lịch trình:', err);
+          this.message.error(
+            'Có lỗi khi tự động tạo ngày khởi hành. Vui lòng thử lại.'
+          );
+          return of(null);
+        })
+      )
+      .subscribe((result) => {
+        if (result) {
+          this.message.success(
+            'Đã tự động thêm ngày khởi hành theo yêu cầu của khách!'
+          );
         }
-        const tourPaxId = newPax.id;
-
-        // Chuyển đổi ngày sang định dạng ISO đầy đủ (YYYY-MM-DDTHH:mm:ss)
-        const departureDateISO = new Date(this.requestStartDate!).toISOString();
-
-        const schedulePayload: TourScheduleCreateRequest = {
-          departureDate: departureDateISO,
-          coordinatorId: coordinatorId,
-          tourPaxId: tourPaxId,
-        };
-
-        return this.tourDepartureService.createTourSchedule(
-          tourId,
-          schedulePayload
-        );
-      }),
-      catchError((err) => {
-        console.error('Lỗi trong chuỗi tự động tạo lịch trình:', err);
-        this.message.warning(
-          'Tạo tour thành công nhưng không thể tự động tạo ngày khởi hành. Vui lòng thêm thủ công.'
-        );
-        this.router.navigate(['/business/tours', tourId, 'departure-dates']);
-        return of(null);
-      })
-    ).subscribe((result) => {
-      if (result) {
-        this.message.success(
-          `Tạo tour thành công và đã tự động thêm ngày khởi hành!`
-        );
-        this.router.navigate(['/business/tours', tourId, 'departure-dates']);
-      }
-    });
+      });
   }
 
   goBack(): void {
