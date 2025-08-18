@@ -1,6 +1,6 @@
 <!--
   FILE: src/app/features/seller/pages/seller-request-list/seller-request-list.component.html
-  MÔ TẢ: Giao diện đã được cải thiện bố cục và đồng bộ với các component của NG-ZORRO.
+  MÔ TẢ: Thêm nút "Từ chối" và modal để nhập lý do.
 -->
 
 <!-- 1. Breadcrumb -->
@@ -28,7 +28,7 @@
         <th>Ngày bắt đầu</th>
         <th>Ngày kết thúc</th>
         <th>Ngày tạo</th>
-        <th nzWidth="15%" nzAlign="center">Hành động</th>
+        <th nzWidth="20%" nzAlign="center">Hành động</th>
       </tr>
     </thead>
     <tbody>
@@ -39,13 +39,18 @@
         <td>{{ data.endDate | formatDate }}</td>
         <td>{{ data.createdAt | formatDate }}</td>
         <td nzAlign="center">
-          <!-- Sử dụng nz-popconfirm để xác nhận hành động -->
+          <!-- Nút Duyệt -->
           <button nz-button nzType="primary" nz-popconfirm
             nzPopconfirmTitle="Bạn có chắc muốn duyệt yêu cầu này?"
             nzPopconfirmSubTitle="Hành động này sẽ chuyển yêu cầu cho bộ phận kinh doanh."
-            (nzOnConfirm)="onApprove(data.id)">
+            (nzOnConfirm)="onApprove(data.id)" class="mr-2">
             <span nz-icon nzType="check"></span>
             Duyệt
+          </button>
+          <!-- [MỚI] Nút Từ chối -->
+          <button nz-button nzType="default" nzDanger (click)="showRejectModal(data.id)">
+             <span nz-icon nzType="close"></span>
+            Từ chối
           </button>
         </td>
       </tr>
