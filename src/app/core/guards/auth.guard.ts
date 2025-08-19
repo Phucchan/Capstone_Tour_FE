@@ -17,7 +17,7 @@ export class AuthGuard implements CanActivate {
     @Inject(PLATFORM_ID) private pid: Object,
   ) {}
 
-  async canActivate(
+  async canActivate( 
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Promise<boolean | UrlTree> {
