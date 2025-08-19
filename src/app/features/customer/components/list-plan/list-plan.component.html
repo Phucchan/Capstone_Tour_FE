@@ -1,0 +1,104 @@
+<div class="w-[1000px] mx-auto px-4 py-8">
+
+    <app-spinner [isLoading]="isLoading"></app-spinner>
+
+    <!-- Sort dropdown -->
+    <div class="flex justify-end text-sm text-gray-500 mb-4">
+        Thứ tự: <span class="ml-1 font-medium text-black">Ngày xuất phát</span>
+        <svg class="w-4 h-4 ml-1 mt-[2px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+    </div>
+
+    <!-- Trip Cards -->
+    <div class="space-y-6">
+        <!-- Trip 1 -->
+        <div *ngFor="let plan of plans; let i = index"
+            class="flex flex-col sm:flex-row bg-white shadow-sm rounded-lg overflow-hidden border-gray-200  border">
+            <img [src]="plan?.thumbnailImageUrl" alt="NYC" class="w-full sm:w-1/3 object-cover" />
+            <div class="p-4 flex-1">
+                <div class="flex justify-between items-cente">
+                    <h2 class="text-lg font-semibold mb-2">{{plan?.title}}</h2>
+
+                    <button 
+                    (click)="openConfirmModal(plan?.id)"
+                    type="button" class=" text-gray-500 hover:text-red-500" data-modal-target="popup-modal" data-modal-toggle="popup-modal">
+                        ✕
+                    </button>
+
+                </div>
+                <div class="text-sm text-gray-500 flex items-center gap-4 mb-2">
+                    <span>🗓️ {{plan?.numberDays}} Ngày</span>
+                    <span>📍 {{plan?.createdAt | date: "dd-MM-yyyy" }}</span>
+                </div>
+                <div class="text-sm text-gray-500 flex items-center gap-4 mb-2 mt-5">
+                    <span> <strong>Loại hình:</strong> {{plan?.planType}}</span>
+                </div>
+                <div class="text-sm text-gray-500 flex items-center gap-4 mb-2 mt-5">
+                    <span> <strong>Chi phí ước tính:</strong> {{plan?.totalSpend | currencyVnd}}</span>
+                </div>
+
+                <div
+                    class="text-sm text-right text-gray-500 flex justify-end items-center gap-4 mb-2 mt-5 w-full hover:cuisor-pointer">
+                    <span [routerLink]="['/customer/plan-detail', plan?.id]"
+                        class="flex justify-center gap-4 hover:text-gray-800  cursor-pointer"> Xem chi tiết → </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <app-table-footer [totalPages]="totalPages()" [currentPage]="page" (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"></app-table-footer>
+</div>
+
+
+@if(showSuccess) {
+    <!-- Warning Notification (Only One at a Time) -->
+    <div class="fixed top-[5rem] left-1/2 transform -translate-x-1/2 z-50 w-80">
+        <div
+            class="flex items-center bg-white shadow-md border border-gray-200 rounded-md p-3 animate-slide-in">
+            <span class="text-green-500 text-xl mr-2">✔</span>
+            <p class="text-green-800 text-sm">
+                {{ successMessage }}
+            </p>
+        </div>
+    </div>
+    }
+
+    @if(showError) {
+    <!-- Warning Notification (Only One at a Time) -->
+    <div class="fixed top-[5rem] left-1/2 transform -translate-x-1/2 z-50 w-80">
+        <div
+            class="flex items-center bg-white shadow-md border border-gray-200 rounded-md p-3 animate-slide-in">
+            <span class="text-red-500 text-xl mr-2">X</span>
+            <p class="text-red-800 text-sm">
+                {{ errorMessage }}
+        </div>
+    </div>
+    }
+
+
+<div id="popup-modal" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+            <button type="button" class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="popup-modal">
+                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                </svg>
+                <span class="sr-only">Close modal</span>
+            </button>
+            <div class="p-4 md:p-5 text-center">
+                <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                </svg>
+                <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Xác nhận xóa kế hoạch này</h3>
+                <button data-modal-hide="popup-modal" type="button" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center" (click)="deletePlan()">
+                    Xóa
+                </button>
+                <button data-modal-hide="popup-modal" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                    Hủy bỏ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

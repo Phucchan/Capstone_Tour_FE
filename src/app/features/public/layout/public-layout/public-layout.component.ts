@@ -9,10 +9,12 @@ import { CommonModule } from '@angular/common';
 import { ChatIconComponent } from '../../../../shared/components/chat-icon/chat-icon.component';
 import { ChatService } from '../../../customer/services/chat.service';
 
+
 @Component({
   selector: 'app-public-layout',
   templateUrl: './public-layout.component.html',
   styleUrls: ['./public-layout.component.css'],
+  standalone: true,
   imports: [
     RouterOutlet,
     HeaderComponent,
@@ -49,7 +51,7 @@ export class PublicLayoutComponent {
     });
   }
   getUserBasicInfo() {
-    this.customerService.getUserProfile(this.currentUser.username).subscribe({
+    this.customerService.getUserBasic(this.currentUser.username).subscribe({
       next: (response) => {
         console.log('User basic information:', response?.data);
         this.customerBasicInfo = response?.data || {};

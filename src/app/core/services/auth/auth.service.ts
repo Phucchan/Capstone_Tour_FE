@@ -5,8 +5,6 @@ import { UserStorageService } from '../user-storage/user-storage.service';
 import { environment } from '../../../../environments/environment';
 import { CurrentUserService } from '../user-storage/current-user.service';
 
-
-
 @Injectable({
   providedIn: 'root',
 })
@@ -28,25 +26,32 @@ export class AuthService {
       })
       .pipe(
         tap((response: any) => {
-          const token = response.body.data.token;
-          const userInfo = response.body.data.user;
+          if (response.body && response.body.data) {
+            const token = response.body.data.token;
+            const userInfo = response.body.data.user;
 
-          if (token && userInfo) {
-            // === ĐÂY LÀ THAY ĐỔI QUAN TRỌNG NHẤT ===
-            // 1. Tạo một đối tượng user hoàn chỉnh để lưu trữ
-            const userToStore = {
-              ...userInfo, // Lấy tất cả thông tin user (id, username, roles...)
-              accessToken: token, // Thêm accessToken để Interceptor có thể tìm thấy
-            };
+            if (token && userInfo) {
+              // 1. Lưu token ngay lập tức để UserStorageService có thể giải mã
+              this.userStorageService.saveToken(token);
 
-            // 2. Service tự xử lý việc lưu trữ
-            this.userStorageService.saveToken(token); // Lưu token riêng vào cookie 'token'
-            this.userStorageService.saveUser(userToStore); // Lưu user hoàn chỉnh vào cookie 'user'
-            this.currentUserService.setCurrentUser(userToStore); // Cập nhật trạng thái trong bộ nhớ
+              // 2. Lấy vai trò (roles) từ token đã được giải mã
+              const roles = this.userStorageService.getUserRoles();
+
+              // 3. Tạo một đối tượng user hoàn chỉnh
+              const userToStore = {
+                ...userInfo, // Thông tin cơ bản (id, username, email...)
+                roles: roles, // Gán mảng vai trò đã được giải mã
+                accessToken: token,
+              };
+
+              // 4. Lưu user HOÀN CHỈNH vào cookie và cập nhật trạng thái
+              this.userStorageService.saveUser(userToStore);
+              this.currentUserService.setCurrentUser(userToStore);
+            }
           }
         }),
-        // Chỉ trả về thông tin user cho component
-        map((response: any) => response.body.data.user)
+        // Trả về toàn bộ body cho LoginComponent để xử lý redirectUrl
+        map((response: any) => response.body)
       );
   }
 

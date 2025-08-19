@@ -1,0 +1,108 @@
+<!--
+ * FILE: src/app/features/business/pages/dashboard/dashboard.component.html
+ * MÔ TẢ:
+ * - Giao diện đã được viết lại hoàn toàn bằng các component của NG-ZORRO.
+-->
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
+      <p class="text-sm text-gray-600 mt-1">Tổng quan hiệu suất kinh doanh của bạn.</p>
+    </div>
+    <form [formGroup]="filterForm">
+      <nz-range-picker formControlName="dateRange"></nz-range-picker>
+    </form>
+  </div>
+
+  <!-- Loading & Error State -->
+  <nz-spin [nzSpinning]="isLoading" [nzSize]="'large'">
+    <div *ngIf="error" class="mb-6">
+      <nz-alert nzType="error" [nzMessage]="error"></nz-alert>
+    </div>
+
+    <div *ngIf="!error">
+      <!-- Stat Cards -->
+      <div nz-row [nzGutter]="[16, 16]" class="mb-6">
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="8">
+          <nz-card>
+            <!-- [SỬA LỖI] Thêm ?? '' để xử lý trường hợp pipe trả về null -->
+            <nz-statistic [nzValue]="(totalRevenue | currency:'VND':'symbol':'1.0-0') ?? ''" [nzTitle]="'Tổng Doanh Thu'" [nzPrefix]="revenueIcon"></nz-statistic>
+            <ng-template #revenueIcon><i nz-icon nzType="dollar-circle" nzTheme="twotone" [nzTwotoneColor]="'#52c41a'"></i></ng-template>
+          </nz-card>
+        </div>
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="8">
+          <nz-card>
+            <nz-statistic [nzValue]="totalBookings" [nzTitle]="'Tổng Lượt Đặt'" [nzPrefix]="bookingIcon"></nz-statistic>
+            <ng-template #bookingIcon><i nz-icon nzType="file" nzTheme="twotone"></i></ng-template>
+          </nz-card>
+        </div>
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="8">
+          <nz-card>
+            <nz-statistic [nzValue]="totalNewUsers" [nzTitle]="'Khách Hàng Mới'" [nzPrefix]="userIcon"></nz-statistic>
+            <ng-template #userIcon><i nz-icon nzType="user-add" nzTheme="outline"></i></ng-template>
+          </nz-card>
+        </div>
+      </div>
+
+      <!-- Charts and Top Tours -->
+      <div nz-row [nzGutter]="[16, 16]">
+        <!-- Monthly Revenue Chart -->
+        <div nz-col [nzXs]="24" [nzLg]="16">
+          <nz-card nzTitle="Doanh Thu Theo Tháng">
+            <div *ngIf="monthlyRevenueData.length > 0; else noData" class="h-96">
+              <ngx-charts-bar-vertical [results]="monthlyRevenueData" [scheme]="chartColorScheme" [xAxis]="true" [yAxis]="true" [showXAxisLabel]="true" [showYAxisLabel]="true" xAxisLabel="Thời gian" yAxisLabel="Doanh thu (VND)" [yAxisTickFormatting]="yAxisTickFormat">
+              </ngx-charts-bar-vertical>
+            </div>
+            <!-- [SỬA LỖI] Thêm ng-template noData vào trong nz-card -->
+            <ng-template #noData>
+              <div class="flex items-center justify-center h-full min-h-[200px] bg-gray-50 rounded-lg">
+                <p class="text-gray-500">Không có dữ liệu để hiển thị.</p>
+              </div>
+            </ng-template>
+          </nz-card>
+        </div>
+
+        <!-- Booking Stats and Top Tours -->
+        <div nz-col [nzXs]="24" [nzLg]="8">
+          <div nz-row [nzGutter]="[16, 16]">
+            <!-- Booking Stats Chart -->
+            <div nz-col [nzSpan]="24">
+              <nz-card nzTitle="Thống Kê Đặt Chỗ">
+                <div *ngIf="bookingStatsData.length > 0 && totalBookings > 0; else noDataChart" class="h-60">
+                  <ngx-charts-pie-chart [results]="bookingStatsData" [scheme]="pieChartColorScheme" [legend]="true" [labels]="true" [doughnut]="true" [arcWidth]="0.4">
+                  </ngx-charts-pie-chart>
+                </div>
+                 <ng-template #noDataChart>
+                    <div class="flex items-center justify-center h-full min-h-[200px] bg-gray-50 rounded-lg">
+                        <p class="text-gray-500">Không có dữ liệu để hiển thị.</p>
+                    </div>
+                </ng-template>
+              </nz-card>
+            </div>
+            <!-- Top Tours -->
+            <div nz-col [nzSpan]="24">
+              <nz-card nzTitle="Top 5 Tours Doanh Thu Cao">
+                <nz-list [nzDataSource]="topTours" [nzRenderItem]="tourItem" [nzItemLayout]="'horizontal'">
+                  <ng-template #tourItem let-tour let-i="index">
+                    <nz-list-item>
+                      <nz-list-item-meta [nzTitle]="tourTitle" [nzDescription]="tour.tourType">
+                        <ng-template #tourTitle>
+                          <a class="font-semibold">{{ i + 1 }}. {{ tour.name }}</a>
+                        </ng-template>
+                      </nz-list-item-meta>
+                      <span class="font-bold text-green-600">{{ tour.totalRevenue | currency:'VND':'symbol':'1.0-0' }}</span>
+                    </nz-list-item>
+                  </ng-template>
+                </nz-list>
+                <div *ngIf="topTours.length === 0">
+                  <ng-container *ngTemplateOutlet="noData"></ng-container>
+                </div>
+              </nz-card>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nz-spin>
+</div>

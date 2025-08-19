@@ -85,14 +85,14 @@ export class UserStorageService {
     return decodedToken ? decodedToken.roles || [] : [];
   }
 
-  // getUserId(): number | null {
-  //   const decodedToken = this.decodeToken();
-  //   return decodedToken ? decodedToken.id || null : null;
-  // }
   getUserId(): number | null {
-    const user = this.getUser();
-    return user && user.id ? Number(user.id) : null;
+    const decodedToken = this.decodeToken();
+    return decodedToken ? decodedToken.id || null : null;
   }
+  // getUserId(): number | null {
+  //   const user = this.getUser();
+  //   return user && user.id ? Number(user.id) : null;
+  // }
 
   decodeToken(): any {
     const token = this.getToken();
@@ -120,7 +120,6 @@ export class UserStorageService {
 
   public getUser(): any {
     const userJson = this.getCookie(USER);
-    console.log('DEBUG - user in getUserId:', userJson);
     return userJson ? JSON.parse(userJson) : null;
   }
 

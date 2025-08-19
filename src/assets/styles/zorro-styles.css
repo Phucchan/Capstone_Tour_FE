@@ -1,0 +1,4 @@
+/* src/assets/styles/zorro-styles.css */
+/* File này chỉ có một nhiệm vụ duy nhất: import CSS của thư viện NG-ZORRO. */
+
+@import 'ng-zorro-antd/ng-zorro-antd.min.css';

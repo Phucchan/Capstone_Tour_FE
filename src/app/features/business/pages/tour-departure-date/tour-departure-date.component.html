@@ -1,0 +1,100 @@
+<div class="container mx-auto p-4 sm:p-6 lg:p-8">
+  <!-- Header -->
+  <ng-container *ngIf="tourDetail$ | async as tour">
+    <nz-page-header [nzTitle]="'Quản lý Lịch Khởi Hành'" [nzSubtitle]="tour.name + ' (' + tour.code + ')'">
+      <nz-page-header-extra>
+        <button nz-button nzType="primary" (click)="showCreateModal(modalContent)">
+          <span nz-icon nzType="plus"></span>
+          Thêm Ngày Khởi Hành
+        </button>
+      </nz-page-header-extra>
+    </nz-page-header>
+  </ng-container>
+
+  <!-- Content -->
+  <nz-spin [nzSpinning]="isLoading">
+    <ng-container *ngIf="schedules$ | async as schedules">
+      <nz-table #departureTable [nzData]="schedules" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="middle">
+        <thead class="bg-gray-50">
+          <tr>
+            <th>Ngày Khởi Hành</th>
+            <th>Điều Phối Viên</th>
+            <th>Gói Giá</th>
+            <th>Giá Bán</th>
+            <th nzAlign="right">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let schedule of departureTable.data">
+            <td>{{ schedule.departureDate | date:'dd/MM/yyyy' }}</td>
+            <td>{{ schedule.coordinator?.fullName || 'N/A' }}</td>
+            <td>{{ formatPaxOption(schedule.tourPax!) }}</td>
+            <td>
+              <strong class="text-green-600">{{ schedule.price | currencyVnd }}</strong>
+            </td>
+            <td nzAlign="right">
+              <a nz-popconfirm nzPopconfirmTitle="Bạn có chắc chắn muốn xóa?" (nzOnConfirm)="onDelete(schedule.id)" class="text-red-500">Xóa</a>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+
+      <div *ngIf="schedules.length === 0" class="mt-4">
+         <nz-empty nzNotFoundContent="Chưa có ngày khởi hành nào. Hãy thêm ngày mới!"></nz-empty>
+      </div>
+    </ng-container>
+  </nz-spin>
+</div>
+
+<!-- Modal Template -->
+<ng-template #modalContent>
+  <form nz-form [formGroup]="departureForm" class="mt-6">
+    <nz-form-item>
+      <nz-form-label nzRequired>Ngày khởi hành đầu tiên</nz-form-label>
+      <nz-form-control nzErrorTip="Vui lòng chọn ngày">
+        <nz-date-picker formControlName="departureDate" class="w-full"></nz-date-picker>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-label nzRequired>Điều phối viên</nz-form-label>
+      <nz-form-control nzErrorTip="Vui lòng chọn điều phối viên">
+        <nz-select formControlName="coordinatorId" nzShowSearch nzPlaceHolder="Chọn điều phối viên">
+          <nz-option *ngFor="let coordinator of options?.coordinators" [nzLabel]="coordinator.fullName" [nzValue]="coordinator.id"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-label nzRequired>Gói giá</nz-form-label>
+      <nz-form-control nzErrorTip="Vui lòng chọn gói giá">
+        <nz-select formControlName="tourPaxId" nzShowSearch nzPlaceHolder="Chọn gói giá">
+          <nz-option *ngFor="let pax of options?.tourPaxes" [nzLabel]="formatPaxOption(pax)" [nzValue]="pax.id"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-divider nzText="Tùy chọn lặp lại"></nz-divider>
+
+    <div nz-row [nzGutter]="16">
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label>Lặp lại</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="repeatType">
+              <nz-option *ngFor="let type of repeatTypes" [nzLabel]="type.label" [nzValue]="type.value"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col nzSpan="12">
+        <nz-form-item>
+          <nz-form-label>Số lần lặp</nz-form-label>
+          <nz-form-control nzErrorTip="Vui lòng nhập số lần lặp">
+            <nz-input-number formControlName="repeatCount" [nzMin]="1" class="w-full"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </div>
+  </form>
+</ng-template>

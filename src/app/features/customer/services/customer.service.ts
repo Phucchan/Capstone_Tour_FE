@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { map, Observable, switchMap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { UserProfile } from '../components/customer-sidebar/customer-sidebar.component';
 
@@ -12,19 +12,49 @@ export class CustomerService {
 
   getUserProfile(userId: number): Observable<any> {
     console.log('{CustomerService} Fetching user profile with userId:', userId);
-    return this.http.get<{ data: any }>(`${environment.apiUrl}/users/profile`, {
+    return this.http.get<{ data: any }>(`${environment.apiUrl}/customer/profile`, {
       params: new HttpParams().set('userId', userId.toString()),
     });
   }
-  updateProfile(data: any): Observable<UserProfile> {
-    return this.http.put<{ data: UserProfile }>(`${environment.apiUrl}/users/profile`, data)
-      .pipe(
-        map(res => res.data)
-      );
+  updateProfile(userId: number, data: any): Observable<UserProfile> {
+    const params = new HttpParams().set('userId', userId.toString());
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        formData.append(key, value as any);
+      }
+    });
+    return this.http
+      .put<{ data: UserProfile }>(`${environment.apiUrl}/customer/profile`, formData, { params })
+      .pipe(map((res) => res.data));
   }
   getProfile(): Observable<UserProfile> {
-    return this.http.get<{ data: UserProfile }>(`${environment.apiUrl}/users/profile`)
+    return this.http.get<{ data: UserProfile }>(`${environment.apiUrl}/customer/profile`)
       .pipe(map(res => res.data));
+  }
+  uploadAvatar(file: File): Observable<string> {
+    const params = new HttpParams().set('fileName', file.name);
+    return this.http
+      .get<{ url: string }>(`${environment.apiUrl}/s3/presigned-url`, { params })
+      .pipe(
+        switchMap((res) =>
+          this.http
+            .put(res.url, file, { headers: { 'Content-Type': file.type } })
+            .pipe(map(() => res.url.split('?')[0]))
+        )
+      );
+  }
+
+  changePassword(userId: number, body: { currentPassword: string, newPassword: string, rePassword: string }) {
+  return this.http.put<any>(`${environment.apiUrl}/customer/change-password`, body, {
+    params: { userId }
+  });
+}
+
+  getUserBasic(username: string): Observable<any> {
+    return this.http.get<{ data: any }>(`${environment.apiUrl}/public/users/info`, {
+      params: new HttpParams().set('username', username),
+    });
   }
 
 }

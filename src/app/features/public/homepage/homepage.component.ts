@@ -1,4 +1,4 @@
-import { Component, ElementRef, Inject, OnInit, PLATFORM_ID, QueryList, ViewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Inject, OnInit, PLATFORM_ID, QueryList, ViewChildren } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HeroSectionComponent } from '../../../shared/components/hero-section/hero-section.component';
 import { HomepageService } from '../services/homepage.service';
@@ -7,6 +7,8 @@ import { Router, RouterModule } from '@angular/router';
 import { CurrencyVndPipe } from '../../../shared/pipes/currency-vnd.pipe';
 import { IconTransportPipe } from '../../../shared/pipes/icon-transport.pipe';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
+import { RequestBookingService } from '../../customer/services/request-booking.service';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 
 @Component({
@@ -20,6 +22,7 @@ import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.
     CurrencyVndPipe,
     IconTransportPipe,
     SkeletonComponent,
+    NgSelectModule
 
   ],
   templateUrl: './homepage.component.html',
@@ -27,6 +30,7 @@ import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.
 })
 export class HomepageComponent implements OnInit {
   blogs: Blog[] = [];
+  destinationList: Location[] = [];
   saleTours: SaleTour[] = [];
   locations: Location[] = [];
   isLoading = true;
@@ -34,6 +38,7 @@ export class HomepageComponent implements OnInit {
 
   constructor(
     private homepageService: HomepageService,
+    private requestBookingService: RequestBookingService,
     @Inject(PLATFORM_ID) private platformId: Object,
     private router: Router
   ) { }
@@ -42,6 +47,7 @@ export class HomepageComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.getHomePageData();
     }
+    this.getDestinations();
   }
 
   getHomePageData(): void {
@@ -101,7 +107,36 @@ export class HomepageComponent implements OnInit {
     return Math.round(tour.startingPrice * (1 - tour.discountPercent / 100));
   }
 
+  goToLocation(destId: number) {
+    this.router.navigate(['/tours/location', destId]);
+
+  }
+
+  goToTourDiscountDetail(tourId: number): void {
+    this.router.navigate(['/tours', tourId]);
+
+  }
+  goToBlogDetail(blogId: number): void {
+    this.router.navigate(['/blogs', blogId]);
+  }
+  getDestinations(): void {
+    this.requestBookingService.getDestinations().subscribe({
+      next: (response) => {
+        this.destinationList = response.data.map((d: any) => ({
+            id: +d.id,
+            name: d.name,
+            description: d.description,
+            image: d.image,
+          }));
+      },
+      error: (err) => {
+        console.error('Error fetching destinations', err);
+      },
+    });
+  }
+
 }
+
 
 interface Blog {
   id: number;
@@ -112,7 +147,8 @@ interface Blog {
 }
 
 interface SaleTour {
-  id: number;
+  tourId: number;
+  scheduleId: number;
   name: string;
   thumbnailUrl: string;
   averageRating: number;

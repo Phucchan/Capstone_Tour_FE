@@ -1,24 +1,25 @@
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import packageJson from '../../../../../package.json';
-import { layoutService } from '../../../features/admin/layout/services/layout.service';
+import { LayoutService } from '../../../core/services/layout.service';
 import { AdminSidebarMenuComponent } from './admin-sidebar-menu/admin-sidebar-menu.component';
 
 @Component({
+  // SỬA LỖI 1: Đổi selector cho đúng với cách gọi trong layout.component.html
   selector: 'app-admin-sidebar',
+  standalone: true,
   imports: [
     CommonModule,
     AngularSvgIconModule,
-    AdminSidebarMenuComponent
+    // Import component menu chính
+    AdminSidebarMenuComponent,
   ],
   templateUrl: './admin-sidebar.component.html',
-  styleUrl: './admin-sidebar.component.css'
 })
 export class AdminSidebarComponent implements OnInit {
   public appJson: any = packageJson;
-
-  constructor(public layoutService: layoutService) {}
+  public layoutService = inject(LayoutService);
 
   ngOnInit(): void {}
 

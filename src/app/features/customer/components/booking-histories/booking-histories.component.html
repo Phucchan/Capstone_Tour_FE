@@ -1,0 +1,93 @@
+<div class="p-4 md:p-6">
+    <h2 class="text-2xl text-blue-700 font-bold mb-4">Đơn đặt tour của tôi</h2>
+
+    <!-- filter + paging -->
+    <div class="flex flex-wrap items-center gap-3 mb-4">
+        <label class="text text-gray-600">Trạng thái:</label>
+        <select class="border rounded px-3 py-2" [ngModel]="selectedStatus()"
+            (ngModelChange)="selectedStatus.set($event); page.set(0); fetch()">
+            <option value="">Tất cả</option>
+            <option *ngFor="let s of statuses" [value]="s">{{statusLabel(s)}}</option>
+        </select>
+        <!-- Booking code -->
+        <label class="text text-gray-600 ml-4">Mã đơn:</label>
+        <input class="border rounded px-3 py-2" placeholder="Nhập mã đơn..." [ngModel]="searchCode()"
+            (ngModelChange)="searchCode.set($event); page.set(0); fetch();" />
+
+        <!-- Departure date -->
+        <label class="text text-gray-600 ml-4">Ngày khởi hành:</label>
+        <input type="date" class="border rounded px-3 py-2" [ngModel]="searchDate()"
+            (ngModelChange)="searchDate.set($event); page.set(0); fetch();" />
+        <!-- Reset filters -->
+        <button type="button" class="px-3 py-2 text-sm text-blue-600 border rounded  hover:bg-blue-200" (click)="resetFilters()">
+            Xóa lọc
+        </button>
+    </div>
+
+    <!-- states -->
+    <div *ngIf="loading()" class="text-gray-500 py-6">Đang tải...</div>
+    <div *ngIf="!loading() && errorMsg()" class="text-red-500 py-6">{{ errorMsg() }}</div>
+    <div *ngIf="!loading() && !errorMsg() && bookings().length === 0" class="text-gray-500 py-6">
+        Chưa có đơn đặt tour nào.
+    </div>
+
+    <!-- table -->
+    <div *ngIf="!loading() && bookings().length > 0" class="overflow-x-auto">
+        <table class="min-w-full border rounded-md overflow-hidden">
+            <thead class="bg-gray-100 text-left text-sm">
+                <tr>
+                    <th class="px-4 py-3">Mã đơn</th>
+                    <th class="px-4 py-3">Ngày tạo</th>
+                    <th class="px-4 py-3">Tên tour</th>
+                    <th class="px-4 py-3">Trạng thái</th>
+                    <th class="px-4 py-3">Ngày khởi hành</th>
+                    <th class="px-4 py-3">Tổng tiền</th>
+                    <th class="px-4 py-3">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody class="text-sm">
+                <tr *ngFor="let b of (clientMode()
+                        ? (bookings() | slice:(page()*size()):((page()+1)*size()))
+                        : bookings())" class="border-t">
+                    <td class="px-4 py-3 font-mono">{{ b.bookingCode }}</td>
+                    <td class="px-4 py-3">{{ b.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                    <td class="px-4 py-3">{{ b.tourName }}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-2 py-1 rounded text-xs font-semibold" [ngClass]="statusColor(b.status)">
+                            {{ statusLabel(b.status) }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3">{{ b.departureDate | date:'dd/MM/yyyy HH:mm' }}</td>
+                    <td class="px-4 py-3">{{ b.totalAmount | currencyVnd }}</td>
+
+                    <td class="px-4 py-3 flex gap-2">
+                        <button class="px-3 py-1 border rounded hover:bg-gray-50" *ngIf="canRequestCancel(b.status)"
+                            [disabled]="loadingResquestCancel()" (click)="requestCancel(b)">
+                            Yêu cầu hủy
+                        </button>
+
+                        <button class="px-3 py-1 border rounded hover:bg-gray-50"
+                            *ngIf="canSubmitRefund(b.status) && !b.hasRefundInfo" [disabled]="loading()"
+                            (click)="submitRefund(b)">
+                            Gửi thông tin hoàn
+                        </button>
+
+                        <!-- Nếu đã gửi -->
+                        <span *ngIf="canSubmitRefund(b.status) && b.hasRefundInfo"
+                            class="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-700">
+                            ĐÃ GỬI STK
+                        </span>
+
+                        <a class="px-3 py-1 border rounded hover:bg-gray-50" [routerLink]="['/tours', b.tourId]">
+                            Xem
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<app-pagination [currentPage]="page()" [totalItems]="total()" [pageSize]="size()"
+    (pageChange)="onPageChange($event)">
+</app-pagination>

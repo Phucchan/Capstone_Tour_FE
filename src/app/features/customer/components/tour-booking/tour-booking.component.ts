@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgModule, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { UserStorageService } from '../../../../core/services/user-storage/user-storage.service';
 import {
   FormArray,
   FormBuilder,
   FormGroup,
+  FormsModule,
+  NgModel,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
@@ -15,7 +17,11 @@ import { TourDetailService } from '../../services/tour-detail.service';
 import { BookingInfoService } from '../../services/booking-infor.service';
 import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
 import { CustomerService } from '../../services/customer.service';
-import { filter, take } from 'rxjs';
+import { filter, interval, Subscription, take } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import Swal from 'sweetalert2';
+import { ToastrService } from 'ngx-toastr';
+import { VoucherService } from '../../services/voucher.service';
 
 @Component({
   selector: 'app-tour-booking',
@@ -24,12 +30,14 @@ import { filter, take } from 'rxjs';
     ReactiveFormsModule,
     CurrencyVndPipe,
     SpinnerComponent,
+    FormsModule,
   ],
+  standalone: true,
   templateUrl: './tour-booking.component.html',
   styleUrl: './tour-booking.component.css',
   providers: [DatePipe],
 })
-export class TourBookingComponent implements OnInit {
+export class TourBookingComponent implements OnInit, OnDestroy {
   tourDetails?: any;
   tourSchedule?: any;
   userInformation: any;
@@ -57,7 +65,21 @@ export class TourBookingComponent implements OnInit {
 
   warningMessage: string = '';
 
-  isHelpingInput: boolean = false;
+  isHelpingInput: boolean = true;
+
+  sendingCode = false;
+  codeSended = false;
+  codeCooldown = 0;
+  private codeTimerSub?: Subscription;
+
+  // ===== Voucher UI state ===== // CHANGE
+  showVoucherModal = false;
+  voucherInput = '';                 // người dùng gõ mã
+  userVouchers: any[] = [];      // CHANGE
+  appliedVoucherCode: string | null = null; // hiển thị mã đã áp dụng
+  voucherDiscount = 0;                    // CHANGE: số tiền giảm áp dụng
+
+
 
   constructor(
     private bookingInforService: BookingInfoService,
@@ -66,15 +88,17 @@ export class TourBookingComponent implements OnInit {
     private router: Router,
     private tourDetailService: TourDetailService,
     private customerService: CustomerService,
-    private currentUserService: CurrentUserService
+    private currentUserService: CurrentUserService,
+    private toastr: ToastrService,
+    private voucherService: VoucherService
   ) {
     this.bookingForm = this.fb.group({
       userId: ['', Validators.required],
       tourId: ['', Validators.required],
       scheduleId: ['', Validators.required],
-      fullName: ['', Validators.required],
+      fullName: ['', [Validators.required, Validators.pattern(/^[a-zA-ZÀ-ỹ\s]+$/)]],
       email: ['', [Validators.required, Validators.email]],
-      phone: [null, [Validators.required, Validators.pattern('^[0-9]*$')]],
+      phone: [null, [Validators.required, Validators.pattern(/^(0\d{9})$/)]],
       address: ['', Validators.required],
       note: [''],
       paymentMethod: ['CASH', Validators.required],
@@ -86,6 +110,10 @@ export class TourBookingComponent implements OnInit {
       sellingPrice: [0, Validators.required],
       extraHotelCost: [0, Validators.required],
       numberSingleRooms: [1, Validators.required],
+      tourName: ['', Validators.required],
+      needHelp: [true], // Checkbox for help input
+      verificationCode: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
+      userVoucherId: [null],
     });
 
     // Dynamically add adult form groups based on numberAdults
@@ -98,6 +126,9 @@ export class TourBookingComponent implements OnInit {
 
       this.calculateTotal();
     });
+  }
+  ngOnDestroy(): void {
+    this.codeTimerSub?.unsubscribe();
   }
 
   ngOnInit(): void {
@@ -112,11 +143,7 @@ export class TourBookingComponent implements OnInit {
 
     this.getTourDetails(tourId);
     this.currentUserService.currentUser$
-      .pipe(
-        // chỉ lấy khi user có (khác null)
-        filter((user: any) => !!user),
-        take(1) // chỉ lấy 1 lần
-      )
+      .pipe(filter((u: any) => !!u), take(1))
       .subscribe((user) => {
         this.getUserData();
       });
@@ -132,14 +159,65 @@ export class TourBookingComponent implements OnInit {
     this.today = today.toISOString().split('T')[0];
   }
 
+
+  sendVerificationCode(): void {
+    const emailCtrl = this.bookingForm.get('email');
+    if (!emailCtrl || emailCtrl.invalid) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Email chưa hợp lệ',
+        text: 'Vui lòng nhập email hợp lệ trước khi gửi mã.',
+        confirmButtonText: 'Đã hiểu',
+        customClass: { confirmButton: 'swal-confirm-btn' }
+      });
+      emailCtrl?.markAsTouched();
+      return;
+    }
+    if (this.codeCooldown > 0 || this.sendingCode) return;
+
+    this.sendingCode = true;
+    const email = String(emailCtrl.value).trim();
+
+    this.bookingInforService.sendVerifyCode(email).subscribe({
+      next: () => {
+        this.sendingCode = false;
+        this.codeSended = true;
+        this.startCooldown(30);
+
+
+        this.toastr.success('Đã gửi mã xác thực. Vui lòng kiểm tra email.');
+      },
+      error: (err) => {
+        this.sendingCode = false;
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Gửi mã thất bại',
+          text: err?.error?.message || 'Vui lòng thử lại sau.',
+          confirmButtonText: 'Đóng',
+          customClass: { confirmButton: 'swal-confirm-btn' }
+        });
+      }
+    });
+  }
+
+  startCooldown(seconds: number) {
+    this.codeCooldown = seconds;
+    this.codeTimerSub?.unsubscribe();
+    this.codeTimerSub = interval(1000).subscribe(() => {
+      this.codeCooldown--;
+      if (this.codeCooldown <= 0) this.codeTimerSub?.unsubscribe();
+    });
+  }
+
   calculateTotal() {
     const adultsArray = this.adultsFormArray;
     const childrenArray = this.childrenFormArray;
 
-    const adultPrice = this.tourSchedule?.price;
+    const adultPrice = this.tourSchedule?.finalPrice;
     const childrenPrice = this.childrenPrice;
     const toddlersPrice = this.toddlersPrice;
-    const infantsPrice = this.tourSchedule?.price! * 0.5;
+    const infantsPrice = this.tourSchedule?.finalPrice! * 0.5;
 
     const adultTotal = adultsArray.controls.length * adultPrice!;
     const childrenTotal = childrenArray.controls.length * childrenPrice;
@@ -148,8 +226,9 @@ export class TourBookingComponent implements OnInit {
 
     const extra = this.numberSingleRooms * this.tourSchedule?.extraHotelCost!;
 
-    this.total =
-      adultTotal + childrenTotal + extra + infantsTotal + toddlersTotal;
+    const subtotal = adultTotal + childrenTotal + extra + infantsTotal + toddlersTotal;
+    const final = Math.max(0, subtotal - (this.voucherDiscount || 0));
+    this.total = final;
 
     this.bookingForm.patchValue({ total: this.total }, { emitEvent: false });
   }
@@ -264,6 +343,92 @@ export class TourBookingComponent implements OnInit {
     });
   }
 
+  // ====== Voucher popup handlers ======
+  openVoucherModal() {                    // CHANGE
+    this.showVoucherModal = true;
+
+    // userId có trong userInformation (sau getUserData) hoặc lấy nhanh từ currentUserService
+    const uid = this.userInformation?.id || this.currentUserService.getCurrentUser()?.id;
+    if (!uid) return;
+
+    this.voucherService.getUserVouchers(uid).subscribe({
+      next: (list) => (this.userVouchers = Array.isArray(list) ? list : []),
+      error: () => (this.userVouchers = []),
+    });
+  }
+
+  closeVoucherModal() {                   // CHANGE
+    this.showVoucherModal = false;
+    this.voucherInput = (this.voucherInput || '').trim();
+  }
+
+  /** Voucher còn hiệu lực? */
+isVoucherActive(v: any): boolean {
+  if (!v) return false;
+  const now = new Date();
+  const fromOk = !v.validFrom || now >= new Date(v.validFrom);
+  const toOk   = !v.validTo   || now <= new Date(v.validTo);
+
+  // Nếu backend không trả status, coi như dùng được
+  const notUsed = v.status ? String(v.status).toUpperCase() !== 'USED' : true;
+  const active  = v.voucherStatus ? String(v.voucherStatus).toUpperCase() === 'ACTIVE' : true;
+
+  return fromOk && toOk && notUsed && active;
+}
+
+
+/** Bấm nút Dùng trong danh sách mã */
+applyVoucherDirect(v: any): void {
+  if (!this.isVoucherActive(v)) { return; }
+
+  // API getUserVouchers trả id (id của userVoucher), code, discountAmount...
+  this.bookingForm.patchValue({ userVoucherId: v?.id ?? null });
+
+  this.appliedVoucherCode = v?.code ?? null;
+  this.voucherDiscount = Number(v?.discountAmount) || 0;
+
+  this.calculateTotal();
+  this.toastr.success('Áp dụng mã thành công!');
+  this.showVoucherModal = false;
+}
+
+  applyVoucher() {                        // CHANGE
+    const code = (this.voucherInput || '').trim();
+    if (!code) return;
+
+    // Tìm code trong danh sách voucher của user
+    // API mẫu trả mỗi item: { id, voucherId, code, discountAmount, ... }
+    const found = this.userVouchers.find(
+      v => String(v.code || '').toLowerCase() === code.toLowerCase()
+    );
+
+    if (!found) {
+      // Không có voucher trùng
+      this.toastr.error('Mã không tồn tại trong danh sách mã của bạn.');
+      return;
+    }
+
+    // Gắn vào form: userVoucherId + số tiền giảm
+    this.bookingForm.patchValue({ userVoucherId: found.id }); // id của userVoucher
+    this.appliedVoucherCode = found.code;
+    this.voucherDiscount = Number(found.discountAmount) || 0;
+
+    // Tính lại tổng (trừ tiền)
+    this.calculateTotal();
+
+    this.toastr.success('Áp dụng mã thành công!');
+    this.showVoucherModal = false;
+  }
+
+  // Cho phép xóa mã 
+  clearVoucher() {                       
+    this.bookingForm.patchValue({ userVoucherId: null });
+    this.appliedVoucherCode = null;
+    this.voucherDiscount = 0;
+    this.calculateTotal();
+  }
+
+
   addAdults(count: number): void {
     const adultsArray = this.adultsFormArray;
     for (let i = 0; i < count; i++) {
@@ -330,8 +495,21 @@ export class TourBookingComponent implements OnInit {
         this.tourSchedule = this.tourDetails?.schedules?.find(
           (schedule: any) => schedule.id === this.scheduleId
         );
-        this.childrenPrice = this.tourSchedule?.price! * 0.75;
-        this.infantsPrice = this.tourSchedule?.price! * 0.5;
+        const base = Number(this.tourSchedule?.price) || 0;
+        const discount = Number(this.tourSchedule?.discountPercent) || 0;
+        const finalPrice = discount > 0
+          ? Math.round((base * (100 - discount)) / 100)
+          : base;
+
+        // Gắn vào schedule để dùng mọi nơi
+        this.tourSchedule = {
+          ...this.tourSchedule,
+          finalPrice,
+          hasDiscount: discount > 0,
+        };
+
+        this.childrenPrice = this.tourSchedule?.finalPrice! * 0.75;
+        this.infantsPrice = this.tourSchedule?.finalPrice! * 0.5;
 
         this.calculateTotal();
 
@@ -340,12 +518,13 @@ export class TourBookingComponent implements OnInit {
           scheduleId: this.tourSchedule?.id,
           sellingPrice: this.tourSchedule?.price,
           extraHotelCost: this.tourSchedule?.extraHotelCost,
+          tourName: this.tourDetails?.name,
         });
 
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Failed to load tour details:', error);
+        console.error('Lỗi khi tải chi tiết tour:', error);
         this.isLoading = false;
       },
     });
@@ -353,7 +532,7 @@ export class TourBookingComponent implements OnInit {
 
   getUserData() {
     this.customerService
-      .getUserProfile(this.currentUserService.getCurrentUser().username)
+      .getUserBasic(this.currentUserService.getCurrentUser().username)
       .subscribe({
         next: (response) => {
           this.userInformation = response.data;
@@ -364,41 +543,106 @@ export class TourBookingComponent implements OnInit {
             phone: this.userInformation?.phone,
             address: this.userInformation?.address,
           });
+          this.loadUserVouchers(this.userInformation?.id);
         },
         error: (error) => {
-          console.error('Failed to load user data:', error);
+          console.error('Lỗi khi tải thông tin người dùng:', error);
           this.isLoading = false;
         },
       });
   }
+  loadUserVouchers(userId: number) {
+  if (!userId) return;
+  this.voucherService.getUserVouchers(userId).subscribe({
+    next: (list) => {
+      this.userVouchers = list ?? [];
+      // console.log('userVouchers:', this.userVouchers);
+    },
+    error: () => this.userVouchers = []
+  });
+}
+
 
   onSubmit() {
-    if (this.bookingForm.valid) {
-      const formData = this.bookingForm.value;
-
-      console.log('Form Data:', formData);
-
-      this.isLoading = true;
-
-      this.bookingInforService.submitBooking(formData).subscribe({
-        next: (response) => {
-          this.router.navigate(['/tour-booking-detail', response.data]);
-        },
-        error: (error) => {
-          console.error('Booking Failed:', error);
-          this.warningMessage = 'Failed to create booking. Please try again.';
-          this.triggerWarning();
-        },
+    if (this.bookingForm.invalid) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Thiếu thông tin',
+        text: 'Vui lòng điền đầy đủ thông tin.',
+        confirmButtonText: 'OK',
+        customClass: { confirmButton: 'swal-confirm-btn' }
       });
-    } else {
-      console.log('Form Submitted:', this.bookingForm.value);
-      this.warningMessage = 'Please fill in all required fields';
-      this.triggerWarning();
       this.bookingForm.markAllAsTouched();
+      return;
     }
+
+    if (!this.codeSended) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Cần xác thực email',
+        text: 'Vui lòng bấm "Gửi mã" để nhận mã xác thực trước khi đặt.',
+        confirmButtonText: 'OK',
+        customClass: { confirmButton: 'swal-confirm-btn' }
+      });
+      return;
+    }
+    const vCtrl = this.bookingForm.get('verificationCode');
+    if (vCtrl?.invalid) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Mã xác thực không hợp lệ',
+        text: 'Mã phải gồm 6 chữ số.',
+        confirmButtonText: 'OK',
+        customClass: { confirmButton: 'swal-confirm-btn' }
+      });
+      vCtrl?.markAsTouched();
+      return;
+    }
+
+    const formData = this.bookingForm.value; // có cả verificationCode       
+    this.isLoading = true;
+
+    this.bookingInforService.submitBooking(formData).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        Swal.fire({
+          icon: 'success',
+          title: 'Đặt tour thành công!',
+          text: 'Chúng tôi đã ghi nhận yêu cầu của bạn.',
+          confirmButtonText: 'Xem chi tiết',
+          allowOutsideClick: false,
+          customClass: { confirmButton: 'swal-confirm-btn' }
+        }).then(res => {
+          if (res.isConfirmed) {
+            this.router.navigate(['/tour-booking-detail', response.data]);
+          }
+        });
+      },
+      error: (error: HttpErrorResponse) => {
+        this.isLoading = false;
+        if (error.status === 400 && (String(error.error?.message || '')).toLowerCase().includes('verification')) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi xác thực',
+            text: 'Mã xác thực không đúng hoặc đã hết hạn. Vui lòng kiểm tra lại email hoặc bấm "Gửi mã" để nhận mã mới.',
+            confirmButtonText: 'OK',
+            customClass: { confirmButton: 'swal-confirm-btn' }
+          });
+          return;
+        }
+        Swal.fire({
+          icon: 'error',
+          title: 'Đặt tour thất bại',
+          text: error?.error?.message || 'Vui lòng thử lại sau.',
+          confirmButtonText: 'Đóng',
+          customClass: { confirmButton: 'swal-confirm-btn' }
+        });
+      }
+    });
   }
 
-  increamentSingleRooms() {
+
+  incrementSingleRooms() {
     if (this.numberSingleRooms < this.numberAdults) {
       this.numberSingleRooms++;
       this.bookingForm.patchValue({
@@ -421,12 +665,12 @@ export class TourBookingComponent implements OnInit {
     });
   }
 
-  incrementAldults() {
+  incrementAdults() {
     if (
       this.numberAdults +
-        this.numberChildren +
-        this.numberInfants +
-        this.numberToddlers <
+      this.numberChildren +
+      this.numberInfants +
+      this.numberToddlers <
       this.tourSchedule?.availableSeats!
     ) {
       this.numberAdults++;
@@ -437,14 +681,31 @@ export class TourBookingComponent implements OnInit {
       this.calculateTotal();
     } else {
       this.warningMessage =
-        'Sorry, the current tour has only ' +
+        'Xin lỗi, tour hiện tại chỉ còn ' +
         this.tourSchedule?.availableSeats +
-        ' seats left.';
+        ' chỗ.';
       this.triggerWarning();
     }
   }
 
-  decrementAldults() {
+  get availableSeats(): number {
+    const totalSeats = this.tourSchedule?.availableSeats ?? 0;
+    return Math.max(0, totalSeats - this.getTotalGuests());
+  }
+
+
+
+
+  getTotalGuests(): number {
+    return (
+      this.numberAdults +
+      this.numberChildren +
+      this.numberInfants +
+      this.numberToddlers
+    );
+  }
+
+  decrementAdults() {
     if (this.numberAdults > 1) {
       this.numberAdults--;
       this.adultsFormArray.removeAt(this.numberAdults); // Remove the last adult form group
@@ -463,9 +724,9 @@ export class TourBookingComponent implements OnInit {
   incrementChildren() {
     if (
       this.numberAdults +
-        this.numberChildren +
-        this.numberInfants +
-        this.numberToddlers <
+      this.numberChildren +
+      this.numberInfants +
+      this.numberToddlers <
       this.tourSchedule?.availableSeats!
     ) {
       this.numberChildren++;
@@ -473,9 +734,9 @@ export class TourBookingComponent implements OnInit {
       this.calculateTotal();
     } else {
       this.warningMessage =
-        'Sorry, the current tour has only ' +
+        'Xin lỗi, tour hiện tại chỉ còn ' +
         this.tourSchedule?.availableSeats +
-        ' seats left.';
+        ' chỗ.';
       this.triggerWarning();
     }
   }
@@ -491,9 +752,9 @@ export class TourBookingComponent implements OnInit {
   incrementInfants() {
     if (
       this.numberAdults +
-        this.numberChildren +
-        this.numberInfants +
-        this.numberToddlers <
+      this.numberChildren +
+      this.numberInfants +
+      this.numberToddlers <
       this.tourSchedule?.availableSeats!
     ) {
       this.numberInfants++;
@@ -501,9 +762,9 @@ export class TourBookingComponent implements OnInit {
       this.calculateTotal();
     } else {
       this.warningMessage =
-        'Sorry, the current tour has only ' +
+        'Xin lỗi, tour hiện tại chỉ còn ' +
         this.tourSchedule?.availableSeats +
-        ' seats left.';
+        ' chỗ.';
       this.triggerWarning();
     }
   }
@@ -519,9 +780,9 @@ export class TourBookingComponent implements OnInit {
   incrementToddlers() {
     if (
       this.numberAdults +
-        this.numberChildren +
-        this.numberInfants +
-        this.numberToddlers <
+      this.numberChildren +
+      this.numberInfants +
+      this.numberToddlers <
       this.tourSchedule?.availableSeats!
     ) {
       this.numberToddlers++;
@@ -529,9 +790,9 @@ export class TourBookingComponent implements OnInit {
       this.calculateTotal();
     } else {
       this.warningMessage =
-        'Sorry, the current tour has only ' +
+        'Xin lỗi, tour hiện tại chỉ còn ' +
         this.tourSchedule?.availableSeats +
-        ' seats left.';
+        ' chỗ.';
       this.triggerWarning();
     }
   }

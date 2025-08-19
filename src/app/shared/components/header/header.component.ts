@@ -12,7 +12,11 @@ declare const window: any;
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ChatComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    RouterModule, 
+    ChatComponent],
   templateUrl: './header.component.html',
 })
 export class HeaderComponent implements OnInit {
@@ -35,6 +39,7 @@ export class HeaderComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    console.log('HeaderComponent initialized with currentUser:', this.currentUser);
   }
 
   onLogin() {
@@ -51,6 +56,9 @@ export class HeaderComponent implements OnInit {
     this.currentUserService.clearCurrentUser();
     this.router.navigate(['/homepage']);
   }
+
+
+  
 
   toggleDropdown() {
     this.showDropdown = !this.showDropdown;

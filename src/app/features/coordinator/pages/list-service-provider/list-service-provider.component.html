@@ -1,0 +1,115 @@
+<!--
+  FILE: src/app/features/coordinator/pages/list-service-provider/list-service-provider.component.html
+  MÔ TẢ: Giao diện đã được chuyển đổi hoàn toàn sang sử dụng các component của NG-ZORRO.
+-->
+
+<!-- 1. Breadcrumb: Cung cấp ngữ cảnh điều hướng cho người dùng -->
+<nz-breadcrumb>
+  <nz-breadcrumb-item>Điều phối viên</nz-breadcrumb-item>
+  <nz-breadcrumb-item>Quản lý Nhà cung cấp</nz-breadcrumb-item>
+</nz-breadcrumb>
+
+<!-- 2. Page Header: Tiêu đề trang, thông tin tóm tắt và nút hành động chính -->
+<nz-page-header class="site-page-header" nzTitle="Quản lý Nhà cung cấp"
+  [nzSubtitle]="totalItems > 0 ? 'Có tổng cộng ' + totalItems + ' nhà cung cấp' : ''">
+  <!-- Nút hành động chính -->
+  <nz-page-header-extra>
+    <button nz-button nzType="primary" routerLink="create">
+      <span nz-icon nzType="plus"></span>
+      Thêm Nhà cung cấp
+    </button>
+  </nz-page-header-extra>
+</nz-page-header>
+
+<!-- 3. Vùng chứa bộ lọc và bảng, được đặt trong một card để có giao diện gọn gàng -->
+<div class="p-6 bg-white rounded-lg shadow-md">
+  <!-- Form chứa các bộ lọc -->
+  <form nz-form [formGroup]="filterForm" class="mb-6">
+    <div nz-row [nzGutter]="24">
+      <!-- Bộ lọc theo Keyword -->
+      <div nz-col [nzSpan]="12">
+        <nz-form-item>
+          <nz-form-label>Tìm kiếm</nz-form-label>
+          <nz-form-control>
+            <nz-input-group nzPrefixIcon="search">
+              <input nz-input formControlName="keyword" placeholder="Tìm theo tên nhà cung cấp..." />
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <!-- Bộ lọc theo Trạng thái -->
+      <div nz-col [nzSpan]="12">
+        <nz-form-item>
+          <nz-form-label>Trạng thái</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="isDeleted" nzAllowClear nzPlaceHolder="Chọn trạng thái">
+              <nz-option [nzValue]="false" nzLabel="Đang hoạt động"></nz-option>
+              <nz-option [nzValue]="true" nzLabel="Ngưng hoạt động"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </div>
+  </form>
+
+  <!-- 4. Bảng hiển thị dữ liệu -->
+  <nz-table #basicTable [nzData]="partners" [nzLoading]="isLoading" [nzTotal]="totalItems"
+    [(nzPageIndex)]="currentPage" [(nzPageSize)]="pageSize" (nzPageIndexChange)="loadPartners()"
+    (nzPageSizeChange)="loadPartners(true)" nzShowSizeChanger [nzFrontPagination]="false" nzBordered>
+    <thead>
+      <tr>
+        <th nzWidth="30%">Tên nhà cung cấp</th>
+        <th>Email</th>
+        <th>Điện thoại</th>
+        <th nzWidth="15%" class="text-center">Trạng thái</th>
+        <th nzWidth="10%" class="text-center">Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let partner of basicTable.data">
+        <td>{{ partner.name }}</td>
+        <td>{{ partner.contactEmail }}</td>
+        <td>{{ partner.contactPhone }}</td>
+        <td class="text-center">
+          <!-- Sử dụng nz-tag để hiển thị trạng thái một cách trực quan -->
+          <nz-tag [nzColor]="partner.deleted ? 'red' : 'green'">
+            {{ partner.deleted ? 'Ngưng hoạt động' : 'Hoạt động' }}
+          </nz-tag>
+        </td>
+        <td class="text-center">
+          <!-- Sử dụng nz-space để tạo khoảng cách giữa các nút -->
+          <nz-space>
+            <!-- Nút chỉnh sửa -->
+            <button nz-button nz-tooltip="Chỉnh sửa" nzType="default" nzShape="circle" (click)="editPartner(partner.id)">
+              <span nz-icon nzType="edit"></span>
+            </button>
+            <!-- Nút thay đổi trạng thái với Popconfirm -->
+            <button nz-button nz-tooltip="{{ partner.deleted ? 'Kích hoạt lại' : 'Vô hiệu hóa' }}"
+              nzType="default" nzShape="circle"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'Bạn chắc chắn muốn ' + (partner.deleted ? 'kích hoạt' : 'vô hiệu hóa') + ' nhà cung cấp này?'"
+              (nzOnConfirm)="toggleStatus(partner)"
+              [nzPopconfirmPlacement]="'topRight'">
+              <span nz-icon [nzType]="partner.deleted ? 'check-circle' : 'stop'" [nzTheme]="'outline'"></span>
+            </button>
+          </nz-space>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+
+  <!--
+    [SỬA LỖI] Giao diện khi không có dữ liệu hoặc có lỗi.
+    - Xóa binding [nzContent].
+    - Đặt nội dung trực tiếp bên trong thẻ <nz-empty>.
+    - Sử dụng *ngIf để hiển thị thông báo lỗi hoặc thông báo không có dữ liệu.
+  -->
+  <nz-empty *ngIf="!isLoading && (partners.length === 0 || errorMessage)">
+    <ng-container *ngIf="errorMessage; else noDataTpl">
+      <p class="text-red-500">{{ errorMessage }}</p>
+    </ng-container>
+    <ng-template #noDataTpl>
+      <span>Không có nhà cung cấp nào.</span>
+    </ng-template>
+  </nz-empty>
+</div>

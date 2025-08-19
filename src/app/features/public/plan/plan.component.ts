@@ -10,7 +10,6 @@ import {
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { GeminiService } from './gemini.service';
-import { ImageSearchService } from './plan-detail/imge.service';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 import { UserStorageService } from '../../../core/services/user-storage/user-storage.service';
 import { PlanService } from '../services/plan.service';
@@ -47,7 +46,6 @@ export class PlanComponent {
     private userStorageService: UserStorageService,
     private route: Router,
     private geminiService: GeminiService,
-    private imageSearchService: ImageSearchService
   ) {
     this.generatePlanForm = this.fb.group({
       userId: ['', [Validators.required]],
@@ -73,14 +71,15 @@ export class PlanComponent {
   }
 
   addInterest() {
-    this.otherInterest = this.addInterestForm.value.interest;
+    this.otherInterest = this.addInterestForm.value.interest.trim();
+    this.closeInterestModal();
   }
 
   addDay(dayNumber: number, location: any) {
     const dayGroup = this.fb.group({
       dayNumber: [dayNumber],
       locationId: [location.id],
-      locationName: [location.name],
+      locationName: [location.name]
     });
 
     // Nếu ngày đó đã tồn tại → cập nhật
@@ -160,6 +159,7 @@ export class PlanComponent {
         (response) => {
           console.log(response);
           this.isGenerating = false;
+          this.route.navigate(['/plan-preview', response.data.id]);
         },
         (error) => {
           console.error('Error generating plan:', error);
@@ -168,34 +168,6 @@ export class PlanComponent {
     } else {
       console.log('Form is invalid:', this.generatePlanForm.value);
     }
-  }
-
-  async loadImagesForActivities(): Promise<void> {
-    this.isGenerating = true;
-    const imageFetchTasks: Promise<void>[] = [];
-
-    this.response.plan.days.forEach((day: any) => {
-      day.activities.forEach((activity: any) => {
-        const task = this.imageSearchService
-          .getImageUrl(activity.title)
-          .toPromise()
-          .then((res) => {
-            activity.imageUrl =
-              res.images_results?.[0]?.thumbnail ||
-              'https://statics.vinpearl.com/pho-co-ha-noi-10_1687918089.jpg';
-          })
-          .catch((err) => {
-            console.error(`Error fetching image for ${activity.title}:`, err);
-            activity.imageUrl =
-              'https://statics.vinpearl.com/pho-co-ha-noi-10_1687918089.jpg';
-          });
-
-        imageFetchTasks.push(task);
-      });
-    });
-
-    await Promise.all(imageFetchTasks);
-    this.isGenerating = false;
   }
 
   selectTrip(trip: any) {
@@ -238,7 +210,7 @@ export class PlanComponent {
 
   isSelected(interest: string): boolean {
     return (
-      this.selectedInterests.includes(interest) || this.otherInterest != ''
+      this.selectedInterests.includes(interest) 
     );
   }
 
@@ -325,6 +297,16 @@ export class PlanComponent {
     if (this.currentStep < this.steps.length - 1) {
       this.currentStep++;
     }
+  }
+
+  closeInterestModal() {
+    const modal = document.getElementById('interestModal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  openInterestModal() {
+    const modal = document.getElementById('interestModal');
+    if (modal) modal.classList.remove('hidden');
   }
 
   goToStep(index: number) {

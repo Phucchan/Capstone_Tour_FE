@@ -1,25 +1,31 @@
-<div *ngIf="totalPages > 1" class="flex justify-center items-center gap-2 mt-8 text-sm">
-  <button 
-    (click)="previous()" 
+<div *ngIf="totalPages > 1" class="flex justify-center items-center gap-2 mt-8 text-sm" role="navigation" aria-label="Pagination">
+  <button
+    type="button"
+    (click)="previous()"
     [disabled]="currentPage === 0"
-    class="px-3 py-1 border rounded disabled:opacity-50 hover:bg-blue-50">
+    class="px-3 py-1 border rounded disabled:opacity-50 hover:bg-blue-50"
+    aria-label="Trang trước">
     « Trước
   </button>
 
-  <button 
-    *ngFor="let p of visiblePages"
-    [disabled]="p === '...'" 
+  <button
+    type="button"
+    *ngFor="let p of visiblePages; trackBy: track"
+    [disabled]="p === '...'"
     (click)="changePage(p)"
-    [class.bg-blue-600]="p === currentPage + 1"
-    [class.text-white]="p === currentPage + 1"
+    [class.bg-blue-600]="p !== '...' && p === currentPage + 1"
+    [class.text-white]="p !== '...' && p === currentPage + 1"
+    [attr.aria-current]="p !== '...' && p === currentPage + 1 ? 'page' : null"
     class="px-3 py-1 border rounded hover:bg-blue-100">
     {{ p }}
   </button>
 
-  <button 
-    (click)="next()" 
+  <button
+    type="button"
+    (click)="next()"
     [disabled]="currentPage + 1 >= totalPages"
-    class="px-3 py-1 border rounded disabled:opacity-50 hover:bg-blue-50">
+    class="px-3 py-1 border rounded disabled:opacity-50 hover:bg-blue-50"
+    aria-label="Trang sau">
     Sau »
   </button>
 </div>

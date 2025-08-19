@@ -1,52 +1,118 @@
-<div class="bg-white rounded-2xl border border-gray-200 p-8 shadow-xl w-full max-w-3xl mx-auto">
-  <div class="text-2xl font-bold text-blue-800 mb-2 text-center">TÀI KHOẢN CỦA BẠN</div>
-  <div class="font-semibold mb-1">Thông Tin Cá Nhân</div>
-  <div class="text-gray-500 text-sm mb-6">
-    Cập Nhật Thông Tin Của Quý Khách Và Tìm Hiểu Các Thông Tin Này Được Sử Dụng Ra Sao
+<div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-md w-full max-w-4xl mx-auto text-sm">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-bold text-blue-700">Thông tin cá nhân</h2>
+    <button (click)="toggleEditMode()" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+      {{ isEditMode ? 'Huỷ' : '✏️ Chỉnh sửa' }}
+    </button>
   </div>
-  <form (ngSubmit)="onSave()" class="grid grid-cols-2 gap-6">
+
+  <form *ngIf="isEditMode; else viewMode" [formGroup]="profileForm" (ngSubmit)="onSave()" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 w-[500px]">
+    <!-- Họ và tên -->
     <div>
-      <label class="block mb-1">Họ và tên</label>
-      <input type="text" class="form-input" [(ngModel)]="editableUser.fullName" name="fullName" />
+      <label class="block text-gray-500 mb-1">Họ và tên</label>
+      <input type="text" formControlName="fullName" class="text-sm text-gray-900 border border-gray-300 rounded-md px-3 py-2 w-full min-h-[38px]" />
+      <div *ngIf="profileForm.get('fullName')?.touched && profileForm.get('fullName')?.invalid" class="text-red-500 text-sm mt-1">
+        <div *ngIf="profileForm.get('fullName')?.errors?.['required']">Họ tên không được để trống</div>
+        <div *ngIf="profileForm.get('fullName')?.errors?.['pattern']">Chỉ được chứa chữ cái và dấu cách</div>
+      </div>
     </div>
+
+    <!-- Giới tính -->
     <div>
-      <label class="block mb-1">Giới tính</label>
-      <select class="form-input" [(ngModel)]="editableUser.gender" name="gender">
+      <label class="block text-gray-500 mb-1">Giới tính</label>
+      <select formControlName="gender" class="text-sm text-gray-900 border border-gray-300 rounded-md px-3 py-2 w-full min-h-[38px]">
+        <option value="">-- Chọn --</option>
         <option value="MALE">Nam</option>
         <option value="FEMALE">Nữ</option>
         <option value="OTHER">Khác</option>
       </select>
+      <div *ngIf="profileForm.get('gender')?.touched && profileForm.get('gender')?.invalid" class="text-red-500 text-sm mt-1">
+        Vui lòng chọn giới tính
+      </div>
     </div>
+
+    <!-- Email -->
     <div>
-      <label class="block mb-1">E-mail</label>
-      <input type="email" class="form-input" [(ngModel)]="editableUser.email" name="email" />
+      <label class="block text-gray-500 mb-1">Email</label>
+      <input type="email" formControlName="email" class="text-sm text-gray-900 border border-gray-300 rounded-md px-3 py-2 w-full min-h-[38px]" />
+      <div *ngIf="profileForm.get('email')?.touched && profileForm.get('email')?.invalid" class="text-red-500 text-sm mt-1">
+        <div *ngIf="profileForm.get('email')?.errors?.['required']">Email không được để trống</div>
+        <div *ngIf="profileForm.get('email')?.errors?.['email']">Email không hợp lệ</div>
+      </div>
     </div>
+
+    <!-- Số điện thoại -->
     <div>
-      <label class="block mb-1">Tổng số tour đã đi</label>
-      <input type="number" class="form-input " [value]="currentUser?.totalToursBooked" disabled readonly />
+      <label class="block text-gray-500 mb-1">Số điện thoại</label>
+      <input type="tel" maxlength="10" formControlName="phone" class="text-sm text-gray-900 border border-gray-300 rounded-md px-3 py-2 w-full min-h-[38px]" />
+      <div *ngIf="profileForm.get('phone')?.touched && profileForm.get('phone')?.invalid" class="text-red-500 text-sm mt-1">
+        <div *ngIf="profileForm.get('phone')?.errors?.['required']"> Số điện thoại không hợp lệ (bắt đầu bằng 0 và gồm 10 số).</div>
+      </div>
     </div>
+
+    <!-- Ngày sinh -->
     <div>
-      <label class="block mb-1">Số điện thoại</label>
-      <input type="text" class="form-input" [(ngModel)]="editableUser.phone" name="phone" />
-    </div>
+  <label class="block text-gray-500 mb-1">Ngày sinh</label>
+  <input 
+    type="date" 
+    formControlName="dateOfBirth" 
+    max="{{ today }}"
+    class="text-sm text-gray-900 border border-gray-300 rounded-md px-3 py-2 w-full min-h-[38px]" 
+  />
+</div>
+
+    <!-- Địa chỉ -->
     <div>
-      <label class="block mb-1">Ngày sinh</label>
-      <input type="date" class="form-input" [(ngModel)]="editableUser.dateOfBirth" name="dateOfBirth" />
-      <!-- Nếu muốn chỉ hiển thị ngày (readonly) -->
-      <!-- <input type="text" class="form-input" [value]="user?.dateOfBirth | birthDate" readonly disabled /> -->
+      <label class="block text-gray-500 mb-1">Địa chỉ</label>
+      <input type="text" formControlName="address" class="text-sm text-gray-900 border border-gray-300 rounded-md px-3 py-2 w-full min-h-[38px]" />
+      <div *ngIf="profileForm.get('address')?.touched && profileForm.get('address')?.invalid" class="text-red-500 text-sm mt-1">
+        Địa chỉ không được để trống
+      </div>
     </div>
-    <div>
-      <label class="block mb-1">Địa chỉ</label>
-      <input type="text" class="form-input" [(ngModel)]="editableUser.address" name="address" />
-    </div>
-    <div>
-      <label class="block mb-1">Số điểm hiện có</label>
-      <input type="number" class="form-input" [value]="currentUser?.points" disabled readonly />
-    </div>
-    <div class="col-span-2 text-right mt-4">
+
+    <!-- Nút lưu -->
+    <div class="col-span-2 text-right mt-2">
       <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
         Lưu thay đổi
       </button>
     </div>
   </form>
+
+  <!-- Chế độ xem -->
+  <ng-template #viewMode>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 w-[500px]">
+      <div>
+        <label class="block text-gray-500 mb-1">Họ và tên</label>
+        <p class="text-sm text-gray-900 border border-gray-300 rounded-md px-3 py-2 w-full min-h-[38px]">{{ currentUser?.fullName }}</p>
+      </div>
+      <div>
+        <label class="block text-gray-500 mb-1">Giới tính</label>
+        <p class="text-sm text-gray-900 border border-gray-300 rounded-md px-3 py-2 w-full min-h-[38px]">{{ currentUser?.gender === 'MALE' ? 'Nam' : currentUser?.gender === 'FEMALE' ? 'Nữ' : 'Khác' }}</p>
+      </div>
+      <div>
+        <label class="block text-gray-500 mb-1">Email</label>
+        <p class="text-sm text-gray-900 border border-gray-300 rounded-md px-3 py-2 w-full min-h-[38px]">{{ currentUser?.email }}</p>
+      </div>
+      <div>
+        <label class="block text-gray-500 mb-1">Số điện thoại</label>
+        <p class="text-sm text-gray-900 border border-gray-300 rounded-md px-3 py-2 w-full min-h-[38px]">{{ currentUser?.phone }}</p>
+      </div>
+      <div>
+        <label class="block text-gray-500 mb-1">Ngày sinh</label>
+        <p class="text-sm text-gray-900 border border-gray-300 rounded-md px-3 py-2 w-full min-h-[38px]">{{ currentUser?.dateOfBirth ?? null | birthDate }}</p>
+      </div>
+      <div>
+        <label class="block text-gray-500 mb-1">Địa chỉ</label>
+        <p class="text-sm text-gray-900 border border-gray-300 rounded-md px-3 py-2 w-full min-h-[38px]">{{ currentUser?.address }}</p>
+      </div>
+      <div>
+        <label class="block text-gray-500 mb-1">Tổng số tour đã đi</label>
+        <p class="text-sm text-gray-900 border border-gray-300 rounded-md px-3 py-2 w-full min-h-[38px]">{{ currentUser?.totalToursBooked }}</p>
+      </div>
+      <div>
+        <label class="block text-gray-500 mb-1">Điểm hiện có</label>
+        <p class="text-sm text-gray-900 border border-gray-300 rounded-md px-3 py-2 w-full min-h-[38px]">{{ currentUser?.points }}</p>
+      </div>
+    </div>
+  </ng-template>
 </div>

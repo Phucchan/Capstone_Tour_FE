@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   Observable,
   Subject,
@@ -8,32 +8,73 @@ import {
   debounceTime,
   startWith,
   combineLatest,
+  BehaviorSubject,
 } from 'rxjs';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 
+// Core Services & Models
 import { TourService } from '../../../../core/services/tour.service';
-import { TourListItem, PagingDTO } from '../../../../core/models/tour.model';
-import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { TourListItem } from '../../../../core/models/tour.model';
+import { Paging } from '../../../../core/models/paging.model';
+
+// NG-ZORRO Imports
+import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
+import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzAvatarModule } from 'ng-zorro-antd/avatar';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzDividerModule } from 'ng-zorro-antd/divider';
 
 @Component({
   selector: 'app-tour-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, PaginationComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    // --- NG-ZORRO ---
+    NzTableModule,
+    NzFormModule,
+    NzInputModule,
+    NzSelectModule,
+    NzButtonModule,
+    NzPageHeaderModule,
+    NzGridModule,
+    NzCardModule,
+    NzTagModule,
+    NzIconModule,
+    NzAvatarModule,
+    NzDropDownModule,
+    NzDividerModule,
+  ],
   templateUrl: './tour-list.component.html',
-  styleUrls: ['./tour-list.component.css'],
 })
 export class TourListComponent implements OnInit {
+  // --- Injections ---
   private tourService = inject(TourService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
 
-  public toursResponse$!: Observable<PagingDTO<TourListItem>>;
-  public filterForm!: FormGroup;
-  private page$ = new Subject<number>();
-  private readonly DEFAULT_PAGE_SIZE = 10;
+  // --- State ---
+  tours: TourListItem[] = [];
+  isLoading = true;
+  totalRecords = 0;
+  pageSize = 10;
+  pageIndex = 1;
 
-  public tourTypes = ['FIXED', 'CUSTOM']; // Lấy từ Enum backend
-  public tourStatuses = ['DRAFT', 'PUBLISHED', 'CANCELLED']; // Lấy từ Enum backend
+  filterForm!: FormGroup;
+  private searchTrigger$ = new BehaviorSubject<void>(undefined);
+
+  // --- Data for Filters ---
+  tourTypes = ['FIXED', 'CUSTOM'];
+  tourStatuses = ['DRAFT', 'PUBLISHED', 'CANCELLED'];
 
   ngOnInit(): void {
     this.filterForm = this.fb.group({
@@ -42,36 +83,52 @@ export class TourListComponent implements OnInit {
       tourStatus: [null],
     });
 
-    const page$ = this.page$.pipe(startWith(0));
+    this.filterForm.valueChanges.pipe(debounceTime(500)).subscribe(() => {
+      this.pageIndex = 1;
+      this.searchTrigger$.next();
+    });
 
-    const filters$ = this.filterForm.valueChanges.pipe(
-      startWith(this.filterForm.value),
-      debounceTime(300)
-    );
-
-    this.toursResponse$ = combineLatest([filters$, page$]).pipe(
-      switchMap(([filters, page]) => {
-        const params = {
-          page,
-          size: this.DEFAULT_PAGE_SIZE,
-          ...filters,
-        };
-        return this.tourService.getTours(params);
-      })
-    );
+    this.searchTrigger$
+      .pipe(
+        switchMap(() => {
+          this.isLoading = true;
+          const params = {
+            page: this.pageIndex - 1,
+            size: this.pageSize,
+            ...this.filterForm.value,
+          };
+          return this.tourService.getTours(params);
+        })
+      )
+      .subscribe((response) => {
+        this.tours = response.items;
+        this.totalRecords = response.total;
+        this.isLoading = false;
+      });
   }
 
-  onPageChange(page: number): void {
-    this.page$.next(page);
+  onQueryParamsChange(params: NzTableQueryParams): void {
+    const { pageSize, pageIndex } = params;
+    this.pageSize = pageSize;
+    this.pageIndex = pageIndex;
+    this.searchTrigger$.next();
   }
 
   navigateToCreateTour(): void {
+    // FIX: Corrected navigation path
     this.router.navigate(['/business/tours/new']);
   }
-  viewTourDetails(tourId: number): void {
-    this.router.navigate(['/business/tours', tourId]);
-  }
-  calculateTourPrice(tourId: number): void {
-    /* Sẽ làm sau */
+
+  getStatusColor(status: string): string {
+    switch (status) {
+      case 'PUBLISHED':
+        return 'green';
+      case 'DRAFT':
+        return 'blue';
+      case 'CANCELLED':
+        return 'red';
+      default:
+        return 'default';
+    }
   }
 }

@@ -1,7 +1,7 @@
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
-
+import { provideToastr } from 'ngx-toastr';
 import { routes } from './app.routes';
 import {
   provideClientHydration,
@@ -14,6 +14,89 @@ import {
 } from '@angular/common/http';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { provideAngularSvgIcon } from 'angular-svg-icon';
+import { registerLocaleData } from '@angular/common';
+import vi from '@angular/common/locales/vi';
+import { vi_VN, provideNzI18n } from 'ng-zorro-antd/i18n';
+import { provideNzIcons } from 'ng-zorro-antd/icon';
+import { importProvidersFrom } from '@angular/core';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzMessageModule } from 'ng-zorro-antd/message';
+
+import {
+  DashboardOutline,
+  DollarCircleOutline,
+  FileDoneOutline,
+  UserAddOutline,
+  SearchOutline,
+  PlusCircleOutline,
+  LockOutline,
+  UnlockOutline,
+  UserOutline,
+  TeamOutline,
+  LogoutOutline,
+  MenuFoldOutline,
+  MenuUnfoldOutline,
+  PlusOutline,
+  EditOutline,
+  DeleteOutline,
+  EyeOutline,
+  HomeOutline,
+  UnorderedListOutline,
+  SettingOutline,
+  AppstoreOutline,
+  LeftOutline,
+  RightOutline,
+  DownOutline,
+  DollarCircleTwoTone,
+  FileTwoTone,
+  SaveOutline,
+  ScheduleOutline,
+  CalendarOutline,
+  EnvironmentOutline,
+  ArrowLeftOutline,
+  StopOutline,
+  MailOutline,
+  MinusCircleOutline,
+} from '@ant-design/icons-angular/icons';
+
+registerLocaleData(vi);
+
+const icons = [
+  DashboardOutline,
+  DollarCircleOutline,
+  FileDoneOutline,
+  UserAddOutline,
+  SearchOutline,
+  PlusCircleOutline,
+  LockOutline,
+  UnlockOutline,
+  UserOutline,
+  TeamOutline,
+  LogoutOutline,
+  MenuFoldOutline,
+  MenuUnfoldOutline,
+  PlusOutline,
+  EditOutline,
+  DeleteOutline,
+  EyeOutline,
+  HomeOutline,
+  UnorderedListOutline,
+  SettingOutline,
+  AppstoreOutline,
+  LeftOutline,
+  RightOutline,
+  DownOutline,
+  DollarCircleTwoTone,
+  FileTwoTone,
+  SaveOutline,
+  ScheduleOutline,
+  CalendarOutline,
+  EnvironmentOutline,
+  ArrowLeftOutline,
+  StopOutline,
+  MailOutline,
+  MinusCircleOutline,
+];
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,5 +107,15 @@ export const appConfig: ApplicationConfig = {
     provideAngularSvgIcon(),
     provideClientHydration(withEventReplay()),
     provideAnimations(),
+    provideToastr({
+      timeOut: 3000,
+      positionClass: 'toast-top-center',
+      preventDuplicates: true,
+    }),
+
+    provideNzI18n(vi_VN),
+    provideNzIcons(icons),
+    importProvidersFrom(NzModalModule),
+    importProvidersFrom(NzMessageModule),
   ],
 };

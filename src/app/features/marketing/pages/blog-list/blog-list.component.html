@@ -1,0 +1,81 @@
+<nz-card nzTitle="Quản Lý Blog" [nzExtra]="extraTemplate">
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="goToCreatePage()">
+      <i nz-icon nzType="plus"></i>Tạo bài viết mới
+    </button>
+  </ng-template>
+
+  <nz-table
+    #basicTable
+    [nzData]="blogPaging.items"
+    [nzFrontPagination]="false"
+    [nzLoading]="isLoading"
+    [nzTotal]="blogPaging.total"
+    [nzPageSize]="blogPaging.size"
+    [nzPageIndex]="blogPaging.page + 1"
+    (nzQueryParams)="onQueryParamsChange($event)"
+  >
+    <thead>
+      <tr>
+        <th nzWidth="40%">Tiêu đề</th>
+        <th>Tác giả</th>
+        <th>Tags</th>
+        <th>Trạng thái</th>
+        <th nzAlign="right">Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let blog of basicTable.data">
+        <td>
+          <div class="flex items-center">
+            <nz-avatar
+              nzShape="square"
+              [nzSize]="40"
+              [nzSrc]="blog.thumbnailImageUrl"
+              (error)="handleImageError($event)">
+            </nz-avatar>
+            <div class="ml-4">
+              <div class="font-medium text-gray-900" [title]="blog.title">
+                {{ blog.title }}
+              </div>
+              <div class="text-gray-500" [title]="blog.description">
+                {{ blog.description | slice:0:50 }}{{ blog.description.length > 50 ? '...' : '' }}
+              </div>
+            </div>
+          </div>
+        </td>
+        <td>{{ blog.authorName }}</td>
+        <td>
+          <ng-container *ngIf="blog.tags && blog.tags.length > 0; else noTags">
+            <nz-tag *ngFor="let tag of blog.tags" [nzColor]="'blue'">{{ tag }}</nz-tag>
+          </ng-container>
+          <ng-template #noTags>
+            <span>-</span>
+          </ng-template>
+        </td>
+        <td>
+          <nz-tag *ngIf="!blog.deleted" [nzColor]="'green'">Đã xuất bản</nz-tag>
+          <nz-tag *ngIf="blog.deleted" [nzColor]="'red'">Đã xóa</nz-tag>
+        </td>
+        <td nzAlign="right">
+          <button nz-button nzType="link" (click)="goToEditPage(blog.id)">Sửa</button>
+          <nz-divider nzType="vertical"></nz-divider>
+
+          <!-- SỬA LỖI: Sử dụng lại [disabled] cho button -->
+          <button
+            nz-button
+            nzType="link"
+            nzDanger
+            nz-popconfirm
+            nzPopconfirmTitle="Bạn có chắc chắn muốn xóa?"
+            nzPopconfirmPlacement="topRight"
+            (nzOnConfirm)="deleteBlog(blog.id)"
+            [disabled]="blog.deleted"
+          >
+            Xóa
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>

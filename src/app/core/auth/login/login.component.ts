@@ -12,12 +12,12 @@ import { catchError, of } from 'rxjs';
 import { UserStorageService } from '../../services/user-storage/user-storage.service';
 import { CommonModule } from '@angular/common';
 import { SsrService } from '../../services/ssr.service';
-import { SocketSerivce } from '../../services/socket/socket.service';
 import { environment } from '../../../../environments/environment';
 import { CurrentUserService } from '../../services/user-storage/current-user.service';
 
 @Component({
   selector: 'app-login',
+  standalone: true,
   imports: [ReactiveFormsModule, FormsModule, CommonModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
@@ -38,8 +38,6 @@ export class LoginComponent implements OnInit {
     maxLength: false,
   };
 
-  activeUsersSubcription: any;
-
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -48,7 +46,7 @@ export class LoginComponent implements OnInit {
     private ssrService: SsrService,
     private route: ActivatedRoute,
     private currentUserService: CurrentUserService
-  ) { }
+  ) {}
 
   ngOnInit() {
     const rememberedUsername = this.ssrService
@@ -60,7 +58,11 @@ export class LoginComponent implements OnInit {
       const token = params['token'];
       const email = params['email'];
       if (token) {
-        this.postLogin(token, { username: email, password: null });
+        this.postLogin(token, {
+          username: email,
+          password: null,
+          redirectUrl: params['redirectUrl'] || '/',
+        });
       }
     });
 
@@ -133,8 +135,8 @@ export class LoginComponent implements OnInit {
           return of(null);
         })
       )
-      .subscribe((user: any) => {
-        if (user) {
+      .subscribe((response: any) => {
+        if (response && response.data) {
           // Logic rememberMe
           const rememberMe = (
             document.getElementById('remember-me') as HTMLInputElement
@@ -146,35 +148,23 @@ export class LoginComponent implements OnInit {
           }
 
           // Điều hướng sau khi đăng nhập thành công
-          this.navigateAfterLogin(user);
+          this.navigateAfterLogin(response.data);
         }
       });
   }
 
-  navigateAfterLogin(user: any) {
-    this.userStorageService.saveUser(user);
-    this.currentUserService.setCurrentUser(user);
-    // Lấy roles trực tiếp từ đối tượng user vừa nhận được
-    const userRoles = user.roles?.map((roleObj: any) => roleObj.roleName) || [];
+  /**
+   * Hàm điều hướng sau khi đăng nhập thành công.
+   * Ưu tiên sử dụng `redirectUrl` từ API.
+   * @param loginData Dữ liệu trả về từ API, chứa user, token và redirectUrl
+   */
+  navigateAfterLogin(loginData: any) {
+    // AuthService đã lo việc lưu token và thông tin user
 
-    const roleRouteMap: { [key: string]: string } = {
-      CUSTOMER: 'customer',
-      ADMIN: 'admin',
-      BUSINESS_DEPARTMENT: 'business/tours', // <-- Đảm bảo điều hướng đúng
-      // ... các role khác
-    };
+    // Lấy redirectUrl từ dữ liệu API, nếu không có thì mặc định là trang chủ '/'
+    const redirectTo = loginData.redirectUrl || '/';
 
-    let redirectTo = '/';
-    if (userRoles.includes('ADMIN')) {
-      redirectTo = `/${roleRouteMap['ADMIN']}`;
-    } else if (userRoles.includes('BUSINESS_DEPARTMENT')) {
-      redirectTo = `/${roleRouteMap['BUSINESS_DEPARTMENT']}`;
-    } else if (userRoles.length > 0) {
-      const targetRole =
-        userRoles.find((role: string) => role !== 'CUSTOMER') || userRoles[0];
-      redirectTo = `/${roleRouteMap[targetRole] || 'customer'}`;
-    }
-
+    // Điều hướng đến URL được chỉ định
     this.router.navigate([redirectTo]);
   }
 

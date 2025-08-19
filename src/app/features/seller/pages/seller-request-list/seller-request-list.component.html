@@ -1,0 +1,61 @@
+<!--
+  FILE: src/app/features/seller/pages/seller-request-list/seller-request-list.component.html
+  MÔ TẢ: Thêm nút "Từ chối" và modal để nhập lý do.
+-->
+
+<!-- 1. Breadcrumb -->
+<nz-breadcrumb>
+  <nz-breadcrumb-item>
+    <a routerLink="/seller/dashboard">Quản lý Booking</a>
+  </nz-breadcrumb-item>
+  <nz-breadcrumb-item>Yêu cầu Tour Đặt riêng</nz-breadcrumb-item>
+</nz-breadcrumb>
+
+<!-- 2. Page Header -->
+<nz-page-header class="site-page-header" nzTitle="Danh sách Yêu cầu Tour Đặt riêng"
+  [nzSubtitle]="paging.total > 0 ? 'Có tổng cộng ' + paging.total + ' yêu cầu' : ''">
+</nz-page-header>
+
+<!-- 3. Card chứa bảng dữ liệu -->
+<div class="p-6 bg-white rounded-lg shadow-md">
+  <nz-table #requestTable [nzData]="requests" [nzLoading]="isLoading" [nzFrontPagination]="false"
+    [nzTotal]="paging.total" [nzPageIndex]="paging.page + 1" [nzPageSize]="paging.size"
+    (nzPageIndexChange)="onPageIndexChange($event)" nzBordered>
+    <thead>
+      <tr>
+        <th nzWidth="10%">Mã Yêu cầu</th>
+        <th>Chủ đề Tour</th>
+        <th>Ngày bắt đầu</th>
+        <th>Ngày kết thúc</th>
+        <th>Ngày tạo</th>
+        <th nzWidth="20%" nzAlign="center">Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let data of requestTable.data">
+        <td>#{{ data.id }}</td>
+        <td>{{ data.tourTheme }}</td>
+        <td>{{ data.startDate | formatDate }}</td>
+        <td>{{ data.endDate | formatDate }}</td>
+        <td>{{ data.createdAt | formatDate }}</td>
+        <td nzAlign="center">
+          <!-- Nút Duyệt -->
+          <button nz-button nzType="primary" nz-popconfirm
+            nzPopconfirmTitle="Bạn có chắc muốn duyệt yêu cầu này?"
+            nzPopconfirmSubTitle="Hành động này sẽ chuyển yêu cầu cho bộ phận kinh doanh."
+            (nzOnConfirm)="onApprove(data.id)" class="mr-2">
+            <span nz-icon nzType="check"></span>
+            Duyệt
+          </button>
+          <!-- [MỚI] Nút Từ chối -->
+          <button nz-button nzType="default" nzDanger (click)="showRejectModal(data.id)">
+             <span nz-icon nzType="close"></span>
+            Từ chối
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+  <!-- Giao diện khi không có dữ liệu -->
+  <nz-empty *ngIf="!isLoading && requests.length === 0" nzNotFoundContent="Không có yêu cầu nào."></nz-empty>
+</div>

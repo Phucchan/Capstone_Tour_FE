@@ -1,0 +1,71 @@
+<!--
+ * FILE: src/app/features/business/pages/location-management/location-management.component.html
+ * MÔ TẢ:
+ * - Giao diện đã được viết lại hoàn toàn bằng NG-ZORRO.
+ * - Modal giờ đây được quản lý bởi NzModalService.
+-->
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Quản Lý Địa Điểm</h1>
+      <p class="text-sm text-gray-600 mt-1">Thêm, sửa và quản lý các địa điểm du lịch của bạn.</p>
+    </div>
+    <button (click)="openLocationModal()" nz-button nzType="primary">
+      <i nz-icon nzType="plus-circle" nzTheme="outline"></i>
+      Thêm địa điểm
+    </button>
+  </div>
+
+  <!-- Main Content Card -->
+  <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <!-- Card Header with Search -->
+    <div class="p-4 sm:p-6 border-b border-gray-200">
+      <div class="w-full sm:w-auto sm:max-w-xs">
+        <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton">
+          <input type="text" nz-input placeholder="Tìm kiếm theo tên địa điểm..." [(ngModel)]="keyword" (ngModelChange)="onSearchChange($event)" />
+        </nz-input-group>
+        <ng-template #suffixIconButton>
+          <button nz-button nzType="primary" nzSearch><i nz-icon nzType="search"></i></button>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- Table Wrapper -->
+    <div class="overflow-x-auto">
+      <nz-table #locationTable [nzData]="locations" [nzFrontPagination]="false" [nzLoading]="isLoading" [nzTotal]="totalItems" [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" (nzQueryParams)="onQueryParamsChange($event)" nzShowSizeChanger="false">
+        <thead>
+          <tr>
+            <th class="w-2/5">Địa điểm</th>
+            <th class="w-2/5">Mô tả</th>
+            <th class="text-center">Trạng thái</th>
+            <th class="text-center">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let location of locationTable.data">
+            <td>
+              <div class="flex items-center">
+                <nz-avatar [nzSize]="44" nzShape="square" [nzSrc]="location.image || 'https://placehold.co/44x44/E2E8F0/4A5568?text=N/A'"></nz-avatar>
+                <div class="ml-4">
+                  <div class="font-semibold text-gray-900">{{ location.name }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <p class="truncate w-80 text-gray-600">{{ location.description }}</p>
+            </td>
+            <td class="text-center">
+              <nz-tag [nzColor]="!location.deleted ? 'green' : 'red'">
+                {{ !location.deleted ? 'Hoạt động' : 'Đã ẩn' }}
+              </nz-tag>
+            </td>
+            <td class="text-center">
+              <a (click)="openLocationModal(location)">Sửa</a>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,153 @@
+<!-- src/app/features/business/components/tour-day-form/tour-day-form.component.html -->
+<div class="relative p-6 pb-20">
+  <nz-spin [nzSpinning]="isLoading">
+    <form nz-form [formGroup]="dayForm" nzLayout="vertical">
+      <!-- Title -->
+      <nz-form-item>
+        <nz-form-label nzRequired>Tiêu đề</nz-form-label>
+        <nz-form-control nzErrorTip="Vui lòng nhập tiêu đề">
+          <input nz-input formControlName="title" placeholder="Ví dụ: Tham quan Vịnh Hạ Long" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <!-- Description -->
+      <nz-form-item>
+        <nz-form-label>Mô tả</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="description" [nzAutosize]="{ minRows: 3, maxRows: 5 }"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <!-- Location -->
+      <nz-form-item>
+        <nz-form-label>Địa điểm chính trong ngày</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="locationId" nzShowSearch nzAllowClear nzPlaceHolder="Chọn địa điểm">
+            <nz-option *ngFor="let loc of locations$ | async" [nzLabel]="loc.name" [nzValue]="loc.id"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+
+    <!-- Services Management (Only in Edit mode) -->
+    <div *ngIf="dayData; else promptToSave">
+      <nz-divider nzText="Quản lý dịch vụ" nzOrientation="left"></nz-divider>
+      <div nz-row [nzGutter]="16" class="mb-4">
+        <!-- Service Type Selector -->
+        <div nz-col [nzSpan]="12">
+          <nz-select [(ngModel)]="selectedServiceType" (ngModelChange)="onServiceTypeChange($event)"
+            [ngModelOptions]="{standalone: true}" nzAllowClear nzPlaceHolder="1. Chọn loại dịch vụ" class="w-full">
+            <nz-option *ngFor="let type of serviceTypes" [nzLabel]="type.name" [nzValue]="type.id"></nz-option>
+          </nz-select>
+        </div>
+        <!-- Partner Service Selector -->
+        <div nz-col [nzSpan]="12">
+          <nz-input-group [nzAddOnAfter]="addButton">
+            <nz-select [(ngModel)]="selectedPartnerService" [ngModelOptions]="{standalone: true}"
+              [nzLoading]="isServiceLoading" [nzDisabled]="!selectedServiceType" nzShowSearch nzAllowClear
+              nzPlaceHolder="2. Chọn dịch vụ cụ thể" class="w-full">
+              <nz-option *ngFor="let service of filteredPartnerServices"
+                [nzLabel]="service.name + ' (' + service.partnerName + ')'" [nzValue]="service.id"></nz-option>
+            </nz-select>
+          </nz-input-group>
+          <ng-template #addButton>
+            <button nz-button nzType="primary" (click)="addSelectedService()" [disabled]="!selectedPartnerService" nz-tooltip nzTooltipTitle="Thêm dịch vụ đã chọn">
+              <span nz-icon nzType="plus"></span>
+            </button>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Nút tạo nhanh dịch vụ -->
+      <div class="text-right mb-4">
+          <button nz-button nzType="dashed" (click)="openCreateServiceModal()">
+              <span nz-icon nzType="plus-circle"></span>
+              Hoặc tạo nhanh dịch vụ mới
+          </button>
+      </div>
+
+      <!-- Selected Services List -->
+      <div>
+        <nz-list [nzDataSource]="selectedServicesList" nzBordered nzItemLayout="horizontal"
+          [nzRenderItem]="itemTpl" class="bg-gray-50 rounded-md">
+          <nz-list-header *ngIf="selectedServicesList.length > 0">Danh sách dịch vụ đã thêm</nz-list-header>
+          <ng-template #itemTpl let-service>
+            <nz-list-item [nzActions]="[removeAction]">
+              <ng-template #removeAction>
+                <button nz-button nzType="link" nzDanger (click)="removeService(service.id)">
+                    <span nz-icon nzType="delete"></span>
+                </button>
+              </ng-template>
+              <nz-list-item-meta
+                [nzTitle]="service.name"
+                [nzDescription]="metaDescription">
+                <ng-template #metaDescription>
+                    {{ service.partnerName }} - <nz-tag>{{ service.serviceTypeName }}</nz-tag>
+                </ng-template>
+              </nz-list-item-meta>
+            </nz-list-item>
+          </ng-template>
+          <nz-list-empty *ngIf="!selectedServicesList || selectedServicesList.length === 0"></nz-list-empty>
+        </nz-list>
+      </div>
+    </div>
+
+    <ng-template #promptToSave>
+        <div class="text-center text-gray-500 p-4 border rounded-md mt-4">
+            <p>Vui lòng lưu thông tin cơ bản của ngày trước khi thêm dịch vụ.</p>
+        </div>
+    </ng-template>
+
+  </nz-spin>
+</div>
+
+<!-- Footer with actions -->
+<div class="absolute bottom-0 right-0 w-full p-4 border-t bg-white flex justify-end gap-2 rounded-b-md">
+  <button nz-button (click)="onClose()">Đóng</button>
+  <button nz-button nzType="primary" (click)="onSave()" [nzLoading]="isLoading">
+    Lưu thông tin
+  </button>
+</div>
+
+<!-- Modal để tạo dịch vụ mới -->
+<nz-modal
+  [(nzVisible)]="isCreateServiceModalVisible"
+  nzTitle="Tạo và thêm dịch vụ mới"
+  (nzOnCancel)="handleCreateServiceCancel()"
+  (nzOnOk)="handleCreateServiceOk()"
+>
+  <ng-container *nzModalContent>
+     <nz-spin [nzSpinning]="isCreatingService">
+        <form nz-form [formGroup]="newServiceForm" nzLayout="vertical">
+        <nz-form-item>
+            <nz-form-label nzRequired>Tên dịch vụ</nz-form-label>
+            <nz-form-control nzErrorTip="Vui lòng nhập tên dịch vụ">
+            <input nz-input formControlName="name" placeholder="Ví dụ: Bữa tối hải sản"/>
+            </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+            <nz-form-label nzRequired>Đối tác cung cấp</nz-form-label>
+            <nz-form-control nzErrorTip="Vui lòng chọn đối tác">
+            <nz-select formControlName="partnerId" nzShowSearch nzPlaceHolder="Chọn đối tác">
+                <nz-option *ngFor="let partner of partners$ | async" [nzLabel]="partner.name" [nzValue]="partner.id"></nz-option>
+            </nz-select>
+            </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+            <nz-form-label nzRequired>Loại dịch vụ</nz-form-label>
+            <nz-form-control nzErrorTip="Vui lòng chọn loại dịch vụ">
+            <nz-select formControlName="serviceTypeId" nzShowSearch nzPlaceHolder="Chọn loại dịch vụ">
+                <nz-option *ngFor="let type of serviceTypes" [nzLabel]="type.name" [nzValue]="type.id"></nz-option>
+            </nz-select>
+            </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+            <nz-form-label>Mô tả</nz-form-label>
+            <nz-form-control>
+            <textarea nz-input formControlName="description" [nzAutosize]="{ minRows: 2, maxRows: 4 }"></textarea>
+            </nz-form-control>
+        </nz-form-item>
+        </form>
+    </nz-spin>
+  </ng-container>
+</nz-modal>

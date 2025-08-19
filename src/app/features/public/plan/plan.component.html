@@ -194,6 +194,7 @@
                         }"
                         class="px-6 py-2 rounded-full font-semibold border border-gray-300 transition cursor-pointer hover:bg-emerald-100">
                         Tiết kiệm
+                       <div>(5 triệu - 10 triệu)</div>
                     </button>
 
                     <button type="button" (click)="selectBudget('medium')" [ngClass]="{
@@ -202,6 +203,7 @@
                         }"
                         class="px-6 py-2 rounded-full font-semibold border border-gray-300 transition cursor-pointer hover:bg-emerald-100">
                         Vừa phải
+                        <div>(10 triệu - 15 triệu)</div>
                     </button>
 
                     <button type="button" (click)="selectBudget('high')" [ngClass]="{
@@ -210,6 +212,7 @@
                         }"
                         class="px-6 py-2 rounded-full font-semibold border border-gray-300 hover:bg-emerald-100 transition cursor-pointer">
                         Cao cấp
+                        <div>(Trên 15 triệu)</div>
                     </button>
 
                     <button type="button" (click)="selectBudget('custom')" [ngClass]="{
@@ -301,8 +304,7 @@
                         </ng-container>
 
                         <!-- Add interest button (không cần toggle) -->
-                        <button type="button" data-modal-target="interest-modal" data-modal-toggle="interest-modal"
-                            [ngClass]="{
+                        <button type="button" (click)="openInterestModal()" [ngClass]="{
                             'bg-emerald-400 text-white hover:bg-emerald-500':
                             otherInterest.length > 1,
                             'bg-white text-black hover:bg-gray-100': otherInterest.length < 1
@@ -329,52 +331,51 @@
                     Hoàn tất
                 </button>
             </div>
+
+
         </div>
     </div>
 </form>
 
-<div id="interest-modal" tabindex="-1" aria-hidden="true"
-    class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-    <div class="relative p-4 w-full max-w-2xl max-h-full">
-        <!-- Modal content -->
-        <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
-            <!-- Modal body -->
-            <div class="p-4 md:p-5 space-y-4">
-                <!-- Tiêu đề -->
-                <label for="interests" class="block text-base font-semibold text-black">
-                    Thêm sở thích của bạn
-                </label>
+<!-- Modal Interest giống BudgetModal -->
+<div id="interestModal" class="fixed inset-0 z-50 hidden bg-black/30 flex justify-center items-center p-4"
+    (click)="closeInterestModal()">
 
-                <!-- Ô nhập -->
-                <form [formGroup]="addInterestForm">
-                    <textarea id="interests" maxlength="50" rows="3"
-                        class="w-full border border-black rounded-md px-4 py-3 text-base text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black"
-                        formControlName="interest" placeholder="Enter additional interests"></textarea>
-                </form>
+    <div class="bg-white rounded-lg shadow w-full max-w-md p-6" (click)="$event.stopPropagation()">
+        <!-- Tiêu đề -->
+        <h3 class="text-lg font-semibold mb-4 text-center">
+            Thêm sở thích của bạn
+        </h3>
 
+        <!-- Ô nhập -->
+        <form [formGroup]="addInterestForm" class="flex flex-col gap-2">
+            <textarea id="interests" maxlength="50" rows="3"
+                class="w-full border border-gray-300 rounded-md px-4 py-3 text-base text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                formControlName="interest"
+                placeholder="Ví dụ: ẩm thực địa phương, leo núi, chụp ảnh, biển, văn hóa..."></textarea>
 
-                <!-- Phần mô tả -->
-                <div class="flex justify-between text-sm text-gray-500">
-                    <span>
-                        Sở thích nên phân cách bởi dấu phẩy (,) và không nên chứa các ký tự đặc biệt
-                    </span>
-                    <span>{{addInterestForm.value.interest.length}}/50 kí tự tối đa </span>
-                </div>
+            <!-- Mô tả -->
+            <div class="flex justify-between text-sm text-gray-500">
+                <span>
+                    Sở thích nên phân cách bằng dấu phẩy (,), không dùng ký tự đặc biệt
+                </span>
+                <span>{{addInterestForm.value.interest.length}}/50 kí tự</span>
             </div>
-            <!-- Modal footer -->
-            <div class="flex justify-end items-center p-4 md:p-5 rounded-b ">
-                <button data-modal-hide="interest-modal" type="button" (click)="addInterest()"
-                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                    Thêm
-                </button>
-                <button data-modal-hide="interest-modal" type="button"
-                    class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
-                    Hủy
-                </button>
-            </div>
+        </form>
+
+        <!-- Nút hành động -->
+        <div class="mt-6 flex justify-end gap-2">
+            <button type="button" (click)="closeInterestModal()" class="px-4 py-2 rounded-md border hover:bg-gray-100">
+                Hủy
+            </button>
+            <button type="button" (click)="addInterest()"
+                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                Lưu
+            </button>
         </div>
     </div>
 </div>
+
 
 @if(showError) {
 <!-- Warning Notification (Only One at a Time) -->
@@ -399,11 +400,15 @@
         <div class="relative bg-white rounded-lg shadow dark:bg-gray-800 animate-fadeIn">
             <!-- Modal Content -->
             <div class="p-6 text-center">
-                <div
-                    class="px-3 py-1 text-xs font-medium leading-none text-center text-blue-800 bg-blue-200 rounded-full animate-pulse dark:bg-blue-900 dark:text-blue-200">
-                    Đang thực hiện tạo chương trình du lịch cho bạn...</div>
-                <br />
-                Vui lòng đợi trong giây lát.
+                <div class="flex justify-center mb-4">
+                    <video src="/assets/video/walking-duck.mp4" autoplay loop muted playsinline class="w-40 h-auto">
+                        Trình duyệt của bạn không hỗ trợ video.
+                    </video>
+                    <div class="text-sm text-gray-500 mt-2 italic">
+                        Một chút thôi, AI đang sắp xếp hành trình thật hợp gu cho bạn 🧠✨
+                    </div>
+                </div>
+                Vui lòng đợi trong giây lát...
             </div>
         </div>
     </div>

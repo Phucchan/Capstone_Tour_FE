@@ -1,0 +1,93 @@
+<!-- src/app/features/business/pages/tour-schedule/tour-schedule.component.html -->
+<div class="container mx-auto p-4 sm:p-6 lg:p-8">
+  <!-- Header -->
+  <ng-container *ngIf="tourDetail$ | async as tour">
+    <nz-page-header [nzTitle]="'Xây dựng Lịch trình'" [nzSubtitle]="tour.name" (nzBack)="goBack()">
+      <nz-page-header-extra>
+        <a [routerLink]="['/business/tours/', tourId]" nz-button>Về trang chi tiết</a>
+        <button nz-button nzType="primary" (click)="openAddModal()">
+          <span nz-icon nzType="plus"></span>
+          Thêm ngày mới
+        </button>
+      </nz-page-header-extra>
+    </nz-page-header>
+  </ng-container>
+
+  <!-- Loading Spinner -->
+  <nz-spin [nzSpinning]="isLoading">
+    <!-- Content -->
+    <ng-container *ngIf="tourDays$ | async as days">
+      <!-- Trường hợp chưa có ngày nào -->
+      <div *ngIf="days.length === 0" class="mt-4">
+        <nz-empty nzNotFoundContent="Chưa có ngày nào trong lịch trình. Hãy bắt đầu bằng cách nhấn nút 'Thêm ngày mới'." />
+      </div>
+
+      <!-- Hiển thị danh sách các ngày -->
+      <div *ngIf="days.length > 0" class="mt-4 space-y-4">
+        <!-- SỬA ĐỔI: Chuyển các action lên nz-card-extra để gọn gàng hơn -->
+        <nz-card *ngFor="let day of days">
+          <nz-card-meta
+            [nzTitle]="titleTemplate"
+            [nzDescription]="day.description || 'Chưa có mô tả chi tiết cho ngày này.'">
+          </nz-card-meta>
+
+          <!-- Template cho Title -->
+          <ng-template #titleTemplate>
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="font-bold text-lg">Ngày {{ day.dayNumber }}: {{ day.title || "Chưa có tiêu đề" }}</span>
+                <span *ngIf="day.location" class="ml-4 text-sm font-normal text-gray-500">
+                  <span nz-icon nzType="environment" nzTheme="outline"></span>
+                  {{ day.location.name }}
+                </span>
+              </div>
+              <div>
+                <button nz-button nzType="link" (click)="openEditModal(day)">
+                  <span nz-icon nzType="edit"></span> Sửa
+                </button>
+                <button nz-button nzType="link" nzDanger nz-popconfirm nzPopconfirmTitle="Bạn có chắc chắn muốn xóa ngày này?" (nzOnConfirm)="handleDelete(day)">
+                  <span nz-icon nzType="delete"></span> Xóa
+                </button>
+              </div>
+            </div>
+          </ng-template>
+
+          <!-- SỬA ĐỔI: Hiển thị danh sách dịch vụ chi tiết thay vì chỉ tag tên -->
+          <div class="mt-4">
+              <h4 class="font-semibold mb-2 text-gray-700">Các dịch vụ trong ngày:</h4>
+              <div *ngIf="day.services && day.services.length > 0; else noServices">
+                  <nz-list [nzDataSource]="day.services" nzItemLayout="horizontal" [nzRenderItem]="serviceItem">
+                      <ng-template #serviceItem let-service>
+                          <nz-list-item>
+                              <nz-list-item-meta
+                                  [nzTitle]="serviceTitle"
+                                  [nzDescription]="service.partnerName || 'Chưa có nhà cung cấp'">
+                                  <ng-template #serviceTitle>
+                                      <span class="font-medium">{{ service.name }}</span>
+                                      <nz-tag [nzColor]="'blue'" class="ml-2">{{ service.serviceTypeName }}</nz-tag>
+                                  </ng-template>
+                              </nz-list-item-meta>
+                          </nz-list-item>
+                      </ng-template>
+                  </nz-list>
+              </div>
+              <ng-template #noServices>
+                  <nz-empty nzNotFoundImage="simple" nzNotFoundContent="Chưa có dịch vụ nào được thêm vào ngày này."></nz-empty>
+              </ng-template>
+          </div>
+
+        </nz-card>
+      </div>
+    </ng-container>
+  </nz-spin>
+</div>
+
+<!-- Modal chứa Form Component -->
+<nz-modal [(nzVisible)]="isModalOpen" [nzTitle]="modalTitle" (nzOnCancel)="closeModal()" [nzFooter]="null"
+  [nzWidth]="'700px'" [nzMaskClosable]="false">
+  <ng-container *nzModalContent>
+    <!-- Component form được đặt bên trong modal -->
+    <app-tour-day-form *ngIf="isModalOpen" [dayData]="currentDayToEdit" [tourId]="tourId" (formSaved)="handleFormSave()"
+      (close)="closeModal()"></app-tour-day-form>
+  </ng-container>
+</nz-modal>

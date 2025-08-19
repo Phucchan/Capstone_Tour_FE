@@ -1,0 +1,61 @@
+<nz-card [nzTitle]="isEditMode ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới'">
+  <p class="mb-6 text-gray-500">
+    Điền đầy đủ thông tin để {{ isEditMode ? 'cập nhật' : 'tạo' }} một bài viết hấp dẫn cho khách hàng.
+  </p>
+
+  <nz-spin [nzSpinning]="isLoading">
+    <nz-alert *ngIf="error" nzType="error" [nzMessage]="error" nzShowIcon class="mb-4"></nz-alert>
+
+    <form nz-form [formGroup]="blogForm" (ngSubmit)="onSubmit()">
+      <nz-form-item>
+        <nz-form-label [nzSpan]="24" nzRequired>Tiêu đề bài viết</nz-form-label>
+        <nz-form-control [nzSpan]="24" nzErrorTip="Vui lòng nhập tiêu đề!">
+          <input nz-input formControlName="title" placeholder="VD: 10 địa điểm không thể bỏ lỡ ở Đà Nẵng" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label [nzSpan]="24" nzRequired>Mô tả ngắn</nz-form-label>
+        <nz-form-control [nzSpan]="24" nzErrorTip="Vui lòng nhập mô tả ngắn!">
+          <textarea nz-input formControlName="description" placeholder="Một mô tả ngắn gọn, hấp dẫn về nội dung bài viết." [nzAutosize]="{ minRows: 3, maxRows: 5 }"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label [nzSpan]="24" nzRequired>URL Ảnh bìa (Thumbnail)</nz-form-label>
+        <nz-form-control [nzSpan]="24" nzErrorTip="Vui lòng nhập URL ảnh bìa!">
+          <input nz-input formControlName="thumbnailImageUrl" placeholder="https://example.com/image.jpg" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label [nzSpan]="24">Tags</nz-form-label>
+        <nz-form-control [nzSpan]="24">
+            <nz-select formControlName="tagIds" nzMode="multiple" nzPlaceHolder="Chọn các thẻ liên quan">
+                <nz-option *ngFor="let tag of tagOptions" [nzLabel]="tag.label" [nzValue]="tag.value"></nz-option>
+            </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label [nzSpan]="24" nzRequired>Nội dung</nz-form-label>
+        <nz-form-control [nzSpan]="24" nzErrorTip="Vui lòng nhập nội dung bài viết!">
+          <!-- THAY ĐỔI Ở ĐÂY: Thay thế <editor> bằng <textarea> -->
+          <textarea
+            nz-input
+            formControlName="content"
+            placeholder="Nhập nội dung bài viết tại đây..."
+            [nzAutosize]="{ minRows: 15, maxRows: 30 }"
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="pt-5 flex justify-end">
+        <button nz-button type="button" (click)="onCancel()" class="mr-2">Hủy</button>
+        <button nz-button nzType="primary" type="submit" [nzLoading]="isLoading">
+          {{ isEditMode ? 'Cập nhật' : 'Lưu và Xuất bản' }}
+        </button>
+      </div>
+    </form>
+  </nz-spin>
+</nz-card>

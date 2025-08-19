@@ -5,7 +5,7 @@ import { Pipe, PipeTransform } from '@angular/core';
   standalone: true,
 })
 export class BirthDate implements PipeTransform {
-  transform(value: string | null, format: string = 'dd/MM/yyyy'): string {
+  transform(value: string | null | undefined, format: string = 'dd/MM/yyyy'): string {
     if (!value) return 'Không có';
 
     const date = new Date(value);

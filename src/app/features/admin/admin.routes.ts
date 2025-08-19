@@ -1,21 +1,34 @@
 import { Routes } from '@angular/router';
-import { LayoutComponent } from './layout/layout.component';
-import { AdminTestComponent } from './admin-test/admin-test.component';
 
+// LOẠI BỎ: import { LayoutComponent } from './layout/layout.component';
+
+/**
+ * ADMIN_ROUTES giờ đây là một mảng các trang đơn lẻ.
+ * Chúng sẽ được hiển thị bên trong <router-outlet> của LayoutComponent chung.
+ */
 export const ADMIN_ROUTES: Routes = [
+  // Bỏ đi cấu trúc cha-con với LayoutComponent
+  { path: '', redirectTo: 'list-customer', pathMatch: 'full' },
   {
-    path: '',
-    component: LayoutComponent, // <-- Layout component must have <router-outlet>
-    children: [
-      {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full',
-      },
-      {
-        path: 'test',
-        component: AdminTestComponent,
-      },
-    ],
+    path: 'list-customer',
+    // Sử dụng lazy loading cho standalone component
+    loadComponent: () =>
+      import('./pages/list-customer/list-customer.component').then(
+        (m) => m.ListCustomerComponent
+      ),
+  },
+  {
+    path: 'list-staff',
+    loadComponent: () =>
+      import('./pages/list-staff/list-staff.component').then(
+        (m) => m.ListStaffComponent
+      ),
+  },
+  {
+    path: 'post-staff-detail',
+    loadComponent: () =>
+      import('./pages/post-staff-detail/post-staff-detail.component').then(
+        (m) => m.PostStaffDetailComponent
+      ),
   },
 ];

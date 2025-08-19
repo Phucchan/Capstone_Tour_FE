@@ -1,6 +1,6 @@
 <nav class="bg-white border-gray-200 dark:bg-gray-900 shadow-sm">
   <div class="max-w-[90%] flex flex-wrap items-center justify-between mx-auto p-4">
-    <a href="homepage" class="flex items-center space-x-3 rtl:space-x-reverse">
+    <a href="/homepage" class="flex items-center space-x-3 rtl:space-x-reverse">
       <img src="/assets/images/logo/image-removebg-preview.png" class="h-8" alt="Flowbite Logo" />
       <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Đi Đâu</span>
     </a>
@@ -35,24 +35,41 @@
         id="user-dropdown">
         <div class="px-4 py-3">
           <span class="block text-sm text-gray-900 dark:text-white">
-            {{currentUser?.fullName}}
+            {{customerBasicInfo?.fullName}}
           </span>
           <span class="block text-sm  text-gray-500 truncate dark:text-gray-400">
-            {{currentUser?.email}}
+            {{customerBasicInfo?.email}}
           </span>
         </div>
         <ul *ngIf="showDropdown" class="py-2" aria-labelledby="user-menu-button">
           <li>
-            <a [routerLink]="['/customer/profile']"
-              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Thông tin cá nhân</a>
+            <a [routerLink]="['/customer/profile-info']"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Thông
+              tin cá nhân</a>
           </li>
           <li>
-            <a href="#"
-              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Đơn đặt tour</a>
+            <a  [routerLink]="['/customer/booking-histories']"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Đơn
+              đặt tour</a>
           </li>
           <li>
-            <a href="#"
+            <a [routerLink]="['/customer/wishlist']"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Yêu
+              thích</a>
+          </li>
+          <li>
+            <a [routerLink]="['/checkin']"
               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Check-in</a>
+          </li>
+          <li>
+            <a [routerLink]="['/customer/vouchers']"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Mã giảm giá</a>
+          </li>
+          <li>
+            <a [routerLink]="['/customer/list-plan']"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
+                Kế hoạch cá nhân
+              </a>
           </li>
           <li>
             <a (click)="onLogout()"
@@ -72,39 +89,73 @@
       </button>
     </div>
 
-    <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-user">
-      <ul
-        class="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+      <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-user">
+      <ul class="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 
+           md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white 
+           dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+
+        <!-- Trang chủ -->
         <li>
-          <a href="#"
-            class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500"
-            aria-current="page">Trang chủ </a>
+          <a routerLink="/homepage" routerLinkActive="text-blue-700 font-bold border-b-2 border-blue-700"
+            [routerLinkActiveOptions]="{ exact: true }" class="block py-2 px-3 rounded-sm 
+               hover:text-blue-700 hover:font-semibold hover:border-b-2 hover:border-blue-500 
+               transition-all duration-200">
+            Trang chủ
+          </a>
         </li>
+
+        <!-- Về chúng tôi -->
         <li>
-          <a href="#"
-            class="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Về chúng tôi</a>
+          <a routerLink="/about" routerLinkActive="text-blue-700 font-bold border-b-2 border-blue-700"
+            [routerLinkActiveOptions]="{ exact: true }" class="block py-2 px-3 rounded-sm 
+               hover:text-blue-700 hover:font-semibold hover:border-b-2 hover:border-blue-500 
+               transition-all duration-200">
+            Về chúng tôi
+          </a>
         </li>
+
+        <!-- Tours -->
         <li>
-          <a href="#"
-            class="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Tours</a>
+          <a routerLink="/custom-order-tour" routerLinkActive="text-blue-700 font-bold border-b-2 border-blue-700"
+            [routerLinkActiveOptions]="{ exact: true }" class="block py-2 px-3 rounded-sm 
+               hover:text-blue-700 hover:font-semibold hover:border-b-2 hover:border-blue-500 
+               transition-all duration-200">
+            Tours đặt riêng
+          </a>
         </li>
+
+        <!-- Bài viết -->
         <li>
-          <a routerLink="/blogs" routerLinkActive="text-blue-700 dark:text-blue-500 font-bold md:text-blue-700 md:dark:text-blue-500 "
-            [routerLinkActiveOptions]="{exact: true}"
-            class="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Bài viết</a>
+          <a routerLink="/blogs" routerLinkActive="text-blue-700 font-bold border-b-2 border-blue-700"
+            [routerLinkActiveOptions]="{ exact: true }" class="block py-2 px-3 rounded-sm 
+               hover:text-blue-700 hover:font-semibold hover:border-b-2 hover:border-blue-500 
+               transition-all duration-200">
+            Bài viết
+          </a>
         </li>
+
+        <!-- Kế hoạch -->
         <li>
-          <a href="plan-generation"
-            class="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">
-            Kế
-            hoạch</a>
+          <a routerLink="/plan-generation" routerLinkActive="text-blue-700 font-bold border-b-2 border-blue-700"
+            [routerLinkActiveOptions]="{ exact: true }" class="block py-2 px-3 rounded-sm 
+               hover:text-blue-700 hover:font-semibold hover:border-b-2 hover:border-blue-500 
+               transition-all duration-200">
+            Kế hoạch
+          </a>
         </li>
+
+        <!-- Cộng đồng -->
         <li>
-          <a href="#"
-            class="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Cộng
-            đồng</a>
+          <a routerLink="/community" routerLinkActive="text-blue-700 font-bold border-b-2 border-blue-700"
+            [routerLinkActiveOptions]="{ exact: true }" class="block py-2 px-3 rounded-sm 
+               hover:text-blue-700 hover:font-semibold hover:border-b-2 hover:border-blue-500 
+               transition-all duration-200">
+            Cộng đồng
+          </a>
         </li>
+
       </ul>
     </div>
+
   </div>
 </nav>

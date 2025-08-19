@@ -1,36 +1,28 @@
-<div class="max-h-0 overflow-hidden pt-1 pl-4 transition-all duration-500"
-  [ngClass]="{ hidden: !layoutService.showSideBar, 'max-h-screen': submenu.expanded }">
-  <ul class="border-border text-muted-foreground flex flex-col border-l border-dashed pl-2">
-    <li *ngFor="let sub of submenu.children">
-      <div class="text-muted-foreground hover:bg-card hover:text-foreground flex rounded-sm" (click)="toggleMenu(sub)">
-        <!-- Condition -->
-        <ng-container [ngTemplateOutlet]="sub.children ? childMenu : parentMenu"
-          [ngTemplateOutletContext]="{ sub: sub }">
-        </ng-container>
-
-        <!-- Parent Menu -->
-        <ng-template #parentMenu let-sub="sub">
-          <a [routerLink]="sub.route" routerLinkActive="text-green-600 font-bold"
-            [routerLinkActiveOptions]="{ exact: true }"
-            class="inline-block w-full px-4 py-2 text-xs font-semibold hover:bg-slate-200 hover:font-bold">
-            {{ sub.label }}
-          </a>
-
-        </ng-template>
-
-        <!-- Child Menu -->
-        <ng-template #childMenu let-sub="sub">
-          <a class="inline-block w-full cursor-pointer px-4 py-2 text-xs font-semibold hover:font-bold">
-            {{ sub.label }}
-          </a>          
-          <button [ngClass]="{ hidden: !layoutService.showSideBar, 'rotate-90': sub.expanded }"
-            class="text-muted-foreground flex items-center p-1 transition-all duration-500">
-            <svg-icon src="assets/icons/heroicons/solid/chevron-right.svg" [svgClass]="'h-5 w-5'"> </svg-icon>
-          </button>
-        </ng-template>
+<ul class="border-border text-muted-foreground flex flex-col border-l border-dashed pl-2 pt-2">
+  <!-- Lặp qua mảng 'submenu' được truyền vào -->
+  <li *ngFor="let subItem of submenu">
+    <!-- MỤC CON CÓ MENU CON NỮA (ĐỆ QUY) -->
+    <div *ngIf="subItem.children && subItem.children.length > 0">
+      <div class="text-muted-foreground hover:bg-card hover:text-foreground flex items-center justify-between rounded-sm" (click)="toggleMenu(subItem)">
+        <a class="inline-block w-full cursor-pointer px-4 py-2 text-xs font-semibold hover:font-bold">
+          {{ subItem.label }}
+        </a>
+        <button [ngClass]="{ 'rotate-90': subItem.expanded }" class="text-muted-foreground flex items-center p-1 transition-all duration-500">
+          <svg-icon src="assets/icons/heroicons/solid/chevron-right.svg" [svgClass]="'h-5 w-5'"></svg-icon>
+        </button>
       </div>
-      <!-- Submenu items -->
-      <app-admin-sidebar-sub-menu [submenu]="sub"></app-admin-sidebar-sub-menu>
-    </li>
-  </ul>
-</div>
+      <!-- Gọi lại chính nó để hiển thị menu cấp nhỏ hơn -->
+      <div [ngClass]="{ hidden: !subItem.expanded }" class="ms-4 ps-2 transition-all duration-300">
+        <app-admin-sidebar-sub-menu [submenu]="subItem.children"></app-admin-sidebar-sub-menu>
+      </div>
+    </div>
+
+    <!-- MỤC CON KHÔNG CÓ MENU CON (LÀ LINK CUỐI CÙNG) -->
+    <div *ngIf="!subItem.children || subItem.children.length === 0">
+      <a [routerLink]="subItem.route" routerLinkActive="text-green-600 font-bold" [routerLinkActiveOptions]="{ exact: true }"
+        class="inline-block w-full px-4 py-2 text-xs font-semibold hover:bg-slate-200 hover:font-bold">
+        {{ subItem.label }}
+      </a>
+    </div>
+  </li>
+</ul>

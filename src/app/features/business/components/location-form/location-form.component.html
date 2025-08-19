@@ -1,0 +1,38 @@
+<form nz-form [formGroup]="locationForm" (ngSubmit)="onSubmit()">
+  <!-- Image Upload -->
+  <nz-form-item>
+    <nz-form-label>Ảnh đại diện</nz-form-label>
+    <nz-form-control [nzErrorTip]="!locationToEdit && !selectedFile ? 'Vui lòng chọn ảnh' : ''">
+      <nz-upload
+        nzListType="picture-card"
+        [nzFileList]="fileList"
+        [nzBeforeUpload]="beforeUpload"
+        [nzShowUploadList]="{ showPreviewIcon: false, showRemoveIcon: true }"
+      >
+        <div *ngIf="!imagePreview">
+          <span nz-icon nzType="plus"></span>
+          <div class="ant-upload-text">Tải ảnh</div>
+        </div>
+        <img *ngIf="imagePreview" [src]="imagePreview" class="w-full h-full object-cover" alt="Preview"/>
+      </nz-upload>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Location Name -->
+  <nz-form-item>
+    <nz-form-label nzRequired>Tên địa điểm</nz-form-label>
+    <nz-form-control nzErrorTip="Vui lòng nhập tên địa điểm (ít nhất 3 ký tự)">
+      <input nz-input formControlName="name" placeholder="Ví dụ: Vịnh Hạ Long" />
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Description -->
+  <nz-form-item>
+    <nz-form-label nzRequired>Mô tả</nz-form-label>
+    <nz-form-control nzErrorTip="Vui lòng nhập mô tả">
+      <textarea nz-input formControlName="description" placeholder="Nhập mô tả chi tiết về địa điểm..." [nzAutosize]="{ minRows: 4, maxRows: 6 }"></textarea>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Form Actions are handled by the parent modal component -->
+</form>

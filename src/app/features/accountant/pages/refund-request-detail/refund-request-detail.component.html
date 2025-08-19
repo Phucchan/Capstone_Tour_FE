@@ -1,0 +1,85 @@
+<!-- Ghi chú: Áp dụng layout container căn giữa và nền xám. -->
+<div class="bg-gray-50 min-h-screen">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Spinner -->
+    <div *ngIf="isLoading" class="flex justify-center items-center py-20">
+      <nz-spin nzSimple nzSize="large"></nz-spin>
+    </div>
+
+    <!-- Main Content -->
+    <div *ngIf="!isLoading && detail">
+      <!-- Page Header -->
+      <div class="mb-6">
+        <a routerLink="/accountant/refunds" class="text-sm text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-2 mb-4 font-semibold">
+          <i nz-icon nzType="arrow-left"></i>
+          Quay lại danh sách
+        </a>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
+            Yêu cầu Hoàn tiền #{{ detail.bookingCode }}
+          </h1>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button nz-button (click)="confirmCancellation()" *ngIf="detail.status === 'CANCEL_REQUESTED'" [nzLoading]="isProcessing" nzType="primary" nzDanger>
+              <i nz-icon nzType="check-circle" nzTheme="outline"></i> Duyệt Yêu Cầu Hủy
+            </button>
+            <button nz-button (click)="openCreateBillModal()" *ngIf="detail.status === 'CANCELLED'" [nzLoading]="isProcessing" nzType="primary">
+              <i nz-icon nzType="file-add" nzTheme="outline"></i> Tạo Phiếu Hoàn Tiền
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column -->
+        <div class="lg:col-span-2 flex flex-col gap-8">
+          <!-- Booking Info Card -->
+          <div class="bg-white rounded-lg shadow-md">
+            <div class="p-6 border-b border-gray-200">
+              <h3 class="text-xl font-semibold text-gray-800">Thông tin Booking</h3>
+            </div>
+            <dl class="divide-y divide-gray-200">
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Mã Tour</dt><dd class="text-sm text-gray-900 sm:col-span-2 font-semibold">{{ detail.tourCode }}</dd></div>
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Tên Tour</dt><dd class="text-sm text-gray-900 sm:col-span-2">{{ detail.tourName }}</dd></div>
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Tên khách hàng</dt><dd class="text-sm text-gray-900 sm:col-span-2">{{ detail.customerName }}</dd></div>
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Ngày đi</dt><dd class="text-sm text-gray-900 sm:col-span-2">{{ detail.startDate | formatDate }}</dd></div>
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Trạng thái</dt><dd class="text-sm text-gray-900 sm:col-span-2"><nz-tag [nzColor]="getStatusColor(detail.status)">{{ detail.status }}</nz-tag></dd></div>
+            </dl>
+          </div>
+
+          <!-- Financial Info Card -->
+          <div class="bg-white rounded-lg shadow-md">
+            <div class="p-6 border-b border-gray-200">
+              <h3 class="text-xl font-semibold text-gray-800">Thông tin Tài chính</h3>
+            </div>
+            <dl class="divide-y divide-gray-200">
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Tổng tiền tour</dt><dd class="text-sm text-gray-900 sm:col-span-2">{{ detail.totalAmount | currencyVnd }}</dd></div>
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Đã thanh toán</dt><dd class="text-sm text-green-600 sm:col-span-2 font-semibold">{{ detail.paidAmount | currencyVnd }}</dd></div>
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-red-50"><dt class="text-sm font-bold text-red-600">Số tiền hoàn lại</dt><dd class="text-lg text-red-600 sm:col-span-2 font-bold">{{ detail.refundAmount | currencyVnd }}</dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="lg:col-span-1">
+          <!-- Bank Info Card -->
+          <div class="bg-white rounded-lg shadow-md">
+            <div class="p-6 border-b border-gray-200">
+              <h3 class="text-xl font-semibold text-gray-800">Thông tin Nhận tiền</h3>
+            </div>
+            <dl class="divide-y divide-gray-200">
+              <div class="px-6 py-4"><dt class="text-sm font-medium text-gray-500 mb-1">Ngân hàng</dt><dd class="text-sm text-gray-900">{{ detail.bankName || 'Chưa có thông tin' }}</dd></div>
+              <div class="px-6 py-4"><dt class="text-sm font-medium text-gray-500 mb-1">Chủ tài khoản</dt><dd class="text-sm text-gray-900">{{ detail.bankAccountHolder || 'Chưa có thông tin' }}</dd></div>
+              <div class="px-6 py-4"><dt class="text-sm font-medium text-gray-500 mb-1">Số tài khoản</dt><dd class="text-sm text-gray-900">{{ detail.bankAccountNumber || 'Chưa có thông tin' }}</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+
+      <!-- Refund Bill View -->
+      <div *ngIf="detail.refundBill" class="mt-8">
+          <app-refund-bill-view [refundBill]="detail.refundBill"></app-refund-bill-view>
+      </div>
+    </div>
+  </div>
+</div>

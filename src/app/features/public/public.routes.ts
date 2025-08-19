@@ -4,12 +4,17 @@ import { HomepageComponent } from './homepage/homepage.component';
 import { ListTourComponent } from './list-tour/list-tour.component';
 import { TourDetailComponent } from './tour-tourdetail/tour-detail.component';
 import { TourBookingComponent } from '../customer/components/tour-booking/tour-booking.component';
-import { ProfileComponent } from '../customer/components/profile/profile.component';
-import { CustomTourBookingComponent } from '../customer/components/custom-tour-booking/custom-tour-booking.component';
+import { CustomerLayoutComponent } from '../customer/components/Customer-layout/Customer-layout.component';
+import { RequestBookingComponent } from '../customer/components/request-booking/request-booking.component';
 import { TourBookingConfirmComponent } from '../customer/components/tour-booking/tour-booking-confirm/tour-booking-confirm.component';
 import { PlanComponent } from './plan/plan.component';
 import { AuthGuard } from '../../core/guards/auth.guard';
 import { PlanPreviewComponent } from './plan/plan-detail/plan-detail.component';
+import { CUSTOMER_ROUTES } from '../customer/customer.routes';
+import { ListTourDiscountComponent } from './list-tour-discount/list-tour-discount.component';
+import { CheckinListComponent } from '../customer/components/checkin/checkin-list/checkin-list.component';
+import { CheckinPhotosComponent } from '../customer/components/checkin/checkin-photo/checkin-photo.component';
+import { VoucherPageComponent } from '../customer/components/voucher-page/voucher-page.component';
 
 export const PUBLIC_ROUTES: Route[] = [
   {
@@ -26,7 +31,11 @@ export const PUBLIC_ROUTES: Route[] = [
         component: HomepageComponent,
       },
       {
-        path: 'tours',
+        path: 'discount-tours',
+        component: ListTourDiscountComponent,
+      },
+      {
+        path: 'tours/location/:destId',
         component: ListTourComponent,
       },
       {
@@ -42,12 +51,15 @@ export const PUBLIC_ROUTES: Route[] = [
         component: TourBookingConfirmComponent,
       },
       {
-        path: 'custom-tour-booking',
-        component: CustomTourBookingComponent,
+        path: 'custom-order-tour',
+        component: RequestBookingComponent,
       },
       {
-        path: 'customer/profile',
-        component: ProfileComponent,
+        path: 'customer',
+        component: CustomerLayoutComponent,
+        canActivate: [AuthGuard],
+        data: { expectedRoles: ['CUSTOMER'] },
+        children: CUSTOMER_ROUTES // ✅ Sử dụng routes từ file riêng
       },
       {
         path: 'plan-generation',
@@ -61,11 +73,21 @@ export const PUBLIC_ROUTES: Route[] = [
       },
       {
         path: 'blogs',
-        // Tải các routes con từ file blog.routes.ts
-        loadChildren: () => import('../blog/blog.routes').then(r => r.BLOG_ROUTES),
+        loadChildren: () => import('./blog/blog.routes').then(r => r.BLOG_ROUTES),
         data: { title: 'Tin tức' }
       },
-      
+      {
+        path: 'checkin',
+        component: CheckinListComponent,
+        canActivate: [AuthGuard]
+      },
+      {
+        path: 'checkin/:bookingId',
+        component: CheckinPhotosComponent,
+        canActivate: [AuthGuard]
+      },
+
+
     ],
   },
 

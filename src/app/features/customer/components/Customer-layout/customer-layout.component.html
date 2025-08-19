@@ -1,0 +1,10 @@
+
+<div class="flex gap-8 mt-10 items-start w-full justify-center items-center">
+  <app-customer-sidebar
+    [currentUser]="currentUser"
+    (photoUploaded)="onPhotoUploaded($event)"></app-customer-sidebar>
+
+  <main>
+    <router-outlet></router-outlet>
+  </main>
+</div>
