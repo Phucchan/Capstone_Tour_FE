@@ -7,6 +7,7 @@ import { BookingHistoriesComponent } from "./components/booking-histories/bookin
 import { ListPlanComponent } from "./components/list-plan/list-plan.component";
 import { RequestBookingListComponent } from "./components/request-booking-list/request-booking-list.component";
 import { TourPrivateComponent } from "./components/tour-private/tour-private.component";
+import { PlanDetailComponent } from "./components/list-plan/plan-detail/plan-detail.component";
 
 
 export const CUSTOMER_ROUTES: Route[] = [
@@ -42,6 +43,10 @@ export const CUSTOMER_ROUTES: Route[] = [
   {
     path: 'tour-private',
     component: TourPrivateComponent
+  },
+  {
+    path: 'plan-detail/:id',
+    component: PlanDetailComponent
   }
 
 

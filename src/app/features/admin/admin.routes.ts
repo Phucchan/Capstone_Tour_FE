@@ -17,13 +17,13 @@ export const ADMIN_ROUTES: Routes = [
         (m) => m.ListCustomerComponent
       ),
   },
-  {
-    path: 'list-staff',
-    loadComponent: () =>
-      import('./list-staff/list-staff.component').then(
-        (m) => m.ListStaffComponent
-      ),
-  },
+  // {
+    // path: 'list-staff',
+    // loadComponent: () =>
+    //   import('./list-staff/list-staff.component').then(
+    //     (m) => m.ListStaffComponent
+    //   ),
+  // },
   {
     path: 'post-staff-detail',
     loadComponent: () =>

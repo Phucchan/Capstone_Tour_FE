@@ -39,24 +39,24 @@ export class PlanService {
   }
 
 
-  getPlanById(planId: number): Observable<any> {
-    return this.http.get<any>(`${environment.apiUrl}public/plans/details/${planId}`);
+  getPlanById(planId: string): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/public/plans/details/${planId}`);
 
   }
 
-  deletePlan(planId: number): Observable<any> {
-    return this.http.delete<any>(`${environment.apiUrl}public/plans/delete/${planId}`);
+  deletePlan(planId: string): Observable<any> {
+    return this.http.delete<any>(`${environment.apiUrl}/public/plans/delete/${planId}`);
   }
 
 
-  updatePlan(planId: number, planJson: string) : Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}public/plans/update/${planId}`, planJson);
+  updatePlan(planId: string, planJson: string) : Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/public/plans/update/${planId}`, planJson);
   }
 
 
   fetchProviderByCategoryAndLocationId(locationId: number, categoryName: string, ids: number[]): Observable<any> { // Convert array to comma-separated string
 
-    return this.http.get<any>(`${environment.apiUrl}public/plans/service-providers/list`, { 
+    return this.http.get<any>(`${environment.apiUrl}/public/plans/service-providers/list`, { 
       params : {
         locationId: locationId,
         categoryName: categoryName,
@@ -67,26 +67,13 @@ export class PlanService {
   }
 
   fetchActivities(locationName: string, preferences: string, startIndex: number): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}public/plans/activity/list`, {
+    return this.http.post<any>(`${environment.apiUrl}/public/plans/activity/list`, {
       params: {
         locationName: locationName,
         preferences: preferences,
         startIndex: startIndex
       }
     });
-  }
-
-
-  senRequestPlan(planId: number): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}public/plans/request-tour-create`,planId);
-  }
-
-
-
-
-
-  updatePlanStatus(planId: number, planStatus: string) : Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}salesman/plans/update-status/${planId}`, planStatus);
   }
 
 
