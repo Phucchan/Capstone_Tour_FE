@@ -31,7 +31,7 @@ export class ListTourService {
   }
  
 
-  getDiscountTours(page = 0, size = 12, sort?: string): Observable<any> {
+  getDiscountTours(page = 0, size = 12, sort?: string, name?: string): Observable<any> {
   const params: any = {
     page,
     size,
