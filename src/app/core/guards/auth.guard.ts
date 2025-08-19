@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
   CanActivate,
@@ -7,54 +7,52 @@ import {
   UrlTree,
 } from '@angular/router';
 import { UserStorageService } from '../services/user-storage/user-storage.service';
-import { SsrService } from '../services/ssr.service';
+import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
   constructor(
     private userStorageService: UserStorageService,
     private router: Router,
-    private ssrService: SsrService
+    @Inject(PLATFORM_ID) private pid: Object,
   ) {}
 
   async canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Promise<boolean | UrlTree> {
-    if (!this.ssrService.isBrowser) {
-      return false;
-    }
+
+    // ✅ Trên server (SSR): đừng chặn. Có 2 lựa chọn:
+    // 1) Cho qua để prerender không treo:
+    if (isPlatformServer(this.pid)) return true;
+
+    // 2) Hoặc điều hướng về trang public (nếu bạn muốn tuyệt đối không render trang private trên SSR):
+    // if (isPlatformServer(this.pid)) return this.router.parseUrl('/homepage');
+
+    // ✅ Dưới browser mới kiểm tra thật
+    if (!isPlatformBrowser(this.pid)) return true;
 
     const token = await this.userStorageService.getTokenAsync();
     if (!token || token.trim() === '') {
+      // Điều hướng login chỉ nên chạy trên browser
       return this.router.createUrlTree(['/login']);
     }
 
     const userRoles = this.userStorageService.getUserRoles();
 
-    // ======================================================
-    // === LOGIC "MASTER KEY" CHO ADMIN ===
-    // ======================================================
-    // Nếu người dùng có vai trò 'ADMIN', luôn cho phép truy cập.
-    // Điều này phục vụ cho mục đích demo, giúp Admin có thể vào mọi trang.
+    // Master key cho ADMIN (demo)
     if (Array.isArray(userRoles) && userRoles.includes('ADMIN')) {
       return true;
     }
 
-    // --- Logic phân quyền gốc cho các vai trò khác ---
     const expectedRoles: string[] = route.data['expectedRoles'] || [];
-    if (expectedRoles.length === 0) {
-      return true; // Nếu route không yêu cầu quyền, cho phép truy cập
-    }
+    if (expectedRoles.length === 0) return true;
 
     const hasRequiredRole =
       Array.isArray(userRoles) &&
       expectedRoles.some((role) => userRoles.includes(role));
 
     if (!hasRequiredRole) {
-      // Nếu không có quyền, chuyển hướng đến trang không được phép
       return this.router.createUrlTree(['/error/403-unauthorized']);
     }
 
