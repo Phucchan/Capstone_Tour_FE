@@ -1,27 +1,49 @@
-/*
-================================================================
-File: src/app/features/marketing/marketing-blog.routes.ts
-Description: Defines routes for the marketing blog management feature.
-================================================================
-*/
 import { Routes } from '@angular/router';
-import { BlogListComponent } from './pages/blog-list/blog-list.component';
-import { BlogFormComponent } from './pages/blog-form/blog-form.component';
 
 export const MARKETING_ROUTES: Routes = [
   {
     path: '',
-    component: BlogListComponent,
-    title: 'Quản Lý Blog',
+    redirectTo: 'blogs', // Khi vào /marketing, tự động chuyển đến /marketing/blogs
+    pathMatch: 'full',
   },
   {
-    path: 'new',
-    component: BlogFormComponent,
-    title: 'Tạo Bài Viết Mới',
+    path: 'blogs',
+    loadComponent: () =>
+      import('./pages/blog-list/blog-list.component').then(
+        (c) => c.BlogListComponent
+      ),
+    data: {
+      title: 'Quản lý bài viết',
+    },
   },
   {
-    path: 'edit/:id',
-    component: BlogFormComponent,
-    title: 'Chỉnh Sửa Bài Viết',
+    path: 'blogs/create',
+    loadComponent: () =>
+      import('./pages/blog-form/blog-form.component').then(
+        (c) => c.BlogFormComponent
+      ),
+    data: {
+      title: 'Tạo bài viết',
+    },
+  },
+  {
+    path: 'blogs/edit/:id',
+    loadComponent: () =>
+      import('./pages/blog-form/blog-form.component').then(
+        (c) => c.BlogFormComponent
+      ),
+    data: {
+      title: 'Chỉnh sửa bài viết',
+    },
+  },
+  {
+    path: 'discounts',
+    loadComponent: () =>
+      import('./pages/discount-management/discount-management.component').then(
+        (c) => c.DiscountManagementComponent
+      ),
+    data: {
+      title: 'Quản lý khuyến mãi',
+    },
   },
 ];

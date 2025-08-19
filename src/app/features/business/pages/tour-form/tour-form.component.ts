@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
@@ -8,8 +8,9 @@ import {
   FormsModule,
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Observable, of } from 'rxjs';
-import { map, switchMap, tap, finalize } from 'rxjs/operators';
+import { Observable, of, throwError } from 'rxjs';
+import { map, switchMap, tap, finalize, catchError } from 'rxjs/operators';
+
 
 // Core Services & Models
 import { TourService } from '../../../../core/services/tour.service';
@@ -17,8 +18,13 @@ import { RequestBookingService } from '../../services/request-booking.service';
 import {
   TourOptionsData,
   TourDetail,
+  TourPaxRequestDTO,
 } from '../../../../core/models/tour.model';
 import { RequestBookingDetail } from '../../models/request-booking.model';
+import { TourDepartureService } from '../../../../core/services/tour-departure.service';
+import { TourScheduleCreateRequest } from '../../../../core/models/tour-schedule.model';
+import { TourPaxService } from '../../../../core/services/tour-pax.service';
+import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
 
 // NG-ZORRO Imports
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -35,6 +41,8 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
+import { NzSpaceModule } from 'ng-zorro-antd/space';
 
 @Component({
   selector: 'app-tour-form',
@@ -42,9 +50,9 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
     FormsModule,
-    // --- NG-ZORRO ---
+    CurrencyPipe,
+    RouterLink,
     NzFormModule,
     NzInputModule,
     NzSelectModule,
@@ -58,6 +66,8 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
     NzInputNumberModule,
     NzIconModule,
     NzAlertModule,
+    NzDescriptionsModule,
+    NzSpaceModule,
   ],
   templateUrl: './tour-form.component.html',
 })
@@ -68,7 +78,10 @@ export class TourFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private tourService = inject(TourService);
   private requestBookingService = inject(RequestBookingService);
+  private tourDepartureService = inject(TourDepartureService);
   private message = inject(NzMessageService);
+  private tourPaxService = inject(TourPaxService);
+  private currentUserService = inject(CurrentUserService);
 
   // --- State ---
   tourForm!: FormGroup;
@@ -79,6 +92,7 @@ export class TourFormComponent implements OnInit {
   tourId: number | null = null;
   tourOptions$!: Observable<TourOptionsData>;
   durationDays = 0;
+  private initialTourData: TourDetail | null = null;
 
   // --- File Upload State ---
   selectedFile: File | null = null;
@@ -89,6 +103,13 @@ export class TourFormComponent implements OnInit {
   isCustomRequestMode = false;
   requestBookingId: number | null = null;
   requestBookingDetail$: Observable<RequestBookingDetail> | null = null;
+  private requestStartDate: string | null = null;
+  private requestEndDate: string | null = null;
+
+  //Getter để lấy trạng thái tour
+  get tourStatus(): string {
+    return this.tourForm.get('tourStatus')?.value;
+  }
 
   constructor() {
     this.buildForm();
@@ -98,7 +119,8 @@ export class TourFormComponent implements OnInit {
     this.route.queryParamMap.subscribe((queryParams) => {
       const requestBookingIdParam = queryParams.get('requestBookingId');
       const tourTypeParam = queryParams.get('tourType');
-
+      this.requestStartDate = queryParams.get('startDate');
+      this.requestEndDate = queryParams.get('endDate');
       if (requestBookingIdParam && tourTypeParam === 'CUSTOM') {
         this.setupCustomRequestMode(+requestBookingIdParam);
       } else {
@@ -117,11 +139,27 @@ export class TourFormComponent implements OnInit {
     this.isCustomRequestMode = true;
     this.requestBookingId = reqId;
     this.pageTitle = 'Tạo Tour theo Yêu cầu';
-    this.requestBookingDetail$ = this.requestBookingService.getRequestDetail(
-      this.requestBookingId
-    );
+
+    // Sử dụng `tap` để tự động điền form sau khi nhận dữ liệu
+    this.requestBookingDetail$ = this.requestBookingService
+      .getRequestDetail(this.requestBookingId)
+      .pipe(
+        tap((requestDetail) => {
+          // Tự động điền các trường form từ thông tin yêu cầu
+          this.tourForm.patchValue({
+            tourType: 'CUSTOM',
+            departLocationId: requestDetail.departureLocationId,
+            destinationLocationIds: requestDetail.destinationLocationIds,
+            tourThemeIds: requestDetail.tourThemeIds,
+            // Gợi ý tên tour từ yêu cầu của khách
+            name: `Tour theo yêu cầu của ${requestDetail.customerName} - ${
+              requestDetail.destinationDetail || 'Khám phá'
+            }`,
+          });
+        })
+      );
+
     this.tourOptions$ = this.tourService.getTourOptions();
-    this.tourForm.patchValue({ tourType: 'CUSTOM' });
     this.tourForm.get('tourType')?.disable();
     this.isLoading = false;
   }
@@ -148,6 +186,7 @@ export class TourFormComponent implements OnInit {
       next: (data) => {
         this.tourOptions$ = of(data.options);
         if (this.isEditMode && data.detail) {
+          this.initialTourData = data.detail;
           this.patchFormWithTourData(data.detail);
         }
         this.isLoading = false;
@@ -249,25 +288,104 @@ export class TourFormComponent implements OnInit {
         ? this.tourService.updateTourWithFile(this.tourId, formData)
         : this.tourService.createTourWithFile(formData);
 
-    apiCall.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
-      next: (createdTour: TourDetail) => {
-        this.message.success(
-          this.isEditMode
-            ? 'Cập nhật tour thành công!'
-            : `Tạo tour thành công! Mã tour: ${createdTour.code}`
-        );
-        // FIX: Corrected navigation path
-        this.router.navigate(['/business/tours', createdTour.id, 'schedule']);
-      },
-      error: (err) => {
-        console.error('Lỗi khi lưu tour:', err);
-        this.message.error('Có lỗi xảy ra khi lưu tour.');
-      },
-    });
+     apiCall.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
+       next: (savedTour: TourDetail) => {
+         const newStatus = formValue.tourStatus;
+         const oldStatus = this.initialTourData?.tourStatus;
+
+         if (this.isEditMode) {
+           this.message.success('Cập nhật tour thành công!');
+           // Logic kiểm tra việc publish tour custom
+           if (
+             newStatus === 'PUBLISHED' &&
+             oldStatus !== 'PUBLISHED' &&
+             savedTour.tourType === 'CUSTOM' &&
+             savedTour.requestBooking
+           ) {
+             this.autoCreateSchedule(
+               savedTour.id,
+               savedTour.requestBooking.startDate,
+               savedTour.requestBooking.endDate
+             );
+           }
+         } else {
+           this.message.success(
+             `Tạo tour thành công! Mã tour: ${savedTour.code}`
+           );
+           this.router.navigate(['/business/tours', savedTour.id, 'schedule']);
+         }
+       },
+       error: (err: any) => {
+         console.error('Lỗi khi lưu tour:', err);
+         this.message.error('Có lỗi xảy ra khi lưu tour.');
+       },
+     });
+  }
+
+  // Hàm nhận thêm ngày tháng làm tham số
+  private autoCreateSchedule(
+    tourId: number,
+    startDate: string,
+    endDate: string
+  ): void {
+    const currentUser = this.currentUserService.getCurrentUser();
+    if (!currentUser || !currentUser.id) {
+      this.message.error('Không thể xác định người dùng hiện tại.');
+      return;
+    }
+    const coordinatorId = currentUser.id;
+
+    // Lấy thông tin request một lần nữa để biết số lượng khách
+    this.requestBookingService
+      .getRequestDetail(this.requestBookingId!)
+      .pipe(
+        switchMap((requestDetail) => {
+          const totalGuests =
+            requestDetail.adults +
+            requestDetail.children +
+            requestDetail.infants +
+            requestDetail.toddlers;
+          const paxPayload: TourPaxRequestDTO = {
+            minQuantity: totalGuests > 0 ? totalGuests : 1, // Đảm bảo min > 0
+            maxQuantity: totalGuests > 0 ? totalGuests : 1,
+            manualPrice: true,
+          };
+          return this.tourPaxService.createTourPax(tourId, paxPayload);
+        }),
+        switchMap((newPax) => {
+          if (!newPax || !newPax.id) {
+            return throwError(() => new Error('Tạo gói giá thất bại.'));
+          }
+          const tourPaxId = newPax.id;
+          const departureDateISO = new Date(startDate).toISOString();
+          const schedulePayload: TourScheduleCreateRequest = {
+            departureDate: departureDateISO,
+            coordinatorId: coordinatorId,
+            tourPaxId: tourPaxId,
+          };
+          return this.tourDepartureService.createTourSchedule(
+            tourId,
+            schedulePayload
+          );
+        }),
+        catchError((err) => {
+          console.error('Lỗi trong chuỗi tự động tạo lịch trình:', err);
+          this.message.error(
+            'Có lỗi khi tự động tạo ngày khởi hành. Vui lòng thử lại.'
+          );
+          return of(null);
+        })
+      )
+      .subscribe((result) => {
+        if (result) {
+          this.message.success(
+            'Đã tự động thêm ngày khởi hành theo yêu cầu của khách!'
+          );
+        }
+      });
   }
 
   goBack(): void {
-    // FIX: Corrected navigation path
     this.router.navigate(['/business/tours']);
   }
 }

@@ -12,4 +12,7 @@ export class TourDetailService {
   getTourDetail(id: number): Observable<any> {
     return this.http.get<any>(`${environment.apiUrl}/public/tours/${id}`);
   }
+  getPolicies(): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/public/policies`);
+  }
 }

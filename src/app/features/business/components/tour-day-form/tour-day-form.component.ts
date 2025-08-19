@@ -9,7 +9,6 @@ import {
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-// FIX: Import FormsModule for ngModel
 import {
   FormBuilder,
   FormGroup,
@@ -23,6 +22,12 @@ import { finalize, map } from 'rxjs/operators';
 // Core Services & Models
 import { TourService } from '../../../../core/services/tour.service';
 import { PartnerServiceService } from '../../../../core/services/partner-service.service';
+
+// ---  Import service và model thật từ module coordinator ---
+import { PartnerService } from '../../../coordinator/services/partner.service';
+import { PartnerSummary } from '../../../coordinator/models/partner.model';
+
+// Các model này đã được xác nhận là nằm trong tour.model.ts
 import {
   TourOption,
   PartnerServiceShortDTO,
@@ -30,6 +35,7 @@ import {
   TourDayManagerDTO,
   ServiceTypeShortDTO,
   ServiceInfoDTO,
+  PartnerServiceCreateDTO,
 } from '../../../../core/models/tour.model';
 
 // NG-ZORRO Imports
@@ -42,6 +48,9 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzListModule } from 'ng-zorro-antd/list';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 
 @Component({
   selector: 'app-tour-day-form',
@@ -49,7 +58,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    FormsModule, // FIX: Add FormsModule
+    FormsModule,
     // --- NG-ZORRO ---
     NzFormModule,
     NzInputModule,
@@ -59,6 +68,9 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
     NzDividerModule,
     NzListModule,
     NzIconModule,
+    NzTagModule,
+    NzModalModule,
+    NzToolTipModule,
   ],
   templateUrl: './tour-day-form.component.html',
 })
@@ -66,8 +78,10 @@ export class TourDayFormComponent implements OnInit, OnChanges {
   // --- Injections ---
   private fb = inject(FormBuilder);
   private tourService = inject(TourService);
-  private partnerService = inject(PartnerServiceService);
+  private partnerFilterService = inject(PartnerServiceService);
   private message = inject(NzMessageService);
+  // --- SỬA ĐỔI: Inject service thật ---
+  private partnerService = inject(PartnerService);
 
   // --- Inputs & Outputs ---
   @Input() dayData: TourDayManagerDTO | null = null;
@@ -88,11 +102,25 @@ export class TourDayFormComponent implements OnInit, OnChanges {
   selectedPartnerService: number | null = null;
   selectedServicesList: ServiceInfoDTO[] = [];
 
+  // --- New Service Modal State ---
+  isCreateServiceModalVisible = false;
+  isCreatingService = false;
+  newServiceForm!: FormGroup;
+  // --- SỬA ĐỔI: Sử dụng model PartnerSummary thật ---
+  partners$!: Observable<PartnerSummary[]>;
+
   constructor() {
     this.dayForm = this.fb.group({
       title: ['', Validators.required],
       description: [''],
       locationId: [null],
+    });
+
+    this.newServiceForm = this.fb.group({
+      name: ['', Validators.required],
+      partnerId: [null, Validators.required],
+      serviceTypeId: [null, Validators.required],
+      description: [''],
     });
   }
 
@@ -103,6 +131,11 @@ export class TourDayFormComponent implements OnInit, OnChanges {
     this.tourService
       .getServiceTypes()
       .subscribe((types) => (this.serviceTypes = types));
+
+    // Lấy tất cả đối tác đang hoạt động để hiển thị trong dropdown
+    this.partners$ = this.partnerService
+      .getPartners(0, 1000, '', false)
+      .pipe(map((response) => response.data.items));
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -128,13 +161,12 @@ export class TourDayFormComponent implements OnInit, OnChanges {
     this.selectedPartnerService = null;
   }
 
-  // FIX: Changed parameter type from Event to number
   onServiceTypeChange(typeId: number | null): void {
     this.selectedPartnerService = null;
     this.filteredPartnerServices = [];
     if (typeId) {
       this.isServiceLoading = true;
-      this.partnerService
+      this.partnerFilterService
         .getPartnerServicesByType(typeId)
         .pipe(finalize(() => (this.isServiceLoading = false)))
         .subscribe((services) => (this.filteredPartnerServices = services));
@@ -194,10 +226,7 @@ export class TourDayFormComponent implements OnInit, OnChanges {
     }
 
     this.isLoading = true;
-    const payload: TourDayManagerCreateRequestDTO = {
-      ...this.dayForm.value,
-      serviceTypeIds: [], // This field seems no longer needed
-    };
+    const payload: TourDayManagerCreateRequestDTO = this.dayForm.value;
 
     const saveObservable = this.dayData
       ? this.tourService.updateTourDay(this.tourId, this.dayData.id, payload)
@@ -211,5 +240,48 @@ export class TourDayFormComponent implements OnInit, OnChanges {
 
   onClose(): void {
     this.close.emit();
+  }
+
+  // --- New Service Modal Methods ---
+  openCreateServiceModal(): void {
+    this.newServiceForm.reset();
+    this.isCreateServiceModalVisible = true;
+  }
+
+  handleCreateServiceCancel(): void {
+    this.isCreateServiceModalVisible = false;
+  }
+
+  handleCreateServiceOk(): void {
+    if (this.newServiceForm.invalid) {
+      Object.values(this.newServiceForm.controls).forEach((control) => {
+        if (control.invalid) {
+          control.markAsDirty();
+          control.updateValueAndValidity({ onlySelf: true });
+        }
+      });
+      return;
+    }
+
+    if (!this.dayData) return;
+
+    this.isCreatingService = true;
+    const payload: PartnerServiceCreateDTO = this.newServiceForm.value;
+
+    this.tourService
+      .createServiceForTourDay(this.tourId, this.dayData.id, payload)
+      .pipe(finalize(() => (this.isCreatingService = false)))
+      .subscribe({
+        next: (newService: ServiceInfoDTO) => {
+          this.selectedServicesList = [
+            ...this.selectedServicesList,
+            newService,
+          ];
+          this.message.success(`Đã tạo và thêm dịch vụ "${newService.name}"`);
+          this.isCreateServiceModalVisible = false;
+        },
+        error: (err: any) =>
+          this.message.error(err.error?.message || 'Lỗi khi tạo dịch vụ mới'),
+      });
   }
 }

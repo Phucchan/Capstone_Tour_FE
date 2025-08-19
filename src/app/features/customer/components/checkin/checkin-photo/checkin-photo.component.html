@@ -2,44 +2,95 @@
   <h1 class="text-2xl font-semibold mb-4">Ảnh check-in</h1>
 
   <!-- Upload -->
-  <div class="mb-4 flex items-center gap-3">
-    <label class="relative inline-flex items-center">
-      <input type="file" accept="image/*" class="hidden" (change)="onSelectFile($event)" #fi />
-      <button class="rounded-xl px-4 py-2 bg-blue-600 text-white hover:bg-blue-700" (click)="fi.click()" [disabled]="uploading">
-        {{ uploading ? 'Đang tải...' : 'Tải ảnh lên' }}
-      </button>
-    </label>
+  <div class="mb-4 flex flex-col md:flex-row md:items-center gap-3">
+    <div class="flex items-center gap-3">
+      <label class="relative inline-flex items-center">
+        <input type="file" accept="image/*" class="hidden" (change)="onSelectFile($event)" #fi />
+        <button class="rounded-xl px-4 py-2 bg-blue-600 text-white hover:bg-blue-700" (click)="fi.click()"
+          [disabled]="uploading">
+          {{ uploading ? 'Đang tải...' : 'Tải ảnh lên' }}
+        </button>
+      </label>
 
-    <div *ngIf="uploading" class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-      <div class="h-full bg-blue-600 transition-all" [style.width.%]="progress"></div>
+      <div *ngIf="uploading" class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden min-w-[160px]">
+        <div class="h-full bg-blue-600 transition-all" [style.width.%]="progress"></div>
+      </div>
+    </div>
+
+    <!-- change: thanh thao tác lựa chọn -->
+    <div class="flex items-center gap-3 md:ml-auto">
+      <label class="inline-flex items-center gap-2 select-none">
+        <input type="checkbox" class="size-4" [checked]="selectAllChecked" (change)="toggleSelectAll()" />
+        <span>Chọn tất cả</span>
+      </label>
+
+      <button class="rounded-xl px-4 py-2 border text-red-600 hover:bg-red-50 disabled:opacity-50"
+        [disabled]="selected.size === 0" (click)="removeSelected()">
+        Xóa đã chọn ({{ selected.size }})
+      </button>
     </div>
   </div>
 
-  <!-- List -->
+  <!-- Loading -->
   <ng-container *ngIf="isLoading">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 ">
       <div *ngFor="let _ of [1,2,3,4,5,6,7,8]" class="h-32 rounded-xl bg-gray-100 animate-pulse"></div>
     </div>
   </ng-container>
 
+  <!-- Empty -->
   <div *ngIf="!isLoading && photos.length === 0" class="text-gray-500">
     Chưa có ảnh nào. Hãy tải ảnh kỷ niệm của bạn!
   </div>
 
-  <div *ngIf="!isLoading && photos.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-3">
-    <figure *ngFor="let p of photos" class="relative group rounded-xl overflow-hidden border">
-      <img [src]="p.imageUrl" alt="checkin photo" class="w-full h-40 object-cover" />
+  <!-- Grid ảnh -->
+  <div *ngIf="!isLoading && photos.length > 0" class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-10">
+    <figure *ngFor="let p of photos; let i = index" class="relative group rounded-xl overflow-hidden border">
+      <!-- change: checkbox chọn ảnh -->
+      <label
+        class="absolute top-2 left-2 z-10 bg-white/90 rounded-md px-2 py-1 text-xs shadow cursor-pointer select-none">
+        <input type="checkbox" class="mr-1 align-middle" [checked]="selected.has(p.id)" (change)="toggleSelect(p)" />
+      </label>
+
+      <!-- change: click ảnh để mở viewer -->
+      <img [src]="p.imageUrl" alt="checkin photo" class="w-full h-40 object-cover cursor-zoom-in"
+        (click)="openViewer(i)" />
+
       <figcaption class="p-2 text-xs text-gray-600">
         {{ p.createdAt | date:'HH:mm dd/MM/yyyy' }} · +{{ p.pointsEarned }} điểm
       </figcaption>
 
-      <button
-        class="absolute top-2 right-2 bg-white/90 hover:bg-white text-red-600 rounded-lg px-2 py-1 text-xs shadow"
-        (click)="remove(p)"
-        title="Xóa ảnh"
-      >
+      <!-- nút xóa 1 ảnh -->
+      <button class="absolute top-2 right-2 bg-white/90 hover:bg-white text-red-600 rounded-lg px-2 py-1 text-xs shadow"
+        (click)="remove(p)" title="Xóa ảnh">
         Xóa
       </button>
     </figure>
+  </div>
+</div>
+
+<!-- ============ LIGHTBOX VIEWER ============ --> <!-- change -->
+<div *ngIf="viewerOpen" class="fixed inset-0 z-50 bg-black/85 flex items-center justify-center">
+  <!-- Close -->
+  <button class="absolute top-4 right-4 text-white/90 hover:text-white text-2xl" (click)="closeViewer()"
+    aria-label="Đóng">✕</button>
+
+  <!-- Prev -->
+  <button class="absolute left-3 md:left-6 text-white/80 hover:text-white text-3xl" (click)="prev()"
+    aria-label="Ảnh trước">‹</button>
+
+  <!-- Next -->
+  <button class="absolute right-3 md:right-6 text-white/80 hover:text-white text-3xl" (click)="next()"
+    aria-label="Ảnh sau">›</button>
+
+  <!-- Ảnh: phóng to đúng khổ (fit màn hình) -->
+  <div class="max-w-[90vw] max-h-[90vh]">
+    <img [src]="photos[currentIndex].imageUrl" [alt]="photos[currentIndex].id"
+      class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl select-none" draggable="false" />
+  </div>
+
+  <!-- Info -->
+  <div class="absolute bottom-4 left-0 right-0 text-center text-white/85 text-sm">
+    {{ currentIndex + 1 }} / {{ photos.length }}
   </div>
 </div>

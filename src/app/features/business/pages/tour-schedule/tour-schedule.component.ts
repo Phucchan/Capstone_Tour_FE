@@ -22,6 +22,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzListModule } from 'ng-zorro-antd/list';
 
 @Component({
   selector: 'app-tour-schedule',
@@ -41,6 +42,7 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
     NzIconModule,
     NzModalModule,
     NzPopconfirmModule,
+    NzListModule,
   ],
   templateUrl: './tour-schedule.component.html',
 })
@@ -121,7 +123,6 @@ export class TourScheduleComponent implements OnInit {
     });
   }
 
-  // FIX: Added the missing goBack function
   goBack(): void {
     this.router.navigate(['/business/tours']);
   }

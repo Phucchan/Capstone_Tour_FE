@@ -21,10 +21,12 @@ export interface CheckinBooking {
   tourId: number;          // 'tourId' (mặc dù mẫu là 'tourId' viết thường)
   bookingCode: string;
   tourName: string;
+  tourImage: string; // ảnh đại diện tour
   status: string;          // trạng thái booking
   totalAmount: number;
   createdAt: string;       // ISO string
-  departureDate: string;   // ISO string
+  departureDate: string;
+  endDate: string;         // ISO string
   hasRefundInfo: boolean;
 }
 
@@ -80,7 +82,9 @@ export class CheckinService {
     return this.http.delete<ApiResponse<string>>(
       `${environment.apiUrl}/customer/${userId}/checkin/photos/${checkInId}`
     );
+    
   }
+  
 
   // Helpers (tuỳ chọn dùng ở component)
   extractProgress = (e: HttpEvent<unknown>) =>

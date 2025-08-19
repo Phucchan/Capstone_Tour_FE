@@ -1,90 +1,61 @@
-<div class="container mx-auto p-4 sm:p-6 lg:p-8">
-    <form [formGroup]="blogForm" (ngSubmit)="onSubmit()" class="space-y-8 divide-y divide-gray-200">
-        <div class="space-y-8 divide-y divide-gray-200">
-            <div>
-                <div>
-                    <h1 class="text-2xl font-bold leading-6 text-gray-900">
-                        {{ isEditMode ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới' }}
-                    </h1>
-                    <p class="mt-1 text-sm text-gray-500">
-                        Điền đầy đủ thông tin để {{ isEditMode ? 'cập nhật' : 'tạo' }} một bài viết hấp dẫn cho khách hàng.
-                    </p>
-                </div>
+<nz-card [nzTitle]="isEditMode ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới'">
+  <p class="mb-6 text-gray-500">
+    Điền đầy đủ thông tin để {{ isEditMode ? 'cập nhật' : 'tạo' }} một bài viết hấp dẫn cho khách hàng.
+  </p>
 
-                <!-- Loading and Error States -->
-                <div *ngIf="isLoading && isEditMode" class="text-center py-10">
-                    <p>Đang tải dữ liệu bài viết...</p>
-                </div>
-                <div *ngIf="error" class="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                    <strong class="font-bold">Lỗi!</strong>
-                    <span class="block sm:inline">{{ error }}</span>
-                </div>
+  <nz-spin [nzSpinning]="isLoading">
+    <nz-alert *ngIf="error" nzType="error" [nzMessage]="error" nzShowIcon class="mb-4"></nz-alert>
 
-                <div *ngIf="!isLoading || !isEditMode" class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                    <!-- Title -->
-                    <div class="sm:col-span-6">
-                        <label for="blog-title" class="block text-sm font-medium text-gray-700">Tiêu đề bài viết</label>
-                        <div class="mt-1">
-                            <input type="text" id="blog-title" formControlName="title" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="VD: 10 địa điểm không thể bỏ lỡ ở Đà Nẵng">
-                            <div *ngIf="blogForm.get('title')?.invalid && blogForm.get('title')?.touched" class="text-red-600 text-sm mt-1">
-                                Tiêu đề là bắt buộc.
-                            </div>
-                        </div>
-                    </div>
+    <form nz-form [formGroup]="blogForm" (ngSubmit)="onSubmit()">
+      <nz-form-item>
+        <nz-form-label [nzSpan]="24" nzRequired>Tiêu đề bài viết</nz-form-label>
+        <nz-form-control [nzSpan]="24" nzErrorTip="Vui lòng nhập tiêu đề!">
+          <input nz-input formControlName="title" placeholder="VD: 10 địa điểm không thể bỏ lỡ ở Đà Nẵng" />
+        </nz-form-control>
+      </nz-form-item>
 
-                    <!-- Description -->
-                    <div class="sm:col-span-6">
-                        <label for="blog-description" class="block text-sm font-medium text-gray-700">Mô tả ngắn</label>
-                        <div class="mt-1">
-                            <textarea id="blog-description" formControlName="description" rows="3" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Một mô tả ngắn gọn, hấp dẫn về nội dung bài viết."></textarea>
-                             <div *ngIf="blogForm.get('description')?.invalid && blogForm.get('description')?.touched" class="text-red-600 text-sm mt-1">
-                                Mô tả là bắt buộc.
-                            </div>
-                        </div>
-                    </div>
+      <nz-form-item>
+        <nz-form-label [nzSpan]="24" nzRequired>Mô tả ngắn</nz-form-label>
+        <nz-form-control [nzSpan]="24" nzErrorTip="Vui lòng nhập mô tả ngắn!">
+          <textarea nz-input formControlName="description" placeholder="Một mô tả ngắn gọn, hấp dẫn về nội dung bài viết." [nzAutosize]="{ minRows: 3, maxRows: 5 }"></textarea>
+        </nz-form-control>
+      </nz-form-item>
 
-                    <!-- Thumbnail URL -->
-                    <div class="sm:col-span-6">
-                        <label for="blog-thumbnail" class="block text-sm font-medium text-gray-700">URL Ảnh bìa (Thumbnail)</label>
-                        <div class="mt-1">
-                            <input type="text" id="blog-thumbnail" formControlName="thumbnailImageUrl" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="[https://example.com/image.jpg](https://example.com/image.jpg)">
-                             <div *ngIf="blogForm.get('thumbnailImageUrl')?.invalid && blogForm.get('thumbnailImageUrl')?.touched" class="text-red-600 text-sm mt-1">
-                                URL ảnh bìa là bắt buộc.
-                            </div>
-                        </div>
-                    </div>
+      <nz-form-item>
+        <nz-form-label [nzSpan]="24" nzRequired>URL Ảnh bìa (Thumbnail)</nz-form-label>
+        <nz-form-control [nzSpan]="24" nzErrorTip="Vui lòng nhập URL ảnh bìa!">
+          <input nz-input formControlName="thumbnailImageUrl" placeholder="https://example.com/image.jpg" />
+        </nz-form-control>
+      </nz-form-item>
 
-                    <!-- Content -->
-                    <div class="sm:col-span-6">
-                        <label for="blog-content" class="block text-sm font-medium text-gray-700">Nội dung</label>
-                        <div class="mt-1">
-                            <editor formControlName="content" [init]="tinymceConfig"></editor>
-                            <div *ngIf="blogForm.get('content')?.invalid && blogForm.get('content')?.touched" class="text-red-600 text-sm mt-1">
-                                Nội dung là bắt buộc.
-                            </div>
-                        </div>
-                    </div>
+      <nz-form-item>
+        <nz-form-label [nzSpan]="24">Tags</nz-form-label>
+        <nz-form-control [nzSpan]="24">
+            <nz-select formControlName="tagIds" nzMode="multiple" nzPlaceHolder="Chọn các thẻ liên quan">
+                <nz-option *ngFor="let tag of tagOptions" [nzLabel]="tag.label" [nzValue]="tag.value"></nz-option>
+            </nz-select>
+        </nz-form-control>
+      </nz-form-item>
 
-                    <!-- Tags (Placeholder) -->
-                    <div class="sm:col-span-6">
-                         <label for="blog-tags" class="block text-sm font-medium text-gray-700">Tags</label>
-                         <div class="mt-1">
-                            <input type="text" name="blog-tags" id="blog-tags" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Sẽ được thay thế bằng component chọn tag">
-                            <p class="mt-2 text-sm text-gray-500">Gắn thẻ để giúp người dùng dễ dàng tìm thấy bài viết.</p>
-                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      <nz-form-item>
+        <nz-form-label [nzSpan]="24" nzRequired>Nội dung</nz-form-label>
+        <nz-form-control [nzSpan]="24" nzErrorTip="Vui lòng nhập nội dung bài viết!">
+          <!-- THAY ĐỔI Ở ĐÂY: Thay thế <editor> bằng <textarea> -->
+          <textarea
+            nz-input
+            formControlName="content"
+            placeholder="Nhập nội dung bài viết tại đây..."
+            [nzAutosize]="{ minRows: 15, maxRows: 30 }"
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
 
-        <div class="pt-5">
-            <div class="flex justify-end">
-                <button (click)="onCancel()" type="button" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Hủy</button>
-                <button type="submit" [disabled]="isLoading" class="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span *ngIf="isLoading">Đang xử lý...</span>
-                    <span *ngIf="!isLoading">{{ isEditMode ? 'Cập nhật' : 'Lưu và Xuất bản' }}</span>
-                </button>
-            </div>
-        </div>
+      <div class="pt-5 flex justify-end">
+        <button nz-button type="button" (click)="onCancel()" class="mr-2">Hủy</button>
+        <button nz-button nzType="primary" type="submit" [nzLoading]="isLoading">
+          {{ isEditMode ? 'Cập nhật' : 'Lưu và Xuất bản' }}
+        </button>
+      </div>
     </form>
-</div>
+  </nz-spin>
+</nz-card>

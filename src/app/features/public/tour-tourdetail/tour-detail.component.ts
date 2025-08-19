@@ -11,6 +11,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { SsrService } from '../../../core/services/ssr.service';
 import { DurationFormatPipe } from '../../../shared/pipes/duration-format.pipe';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser'; 
 
 @Component({
   selector: 'app-tour-detail',
@@ -34,6 +35,23 @@ export class TourDetailComponent {
   price: number | undefined;
   isBrowser: boolean = false;
   selectedRange: string[] = [];
+  openDays = new Set<number>();           // CHANGE: lưu các index ngày đang mở
+  isShow = false;
+  // CHANGE: state điều khoản
+  policiesLoading = true;              // CHANGE
+  policy: {                            // CHANGE
+    tourPolicy?: string;               // CHANGE
+    cancellationPolicy?: string;       // CHANGE
+    bookingPolicy?: string;            // CHANGE
+    tourPrice?: string;                // CHANGE
+  } | null = null;                     // CHA
+  // Toggle accordion
+  policyOpen = {                                                        // CHANGE
+    tour: false,                                                        // CHANGE
+    booking: false,                                                     // CHANGE
+    cancel: false,                                                      // CHANGE
+    price: false,                                                       // CHANGE
+  };                 
 
 
   @ViewChild('calendar') calendarComponent!: FullCalendarComponent;
@@ -60,7 +78,8 @@ export class TourDetailComponent {
     private datePipe: DatePipe,
     private viewportScroller: ViewportScroller,
     private userStorageService: UserStorageService,
-    private ssrService: SsrService
+    private ssrService: SsrService,
+     private sanitizer: DomSanitizer     
   ) {
 
     this.userId = this.userStorageService.getUserId();
@@ -75,6 +94,10 @@ export class TourDetailComponent {
         next: (response) => {
           this.tourDetails = response.data;
           this.tourDetails?.days?.sort((a: any, b: any) => a.id - b.id);
+          // CHANGE: mở mặc định ngày đầu tiên nếu có
+          if (this.tourDetails?.days?.length) {                            // CHANGE
+            this.openDays.add(0);                                          // CHANGE
+          }                 
 
           this.events = this.tourDetails?.schedules.map((schedule: any) => {
             const final = this.priceAfterDiscount(schedule.price, schedule.discountPercent);
@@ -142,6 +165,15 @@ export class TourDetailComponent {
           this.isLoading = false;
         }
       });
+       this.tourDetailService.getPolicies().subscribe({                    // CHANGE
+      next: (res) => {                                                  // CHANGE
+        const first = Array.isArray(res?.data) ? res.data[0] : res?.data; // CHANGE
+        this.policy = first ?? null;                                     // CHANGE
+        this.policiesLoading = false;                                    // CHANGE
+      },                                                                 // CHANGE
+      error: () => { this.policiesLoading = false; }                     // CHANGE
+    });                                                                  // CHANGE
+  
     } else {
       console.error('Invalid tour id');
       this.isLoading = false;
@@ -241,10 +273,28 @@ export class TourDetailComponent {
       this.router.navigate(['/login'])
     }
   }
+  formatPolicy(text?: string): SafeHtml {                                // CHANGE
+    if (!text) return '';                                                // CHANGE
+    // 1) Chuẩn hóa xuống dòng gốc \n -> <br>
+    let s = text.replace(/\r?\n/g, '<br>');                              // CHANGE
+    // 2) Bất cứ khi nào có '-' ở đầu chuỗi hoặc sau khoảng trắng -> ngắt dòng
+    //    Tránh phá các từ như e-mail vì sẽ không có khoảng trắng phía trước.
+    s = s.replace(/(^|\s)-\s*/g, '<br>- ');                              // CHANGE
+    return this.sanitizer.bypassSecurityTrustHtml(s);                    // CHANGE
+  }                                             
 
-  isShow = false;
+
 
   showOrHide() {
     this.isShow = !this.isShow;
   }
+   // ==== Toggle từng ngày trong “Nội dung Tour” ====
+  toggleDay(idx: number) {                    // CHANGE
+    if (this.openDays.has(idx)) this.openDays.delete(idx);
+    else this.openDays.add(idx);
+  }                                           // CHANGE
+
+  isDayOpen(idx: number): boolean {           // CHANGE
+    return this.openDays.has(idx);
+  }                                     
 }

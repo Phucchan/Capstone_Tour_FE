@@ -2,19 +2,19 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 
-// --- [CẬP NHẬT] Imports cho các module của NG-ZORRO ---
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
 import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzInputModule } from 'ng-zorro-antd/input';
 
-// --- Imports từ project của bạn ---
 import { SellerBookingService } from '../../services/seller-booking.service';
 import { RequestBookingSummary } from '../../models/request-booking-summary.model';
 import { Paging } from '../../../../core/models/paging.model';
@@ -27,7 +27,7 @@ import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
     CommonModule,
     RouterLink,
     FormatDatePipe,
-    // NG-ZORRO Modules
+    FormsModule,
     NzTableModule,
     NzButtonModule,
     NzEmptyModule,
@@ -35,6 +35,8 @@ import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
     NzPageHeaderModule,
     NzBreadCrumbModule,
     NzPopconfirmModule,
+    NzModalModule,
+    NzInputModule,
   ],
   templateUrl: './seller-request-list.component.html',
 })
@@ -75,12 +77,11 @@ export class SellerRequestListComponent implements OnInit {
   }
 
   onApprove(requestId: number): void {
-    // Logic xác nhận đã được chuyển sang nz-popconfirm trên template
     this.sellerService.approveRequestBooking(requestId).subscribe({
       next: (res) => {
         if (res && res.data) {
           this.message.success('Duyệt yêu cầu thành công!');
-          this.loadRequests(); // Tải lại danh sách sau khi duyệt thành công
+          this.loadRequests();
         } else {
           this.message.error(res.message || 'Duyệt yêu cầu thất bại.');
         }
@@ -90,8 +91,48 @@ export class SellerRequestListComponent implements OnInit {
     });
   }
 
+  // ---  Hàm hiển thị modal từ chối ---
+  showRejectModal(requestId: number): void {
+    let reason = '';
+    this.modal.create({
+      nzTitle: 'Xác nhận từ chối yêu cầu',
+      nzContent: `
+        <div>
+          <p>Vui lòng nhập lý do từ chối yêu cầu này. Lý do sẽ được gửi cho khách hàng.</p>
+          <textarea nz-input [(ngModel)]="reason" placeholder="VD: Không đủ nguồn lực để đáp ứng..." [nzAutosize]="{ minRows: 3, maxRows: 5 }"></textarea>
+        </div>
+      `,
+      nzOkText: 'Xác nhận từ chối',
+      nzOkDanger: true,
+      nzOnOk: () => {
+        if (!reason || reason.trim() === '') {
+          this.message.error('Lý do từ chối không được để trống.');
+          return false;
+        }
+        this.onReject(requestId, reason);
+        return true;
+      },
+      nzCancelText: 'Hủy',
+    });
+  }
+
+  // --- Hàm xử lý gọi API từ chối ---
+  private onReject(requestId: number, reason: string): void {
+    this.sellerService.rejectRequestBooking(requestId, reason).subscribe({
+      next: (res) => {
+        if (res && res.data) {
+          this.message.success('Đã từ chối yêu cầu thành công!');
+          this.loadRequests();
+        } else {
+          this.message.error(res.message || 'Từ chối yêu cầu thất bại.');
+        }
+      },
+      error: (err) =>
+        this.message.error(err.error?.message || 'Đã xảy ra lỗi.'),
+    });
+  }
+
   onPageIndexChange(page: number): void {
-    // nz-table trả về page index 1-based, cần trừ 1 để gọi API
     this.paging.page = page - 1;
     this.loadRequests();
   }

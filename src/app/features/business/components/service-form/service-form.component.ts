@@ -19,7 +19,7 @@ import {
   PartnerServiceShortDTO,
   TourDayManagerDTO,
 } from '../../../../core/models/tour.model';
-import { TourService } from '../../../../core/services/tour.service';
+import { PartnerServiceService } from '../../../../core/services/partner-service.service';
 
 @Component({
   selector: 'app-service-form',
@@ -29,7 +29,7 @@ import { TourService } from '../../../../core/services/tour.service';
 })
 export class ServiceFormComponent implements OnInit {
   private fb = inject(FormBuilder);
-  private tourService = inject(TourService);
+  private partnerService = inject(PartnerServiceService);
 
   @Input() isVisible = false;
   @Input() tourDays: TourDayManagerDTO[] = [];
@@ -44,7 +44,7 @@ export class ServiceFormComponent implements OnInit {
       dayId: [null, Validators.required],
       serviceId: [null, Validators.required],
     });
-    this.allServices$ = this.tourService.getAllPartnerServices();
+ this.allServices$ = this.partnerService.getPartnerServices();
   }
 
   onSave(): void {

@@ -34,13 +34,13 @@
         <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="8">
           <nz-card>
             <nz-statistic [nzValue]="totalBookings" [nzTitle]="'Tổng Lượt Đặt'" [nzPrefix]="bookingIcon"></nz-statistic>
-            <ng-template #bookingIcon><i nz-icon nzType="file-done" nzTheme="twotone"></i></ng-template>
+            <ng-template #bookingIcon><i nz-icon nzType="file" nzTheme="twotone"></i></ng-template>
           </nz-card>
         </div>
         <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="8">
           <nz-card>
             <nz-statistic [nzValue]="totalNewUsers" [nzTitle]="'Khách Hàng Mới'" [nzPrefix]="userIcon"></nz-statistic>
-            <ng-template #userIcon><i nz-icon nzType="user-add" nzTheme="twotone" [nzTwotoneColor]="'#eb2f96'"></i></ng-template>
+            <ng-template #userIcon><i nz-icon nzType="user-add" nzTheme="outline"></i></ng-template>
           </nz-card>
         </div>
       </div>
