@@ -86,6 +86,13 @@ export const PUBLIC_ROUTES: Route[] = [
         component: CheckinPhotosComponent,
         canActivate: [AuthGuard]
       },
+      {
+        path: 'chinh-sach-bao-ve-du-lieu-ca-nhan',
+        loadComponent: () =>
+          import('./privacy-policy/privacy-policy.component')
+            .then(m => m.PrivacyPolicyComponent),
+        title: 'Chính sách bảo vệ dữ liệu cá nhân - Đi Đâu TOUR', // SEO title
+      },
 
 
     ],

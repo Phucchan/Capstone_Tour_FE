@@ -8,6 +8,7 @@ import { FriendService } from '../../../customer/services/friend.service';
 import { CommonModule } from '@angular/common';
 import { ChatIconComponent } from '../../../../shared/components/chat-icon/chat-icon.component';
 import { ChatService } from '../../../customer/services/chat.service';
+import { BannerComponent } from '../../../../shared/components/banner/banner.component';
 
 
 @Component({
@@ -21,6 +22,7 @@ import { ChatService } from '../../../customer/services/chat.service';
     FooterComponent,
     CommonModule,
     ChatIconComponent,
+    BannerComponent
   ],
 })
 export class PublicLayoutComponent {
