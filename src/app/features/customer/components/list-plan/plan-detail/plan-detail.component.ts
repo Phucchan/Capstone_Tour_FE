@@ -249,15 +249,12 @@ export class PlanDetailComponent {
   }
 
   onSave() {
-    console.log(this.plan);
-    this.isEdited = false;
 
-    const content = '{"plan":' + JSON.stringify(this.plan) + '}';
-
-    this.planService.updatePlan(this.plan.id, content).subscribe(
+    this.planService.updatePlan(this.plan.id, this.plan).subscribe(
       (response) => {
         console.log('Plan updated successfully:', response);
         this.triggerSuccess();
+        this.isEdited = false;
       },
       (error) => {
         console.error('Error updating plan:', error);

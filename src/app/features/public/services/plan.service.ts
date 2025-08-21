@@ -29,9 +29,7 @@ export class PlanService {
   }
 
   savePlan(planId: any): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}/public/plans/save`, {
-      id: planId
-    });
+    return this.http.post<any>(`${environment.apiUrl}/public/plans/save`, planId);
   }
 
 
