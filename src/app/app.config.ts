@@ -57,6 +57,7 @@ import {
   StopOutline,
   MailOutline,
   MinusCircleOutline,
+  EyeInvisibleOutline,
 } from '@ant-design/icons-angular/icons';
 
 registerLocaleData(vi);
@@ -96,6 +97,7 @@ const icons = [
   StopOutline,
   MailOutline,
   MinusCircleOutline,
+  EyeInvisibleOutline,
 ];
 
 export const appConfig: ApplicationConfig = {

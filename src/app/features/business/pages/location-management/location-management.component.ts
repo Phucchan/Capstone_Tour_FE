@@ -1,16 +1,9 @@
-/*
- * FILE: src/app/features/business/pages/location-management/location-management.component.ts
- * MÔ TẢ:
- * - Thêm các module NG-ZORRO cần thiết.
- * - Thay thế modal tự quản lý bằng NzModalService để hiển thị form.
- */
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, finalize } from 'rxjs/operators';
 
-// --- [THAY ĐỔI] Import các module của NG-ZORRO ---
 import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -20,6 +13,9 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzAvatarModule } from 'ng-zorro-antd/avatar';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+
 
 import { LocationService } from '../../services/location.service';
 import { LocationDTO } from '../../../../core/models/location.model';
@@ -38,6 +34,8 @@ import { LocationFormComponent } from '../../components/location-form/location-f
     NzTagModule,
     NzEmptyModule,
     NzAvatarModule,
+    NzDropDownModule,
+    NzPopconfirmModule,
   ],
   templateUrl: './location-management.component.html',
 })
@@ -103,25 +101,45 @@ export class LocationManagementComponent implements OnInit {
     const modalRef = this.modalService.create({
       nzTitle: modalTitle,
       nzContent: LocationFormComponent,
-      // [SỬA LỖI] Xóa thuộc tính 'nzComponentParams' không hợp lệ.
-      // Dữ liệu sẽ được truyền vào ở bước dưới.
       nzFooter: null, // Form sẽ tự có nút bấm
       nzWidth: '600px',
     });
 
-    // [SỬA LỖI] Gán dữ liệu vào @Input của component sau khi modal được tạo.
     if (modalRef.componentInstance) {
       modalRef.componentInstance.locationToEdit = location
         ? { ...location }
         : null;
     }
 
-    // Lắng nghe sự kiện khi form được lưu
     modalRef.componentInstance?.formSaved.subscribe((success: boolean) => {
       if (success) {
         modalRef.close();
         this.loadLocations(); // Tải lại dữ liệu
       }
     });
+  }
+
+  /**
+   * Xử lý việc thay đổi trạng thái ẩn/hiện của địa điểm
+   * @param location - Địa điểm cần thay đổi
+   * @param newStatus - Trạng thái mới (true = ẩn, false = hiện)
+   */
+  changeStatus(location: LocationDTO, newStatus: boolean): void {
+    this.isLoading = true; // Hiển thị loading trên bảng
+    this.locationService
+      .changeLocationStatus(location.id, newStatus)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: () => {
+          this.message.success(
+            `Đã ${newStatus ? 'ẩn' : 'hiện'} địa điểm "${location.name}"`
+          );
+          this.loadLocations(); // Tải lại dữ liệu để cập nhật bảng
+        },
+        error: (err) => {
+          console.error('Lỗi khi thay đổi trạng thái:', err);
+          this.message.error('Có lỗi xảy ra, không thể thay đổi trạng thái.');
+        },
+      });
   }
 }

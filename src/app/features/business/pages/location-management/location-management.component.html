@@ -1,9 +1,3 @@
-<!--
- * FILE: src/app/features/business/pages/location-management/location-management.component.html
- * MÔ TẢ:
- * - Giao diện đã được viết lại hoàn toàn bằng NG-ZORRO.
- * - Modal giờ đây được quản lý bởi NzModalService.
--->
 <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <!-- Page Header -->
   <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
@@ -61,7 +55,30 @@
               </nz-tag>
             </td>
             <td class="text-center">
-              <a (click)="openLocationModal(location)">Sửa</a>
+                <button nz-button nz-dropdown [nzDropdownMenu]="actionMenu" nzPlacement="bottomRight" nzShape="circle">
+                    <i nz-icon nzType="ellipsis" nzTheme="outline"></i>
+                </button>
+                <nz-dropdown-menu #actionMenu="nzDropdownMenu">
+                    <ul nz-menu>
+                        <li nz-menu-item (click)="openLocationModal(location)">
+                            <i nz-icon nzType="edit" nzTheme="outline"></i> Sửa thông tin
+                        </li>
+                        <li nz-menu-item *ngIf="!location.deleted"
+                            nz-popconfirm
+                            [nzPopconfirmTitle]="'Bạn có chắc muốn ẩn địa điểm này?'"
+                            nzPopconfirmPlacement="topRight"
+                            (nzOnConfirm)="changeStatus(location, true)">
+                            <i nz-icon nzType="eye-invisible" nzTheme="outline"></i> Ẩn địa điểm
+                        </li>
+                        <li nz-menu-item *ngIf="location.deleted"
+                            nz-popconfirm
+                            [nzPopconfirmTitle]="'Bạn có chắc muốn hiện lại địa điểm này?'"
+                            nzPopconfirmPlacement="topRight"
+                            (nzOnConfirm)="changeStatus(location, false)">
+                            <i nz-icon nzType="eye" nzTheme="outline"></i> Hiện địa điểm
+                        </li>
+                    </ul>
+                </nz-dropdown-menu>
             </td>
           </tr>
         </tbody>
