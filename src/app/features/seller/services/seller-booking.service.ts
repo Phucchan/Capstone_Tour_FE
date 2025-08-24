@@ -151,11 +151,17 @@ export class SellerBookingService {
 
   getRequestBookings(
     page: number,
-    size: number
+    size: number,
+    search?: string
   ): Observable<ApiResponse<Paging<RequestBookingSummary>>> {
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
+
+    // chỉ set search khi có giá trị
+    if (search && search.trim().length > 0) {
+      params = params.set('search', search.trim());
+    }
     return this.http.get<ApiResponse<Paging<RequestBookingSummary>>>(
       this.requestApiUrl,
       { params }

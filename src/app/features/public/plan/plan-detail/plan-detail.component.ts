@@ -165,7 +165,7 @@ export class PlanPreviewComponent {
       next: (response) => {
         console.log('Plan saved successfully:', response);
         this.isLoading = false;
-        //this.router.navigate(['/customer/plan-detail', this.plan.id]);
+        this.router.navigate(['/customer/plan-detail', this.plan.id]);
       },
       error: (error) => {
         console.error('Error saving plan:', error);

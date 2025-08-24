@@ -6,7 +6,7 @@ import {
   TemplateRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   FormBuilder,
   FormGroup,
@@ -29,6 +29,7 @@ import {
 
 // Shared Pipes
 import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
+import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
 
 // NG-ZORRO Imports
 import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
@@ -53,6 +54,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
     CommonModule,
     ReactiveFormsModule,
     CurrencyVndPipe,
+    FormatDatePipe,
     NzPageHeaderModule,
     NzButtonModule,
     NzTableModule,
@@ -77,6 +79,7 @@ export class TourDepartureDateComponent implements OnInit, OnDestroy {
   private tourDepartureService = inject(TourDepartureService);
   private modalService = inject(NzModalService);
   private message = inject(NzMessageService);
+  private router = inject(Router);
 
   // --- State ---
   tourId!: number;
@@ -263,5 +266,8 @@ export class TourDepartureDateComponent implements OnInit, OnDestroy {
   formatPaxOption(pax: TourPaxOption): string {
     if (!pax) return '';
     return `Gói ${pax.minQuantity} - ${pax.maxQuantity} khách`;
+  }
+  goBack(): void {
+    this.router.navigate(['/business/tours', this.tourId]);
   }
 }

@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { ca } from 'date-fns/locale';
 
 @Injectable({
   providedIn: 'root'
@@ -54,16 +55,17 @@ export class PlanService {
   }
 
 
-  fetchProviderByCategoryAndLocationId(locationId: number, categoryName: string, ids: number[]): Observable<any> { // Convert array to comma-separated string
+  fetchProviderByCategoryAndLocationId(plandId: string, categoryName: string, ids: number[]): Observable<any> { // Convert array to comma-separated string
 
-    return this.http.get<any>(`${environment.apiUrl}/public/plans/service-providers/list`, { 
-      params : {
-        locationId: locationId,
-        categoryName: categoryName,
-        ids: ids
+
+    console.log(categoryName.toUpperCase());
+
+    return this.http.get<any>(`${environment.apiUrl}/public/plans/partner/list/${plandId}`, {
+      params: {
+        categoryName: categoryName.toUpperCase(),
+        locationIds: ids
       }
-      
-     });
+    });
   }
 
   fetchActivities(locationName: string, preferences: string, startIndex: number): Observable<any> {

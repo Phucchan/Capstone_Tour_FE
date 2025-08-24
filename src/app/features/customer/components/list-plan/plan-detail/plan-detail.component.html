@@ -142,13 +142,13 @@
                                 <ol cdkDropList [cdkDropListData]="selectedDay?.activities"
                                     [cdkDropListDisabled]="!isEdited" (cdkDropListDropped)="dropActivity($event)">
                                     <li *ngFor="let activity of selectedDay?.activities; let last = last"
-                                        class="mb-5 ms-6 overflow-y-hidden shadow" [class]="last ? '!mb-0' : ''"
+                                        class="mb-5 ms-6 overflow-y-hidden" [class]="last ? '!mb-0' : ''"
                                         cdkDrag>
                                         <span
                                             class="absolute flex items-center justify-center w-8 h-8 bg-sky-200 rounded-full -start-4 ring-4 ring-white dark:ring-gray-900 dark:bg-green-900">
                                         </span>
                                         <div class="relative pl-6">
-                                            <div class="bg-white rounded-lg  p-4 flex justify-between items-center">
+                                            <div class="bg-white rounded-lg shadow p-4 flex justify-between items-center">
                                                 <div class="flex">
                                                     <img [src]="activity.imageUrl" alt="image"
                                                         class="w-24 h-20 object-cover rounded-md mr-4" />
@@ -352,7 +352,7 @@
                                     } @else {
                                     <div class="flex hover:bg-gray-100 cursor-pointer"
                                         *ngFor="let provider of filteredProviders" (click)="onSelectProvider(provider)">
-                                        <img [src]="provider?.imageUrl" alt="image"
+                                        <img [src]="provider?.logoUrl" alt="image"
                                             class="w-24 h-20 object-cover rounded-md mr-4" />
                                         <div>
                                             <h3 class="text-md font-bold">
@@ -500,7 +500,7 @@
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Thời gian bắt
                                             đầu</label>
-                                        <input formControlName="startTime" type="time"
+                                        <input formControlName="startTime" type="datetime-local"
                                             class="w-full border px-4 py-2 rounded-md focus:ring-2 focus:ring-blue-500" />
                                     </div>
 
@@ -508,7 +508,7 @@
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Thời gian kết
                                             thúc</label>
-                                        <input formControlName="endTime" type="time"
+                                        <input formControlName="endTime" type="datetime-local"
                                             class="w-full border px-4 py-2 rounded-md focus:ring-2 focus:ring-blue-500" />
                                     </div>
 
@@ -591,12 +591,12 @@
 
                     <div class="col-span-2 sm:col-span-1">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Thời gian bắt đầu</label>
-                        <input formControlName="startTime" type="time"
+                        <input formControlName="startTime" type="datetime-local"
                             class="w-full border px-4 py-2 rounded-md focus:ring-2 focus:ring-blue-500" />
                     </div>
                     <div class="col-span-2 sm:col-span-1">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Thời gian kết thúc</label>
-                        <input formControlName="endTime" type="time"
+                        <input formControlName="endTime" type="datetime-local"
                             class="w-full border px-4 py-2 rounded-md focus:ring-2 focus:ring-blue-500" />
                     </div>
 
