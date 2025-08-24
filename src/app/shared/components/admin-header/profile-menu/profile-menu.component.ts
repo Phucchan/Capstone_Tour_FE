@@ -68,6 +68,6 @@ export class ProfileMenuComponent implements OnInit {
     this.socketService.disconnect(this.user);
     this.userStorageService.logout();
     this.currentUserService.clearCurrentUser();
-    this.router.navigate(['/homepage']);
+    this.router.navigate(['/login']);
   }
 }

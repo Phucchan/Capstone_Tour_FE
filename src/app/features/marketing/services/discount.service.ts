@@ -1,80 +1,119 @@
-// src/app/features/marketing/services/discount.service.ts
+// src/app/core/services/discount.service.ts
 
-import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core'; 
+import { HttpClient, HttpParams } from '@angular/common/http'; 
+import { Observable } from 'rxjs'; 
 import { environment } from '../../../../environments/environment';
-import { ApiResponse } from '../../../core/models/api-response.model';
-import { Paging } from '../../../core/models/paging.model';
-import {
-  TourDiscountRequest,
-  TourDiscountSummary,
-  TourScheduleSelectItem,
-} from '../models/tour-discount.model';
+import { map } from 'rxjs/operators';
 
-@Injectable({
-  providedIn: 'root',
-})
-export class DiscountService {
-  private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/marketing/discounts`;
-  private scheduleApiUrl = `${environment.apiUrl}/business/schedules`; // Giả định URL API để tìm kiếm schedule
 
-  /**
-   * Lấy danh sách khuyến mãi có phân trang và tìm kiếm.
-   * @param keyword Từ khóa tìm kiếm (tên tour)
-   * @param page Trang hiện tại
-   * @param size Số lượng mục trên mỗi trang
-   * @returns Danh sách khuyến mãi
-   */
-  getDiscounts(
-    keyword: string,
-    page: number,
-    size: number
-  ): Observable<ApiResponse<Paging<TourDiscountSummary>>> {
-    let params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
-    if (keyword) {
-      params = params.set('keyword', keyword);
+// ===== Models (đơn giản hóa theo swagger bạn cung cấp) ===== 
+export interface ApiResponse<T> { 
+  status: number; 
+  code: number | string; 
+  message: string; 
+  data: T; 
+} 
+
+export interface Paged<T> { 
+  page: number; 
+  size: number; 
+  total: number; 
+  items: T[]; 
+} 
+
+export interface TourDiscountListItem { 
+  id: number; // tourId 
+  name: string; 
+  thumbnailImage?: string; 
+  durationDays?: number; 
+  typeName?: string; 
+  tourStatus?: string; 
+  hasDiscount?: boolean; // server có thể trả hoặc bạn map thêm 
+  createdAt?: string; 
+  createdByName?: string; 
+} 
+
+export interface ScheduleItem { 
+  id: number; // scheduleId 
+  coordinatorId?: number; 
+  tourProductId?: number; 
+  departureDate: string; 
+  endDate: string; 
+  price?: number; 
+  discountId?: number | null; 
+  discountPercent?: number | null; 
+} 
+
+export interface DiscountUpsertPayload { 
+  scheduleId: number; 
+  discountPercent: number; 
+  startDate: string; // ISO 
+  endDate: string;   // ISO 
+} 
+
+@Injectable({ providedIn: 'root' }) 
+export class DiscountService { 
+  private http = inject(HttpClient); 
+  private base = environment.apiUrl;  
+
+  // GET /marketing/discounts/tours 
+  getDiscountTours(params: {
+    page: number; size: number; keyword?: string; hasDiscount?: boolean | null;
+  }): Observable<ApiResponse<Paged<TourDiscountListItem>>> { 
+    let httpParams = new HttpParams() 
+      .set('page', params.page) 
+      .set('size', params.size); 
+    if (params.keyword) httpParams = httpParams.set('keyword', params.keyword); 
+    if (params.hasDiscount !== null && params.hasDiscount !== undefined) {
+      httpParams = httpParams.set('hasDiscount', params.hasDiscount); 
     }
-    return this.http.get<ApiResponse<Paging<TourDiscountSummary>>>(
-      this.apiUrl,
-      { params }
-    );
+    return this.http.get<ApiResponse<Paged<TourDiscountListItem>>>( 
+      `${this.base}/marketing/discounts/tours`, { params: httpParams } 
+    ); 
   }
 
-  /**
-   * Tạo một chương trình khuyến mãi mới.
-   * @param request Dữ liệu khuyến mãi mới
-   * @returns Khuyến mãi vừa được tạo
-   */
-  createDiscount(
-    request: TourDiscountRequest
-  ): Observable<ApiResponse<TourDiscountSummary>> {
-    return this.http.post<ApiResponse<TourDiscountSummary>>(
-      this.apiUrl,
-      request
-    );
+  // GET /marketing/discounts/tours/{tourId}/schedules 
+  getSchedules(tourId: number) { // change: trả về ApiResponse<ScheduleItem[]>
+    return this.http.get<ApiResponse<any[]>>(
+      `${this.base}/marketing/discounts/tours/${tourId}/schedules`
+    )
+    .pipe(
+      map(res => {
+        const raw = Array.isArray(res.data) ? res.data : [];
+        const data: ScheduleItem[] = raw.map((x: any) => ({
+          id: Number(x.id),
+          coordinatorId: x.coordinatorId ?? undefined,
+          tourProductId: x.tourProductId ?? undefined,
+          // change: chống sai key từ BE
+          departureDate: x.departureDate || x.departDate || x.startDate || x.departure_time,
+          endDate: x.endDate || x.finishDate || x.end_time,
+          price: x.price ?? undefined,
+          discountId: (x.discountId ?? null),
+          discountPercent: (x.discountPercent ?? null),
+        }));
+        return { ...res, data } as ApiResponse<ScheduleItem[]>;
+      })
+    ); // change
+  }
+  // POST /marketing/discounts 
+  createDiscount(payload: DiscountUpsertPayload): Observable<ApiResponse<any>> { 
+    return this.http.post<ApiResponse<any>>( 
+      `${this.base}/marketing/discounts`, payload 
+    ); 
   }
 
-  /**
-   * API giả định để tìm kiếm lịch trình tour cho ô select.
-   * Cần được triển khai ở backend.
-   * @param keyword Tên tour để tìm kiếm
-   * @returns Danh sách các lịch trình phù hợp
-   */
-  searchTourSchedules(
-    keyword: string
-  ): Observable<ApiResponse<TourScheduleSelectItem[]>> {
-    let params = new HttpParams();
-    if (keyword) {
-      params = params.set('keyword', keyword);
-    }
-    // Ví dụ: GET /api/business/schedules/search?keyword=...
-    return this.http.get<ApiResponse<TourScheduleSelectItem[]>>(
-      `${this.scheduleApiUrl}/search`,
-      { params }
-    );
+  // PUT /marketing/discounts/{id} 
+  updateDiscount(id: number, payload: DiscountUpsertPayload): Observable<ApiResponse<any>> { 
+    return this.http.put<ApiResponse<any>>( 
+      `${this.base}/marketing/discounts/${id}`, payload 
+    ); 
+  }
+
+  // DELETE /marketing/discounts/{id} 
+  deleteDiscount(id: number): Observable<ApiResponse<any>> { 
+    return this.http.delete<ApiResponse<any>>( 
+      `${this.base}/marketing/discounts/${id}` 
+    ); 
   }
 }
