@@ -26,6 +26,12 @@ export class TourBookingConfirmComponent {
 
   numberSingleRooms: number = 1;
 
+  adultFinalPrice: number =0;
+  appliedVoucherCode: string | null = null;
+
+  voucherDiscount = 0;                    // CHANGE: số tiền giảm áp dụng
+
+
   constructor(
     private bookingInforService: BookingInfoService,
     private router: Router,
@@ -67,63 +73,56 @@ export class TourBookingConfirmComponent {
 
 
   getBookingDetailByBookingCode(bookingCode: string) {
-    this.bookingInforService.getBookingDetails(bookingCode).subscribe({
-      next: (response) => {
-        this.isLoading = false;
-        this.bookingData = response.data
+  this.bookingInforService.getBookingDetails(bookingCode).subscribe({
+    next: (response) => {
+      this.isLoading = false;
+      this.bookingData = response.data;
 
-        this.numberSingleRooms = this.bookingData.adults.filter((t: any) => t?.singleRoom === true).length
+      // ====== Số phòng đơn ======
+      const adults = Array.isArray(this.bookingData?.adults) ? this.bookingData.adults : []; // change
+      this.numberSingleRooms = adults.filter((t: any) => !!t?.singleRoom).length;           // change
+      if (this.bookingData?.needHelp) {                                                     // change
+        this.numberSingleRooms = this.bookingData?.singleRooms ?? 1;                        // change
+      }
 
-        if(this.bookingData?.needHelp) {
-          this.numberSingleRooms = this.bookingData?.singleRooms || 1;
-        }
+      // ====== Số lượng khách theo nhóm ======
+      this.numberAdults   = adults.length;                          // change
+      this.numberChildren = (this.bookingData?.children ?? []).length;
+      this.numberInfants  = (this.bookingData?.infants  ?? []).length;
+      this.numberToddlers = (this.bookingData?.toddlers ?? []).length;
 
-
-        this.numberAdults = this.bookingData.adults.length;
-        this.numberChildren = this.bookingData.children.length;
-        this.numberInfants = this.bookingData.infants.length;
-        this.numberToddlers = this.bookingData.toddlers.length;
-
-        this.childrenPrice = this.bookingData.sellingPrice! * 0.75;
-        this.infantPrice = this.bookingData.sellingPrice! * 0.5;
-        this.toddlerPrice = 500000;
-        
-
-
-
-        console.log(this.bookingData)
-
-        this.calculateTotal();
-
-        this.setExpiredDate();
-        
-      },
-    })
-  }
+      // ====== Tính finalPrice giống trang TourBooking ======
+      // ====== Tổng tiền lấy trực tiếp từ API ====== // change
+      this.total = Number(this.bookingData?.totalAmount) || 0;             // change                                                                       // change
+      this.setExpiredDate();
+    },
+  });
+}
 
   total: number = 0;
 
 
   calculateTotal() {
-    const adultsArray = this.bookingData.adults;
-    const childrenArray = this.bookingData.children;
+  const adultPrice    = this.adultFinalPrice || 0;
+  const childrenPrice = this.childrenPrice   || Math.round(adultPrice * 0.75);
+  const infantPrice   = this.infantPrice     || Math.round(adultPrice * 0.5);
+  const toddlerPrice  = this.toddlerPrice    || 500000;
 
-    const adultPrice = this.bookingData.sellingPrice;
-    const childrenPrice = this.childrenPrice || adultPrice! * 0.75;
-    const infantPrice = this.infantPrice || adultPrice! * 0.5;
-    const toddlerPrice = this.toddlerPrice || 500000;
+  const adultsArray   = Array.isArray(this.bookingData?.adults)   ? this.bookingData.adults   : [];
+  const childrenArray = Array.isArray(this.bookingData?.children) ? this.bookingData.children : [];
 
+  const adultTotal   = adultsArray.length   * adultPrice;
+  const childTotal   = childrenArray.length * childrenPrice;
+  const infantTotal  = (this.numberInfants  || 0) * infantPrice;
+  const toddlerTotal = (this.numberToddlers || 0) * toddlerPrice;
 
-    const adultTotal = adultsArray.length * adultPrice!;
-    const childrenTotal = childrenArray.length * childrenPrice;
-    const infantTotal = this.numberInfants * infantPrice!;
-    const toddlerTotal = this.numberToddlers * toddlerPrice!;
+  const extra = (this.numberSingleRooms || 0) * (this.bookingData?.extraHotelCost ?? 0);
 
-    const extra = this.numberSingleRooms * this.bookingData.extraHotelCost!;
+  const subtotal = adultTotal + childTotal + infantTotal + toddlerTotal + extra;
+  const final    = Math.max(0, subtotal - (this.voucherDiscount || 0));
 
-    this.total = adultTotal + childrenTotal + extra + infantTotal + toddlerTotal;
-
-  }
+  this.total = final;
+}
 
 
   changePaymentMethod() {
@@ -188,6 +187,13 @@ export class TourBookingConfirmComponent {
       this.errorMessage = 'Thay đổi thất bại';
     }, 4000);
   }
+
+  get totalGuests(): number {
+  return (this.numberAdults || 0)
+       + (this.numberChildren || 0)
+       + (this.numberInfants || 0)
+       + (this.numberToddlers || 0);
+}
 
 
 }

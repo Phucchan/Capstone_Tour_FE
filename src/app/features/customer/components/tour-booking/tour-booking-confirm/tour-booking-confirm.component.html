@@ -320,31 +320,33 @@
                     <strong>{{bookingData?.tour.durationDays}}N{{bookingData?.tour?.durationDays - 1}}Đ</strong>
                 </p>
             </div>
-            <p class="font-semibold flex justify-between text-xl mb-4"><span>👥 Khách hàng</span> <span
-                    class="text-red-600">{{total |currencyVnd}}</span></p>
-            <p class="flex justify-between mb-2"><span>🧑 Người lớn: </span> <span>{{numberAdults}} x
-                    {{bookingData?.sellingPrice |currencyVnd}} </span></p>
+            <!-- change: (tuỳ chọn) hiển thị giá gốc & giá đã giảm -->
+            <p class="font-semibold flex justify-between text-xl mb-4">
+                <span>👥 Khách hàng</span>
+                <span class="text-red-600">Tổng số khách : {{ totalGuests}}</span>
+            </p>
+
+            <p class="flex justify-between mb-2">
+                <span>🧑 Người lớn: </span>
+                <span>{{ numberAdults }}</span>
+            </p>
             @if(numberChildren > 0) {
             <p class="flex justify-between mb-2"><span>👶 Trẻ em:</span>
-                <span>{{numberChildren}} x
-                    {{childrenPrice |currencyVnd}}</span>
+                <span>{{numberChildren}}</span>
             </p>
             }
 
             @if(numberInfants > 0) {
             <p class="flex justify-between mb-2"><span>👶 Trẻ nhỏ:</span>
-                <span>{{numberInfants}} x
-                    {{infantPrice |currencyVnd}}</span>
+                <span>{{numberInfants}}</span>
             </p>
             }
 
             @if(numberToddlers > 0) {
             <p class="flex justify-between mb-2"><span>👶 Em bé:</span>
-                <span>{{numberToddlers}} x
-                    {{toddlerPrice |currencyVnd}}</span>
+                <span>{{numberToddlers}}</span>
             </p>
             }
-
             <p class="flex justify-between mb-2">
                 @if(numberSingleRooms > 0) {
                 <span>📍 Phòng đơn:</span> <span>{{numberSingleRooms}} x
