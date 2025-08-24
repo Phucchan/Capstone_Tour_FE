@@ -184,4 +184,20 @@ export class TourService {
       .post<ApiResponse<ServiceInfoDTO>>(url, payload)
       .pipe(map((res) => res.data));
   }
+
+  /**
+   * Thay đổi trạng thái của một tour (ví dụ: DRAFT -> PUBLISHED)
+   * @param id ID của tour
+   * @param newStatus Trạng thái mới
+   * @returns Observable<void>
+   */
+  changeTourStatus(id: number, newStatus: string): Observable<void> {
+    const url = `${this.toursApiUrl}/${id}/status`;
+    const payload = { newStatus: newStatus };
+    // API này trả về GeneralResponse<Object> với data là null,
+    // nên chúng ta có thể map nó về void.
+    return this.http
+      .patch<ApiResponse<void>>(url, payload)
+      .pipe(map(() => void 0)); // Bỏ qua dữ liệu trả về
+  }
 }
