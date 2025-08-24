@@ -3,11 +3,21 @@ import { LoginComponent } from './core/auth/login/login.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { UnauthorizeComponent } from './core/pages/error-page/unauthorize/unauthorize.component';
 import { AdminLayoutComponent } from './shared/components/admin-layout/admin-layout.component';
+import { RegisterComponent } from './core/register/register/register.component';
 
 export const routes: Routes = [
+   {
+    path: 'login',
+    component: LoginComponent,
+  },
+  {
+    path: 'register',
+    component: RegisterComponent,
+  },
   {
     path: '',
-    component: LoginComponent,
+    loadChildren: () =>
+      import('./features/public/public.routes').then((m) => m.PUBLIC_ROUTES),
   },
   {
     path: '',
