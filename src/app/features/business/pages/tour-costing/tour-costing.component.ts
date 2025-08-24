@@ -6,7 +6,7 @@ import {
   computed,
   TemplateRef,
 } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -47,6 +47,8 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
+import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
+import { NzSpaceModule } from 'ng-zorro-antd/space';
 
 @Component({
   selector: 'app-tour-costing',
@@ -54,7 +56,6 @@ import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
     CurrencyVndPipe,
     // --- NZ-ZORRO ---
     NzTableModule,
@@ -73,6 +74,8 @@ import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
     NzToolTipModule,
     NzTagModule,
     NzIconModule,
+    NzPageHeaderModule,
+    NzSpaceModule,
   ],
   templateUrl: './tour-costing.component.html',
 })
@@ -84,6 +87,7 @@ export class TourCostingComponent implements OnInit {
   private tourService = inject(TourService);
   private modalService = inject(NzModalService);
   private message = inject(NzMessageService);
+  private router = inject(Router);
 
   // --- Component State ---
   tourId!: number;
@@ -102,10 +106,10 @@ export class TourCostingComponent implements OnInit {
   isEditMode = signal(false);
   currentPaxId = signal<number | null>(null);
 
-  // --- FIX: Add formatter and parser for currency input ---
+  //  Add formatter and parser for currency input
   formatterVND = (value: number | null): string =>
     value ? `${value.toLocaleString('vi-VN')} đ` : '';
-  // --- FIX: parserVND must return a number ---
+  // parserVND must return a number
   parserVND = (value: string): number =>
     Number(value.replace(/\s?đ/g, '').replace(/,/g, ''));
 
@@ -386,5 +390,8 @@ export class TourCostingComponent implements OnInit {
       }
       return null;
     };
+  }
+  goBack(): void {
+    this.router.navigate(['/business/tours', this.tourId]);
   }
 }

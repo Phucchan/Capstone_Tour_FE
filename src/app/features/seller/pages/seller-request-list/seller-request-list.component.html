@@ -1,6 +1,5 @@
 <!--
   FILE: src/app/features/seller/pages/seller-request-list/seller-request-list.component.html
-  MÔ TẢ: Thêm nút "Từ chối" và modal để nhập lý do.
 -->
 
 <!-- 1. Breadcrumb -->
@@ -22,22 +21,36 @@
     [nzTotal]="paging.total" [nzPageIndex]="paging.page + 1" [nzPageSize]="paging.size"
     (nzPageIndexChange)="onPageIndexChange($event)" nzBordered>
     <thead>
-      <tr>
-        <th nzWidth="10%">Mã Yêu cầu</th>
-        <th>Chủ đề Tour</th>
-        <th>Ngày bắt đầu</th>
-        <th>Ngày kết thúc</th>
-        <th>Ngày tạo</th>
-        <th nzWidth="20%" nzAlign="center">Hành động</th>
-      </tr>
-    </thead>
+  <tr>
+    <th nzWidth="8%">Mã</th>
+    <th nzWidth="22%">Khách hàng</th>
+    <th>Ngày bắt đầu</th>
+    <th>Ngày kết thúc</th>
+    <th>Ngày tạo</th>
+    <th nzWidth="12%">Trạng thái</th>
+    <th nzWidth="20%" nzAlign="center">Hành động</th>
+  </tr>
+</thead>
     <tbody>
-      <tr *ngFor="let data of requestTable.data">
-        <td>#{{ data.id }}</td>
-        <td>{{ data.tourTheme }}</td>
-        <td>{{ data.startDate | formatDate }}</td>
-        <td>{{ data.endDate | formatDate }}</td>
-        <td>{{ data.createdAt | formatDate }}</td>
+  <tr *ngFor="let data of requestTable.data">
+    <td>#{{ data.id }}</td>
+    <!-- change: hiển thị tên + SĐT -->
+    <td>
+      <div class="font-medium">{{ data.customerName }}</div>
+      <div class="text-gray-500">{{ data.customerPhone }}</div>
+    </td>
+    <td>{{ data.startDate | formatDate }}</td>
+    <td>{{ data.endDate | formatDate }}</td>
+    <td>{{ data.createdAt | formatDate }}</td>
+    <!-- change: trạng thái + lý do (nếu REJECTED) -->
+    <td>
+      <nz-tag [nzColor]="data.status === 'PENDING' ? 'gold' : (data.status === 'ACCEPTED' ? 'green' : 'red')">
+        {{ data.status }}
+      </nz-tag>
+      <div *ngIf="data.reason" class="text-xs text-red-500 mt-1">
+        Lý do: {{ data.reason }}
+      </div>
+    </td>
         <td nzAlign="center">
           <!-- Nút Duyệt -->
           <button nz-button nzType="primary" nz-popconfirm
@@ -47,11 +60,7 @@
             <span nz-icon nzType="check"></span>
             Duyệt
           </button>
-          <!-- [MỚI] Nút Từ chối -->
-          <button nz-button nzType="default" nzDanger (click)="showRejectModal(data.id)">
-             <span nz-icon nzType="close"></span>
-            Từ chối
-          </button>
+
         </td>
       </tr>
     </tbody>

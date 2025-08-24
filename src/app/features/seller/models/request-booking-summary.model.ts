@@ -5,7 +5,8 @@
 */
 export interface RequestBookingSummary {
   id: number;
-  tourTheme: string;
+  customerName: string;
+  customerPhone: string;
   startDate: string; // ISO Date String
   endDate: string; // ISO Date String
   reason: string | null;

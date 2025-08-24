@@ -19,6 +19,7 @@ import { SellerBookingService } from '../../services/seller-booking.service';
 import { RequestBookingSummary } from '../../models/request-booking-summary.model';
 import { Paging } from '../../../../core/models/paging.model';
 import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
+import { NzTagModule } from 'ng-zorro-antd/tag';
 
 @Component({
   selector: 'app-seller-request-list',
@@ -37,6 +38,7 @@ import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
     NzPopconfirmModule,
     NzModalModule,
     NzInputModule,
+    NzTagModule,
   ],
   templateUrl: './seller-request-list.component.html',
 })
@@ -46,6 +48,7 @@ export class SellerRequestListComponent implements OnInit {
   private message = inject(NzMessageService);
 
   requests: RequestBookingSummary[] = [];
+  searchTerm = '';
   isLoading = true;
   paging: Paging<any> = { page: 0, size: 10, total: 0, items: [] };
 
@@ -59,13 +62,13 @@ export class SellerRequestListComponent implements OnInit {
   ): void {
     this.isLoading = true;
     this.sellerService
-      .getRequestBookings(page, size)
+      .getRequestBookings(page, size, this.searchTerm)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (res) => {
           if (res && res.data) {
-            this.requests = res.data.items;
-            this.paging = res.data;
+            this.requests = res.data.items || [];
+            this.paging = { ...res.data, items: [] };
           } else {
             this.message.error(
               res.message || 'Không thể tải danh sách yêu cầu.'
