@@ -3,7 +3,7 @@ import { LoginComponent } from './core/auth/login/login.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { UnauthorizeComponent } from './core/pages/error-page/unauthorize/unauthorize.component';
 import { AdminLayoutComponent } from './shared/components/admin-layout/admin-layout.component';
-import { RegisterComponent } from './core/register/register/register.component';
+import { RegisterComponent } from './core/auth/register/register.component';
 
 export const routes: Routes = [
    {
