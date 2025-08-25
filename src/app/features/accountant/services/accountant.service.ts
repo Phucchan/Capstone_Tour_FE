@@ -1,4 +1,3 @@
-
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -7,7 +6,6 @@ import { environment } from '../../../../environments/environment';
 import { Paging } from '../../../core/models/paging.model';
 import { BookingRefund } from '../models/booking-refund.model';
 import { BookingRefundDetail } from '../models/booking-refund-detail.model';
-import { RefundBillRequest } from '../models/refund-bill-request.model';
 import { ApiResponse } from '../../../core/models/api-response.model';
 import { BookingList } from '../models/booking-list.model';
 import { BookingSettlement } from '../models/booking-settlement.model';
@@ -48,7 +46,18 @@ export class AccountantService {
       .pipe(map((response) => response.data));
   }
 
-  confirmCancellation(bookingId: number): Observable<BookingRefundDetail> {
+  // Sửa tên hàm và endpoint cho đúng logic "Phê duyệt"
+  approveCancellation(bookingId: number): Observable<BookingRefundDetail> {
+    return this.http
+      .patch<ApiResponse<BookingRefundDetail>>(
+        `${this.refundApiUrl}/${bookingId}/approve-cancellation`,
+        {}
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  // Thêm hàm cho logic "Từ chối"
+  rejectCancellation(bookingId: number): Observable<BookingRefundDetail> {
     return this.http
       .patch<ApiResponse<BookingRefundDetail>>(
         `${this.refundApiUrl}/${bookingId}/cancel`,
@@ -57,9 +66,10 @@ export class AccountantService {
       .pipe(map((response) => response.data));
   }
 
+  // Sử dụng model CreateBillRequest đã được định nghĩa
   createRefundBill(
     bookingId: number,
-    request: RefundBillRequest
+    request: CreateBillRequest
   ): Observable<BookingRefundDetail> {
     return this.http
       .post<ApiResponse<BookingRefundDetail>>(
