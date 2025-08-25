@@ -9,7 +9,7 @@
           <nz-form-item>
             <nz-form-label>Từ khóa</nz-form-label>
             <nz-form-control>
-              <input nz-input formControlName="keyword" placeholder="Tìm theo tên tour..." />
+              <input nz-input formControlName="keyword" placeholder="Tìm theo tên tour hoặc mã tour..." />
             </nz-form-control>
           </nz-form-item>
         </div>
@@ -35,7 +35,8 @@
   <nz-table [nzData]="tours" [nzLoading]="isLoading" nzSize="middle" [nzFrontPagination]="false">
     <thead>
       <tr>
-        <th style="width: 36%">Tour</th>
+        <th style="width: 26%">Tour</th>
+        <th style="width: 10%">Mã tour</th>
         <th style="width: 10%">Số ngày</th>
         <th style="width: 14%">Trạng thái</th>
         <th style="width: 30%">Ngày khởi hành</th>
@@ -48,10 +49,11 @@
           <div class="flex items-center">
             <nz-avatar [nzSrc]="t.thumbnailImage || 'https://placehold.co/40x40/EBF4FF/76A9FA?text=T'"
               nzShape="square"></nz-avatar>
-            <span class="ml-3 font-medium">{{ t.name }}</span>
+            <span class="ml-3 font-medium line-clamp-2">{{ t.name }}</span>
           </div>
         </td>
-        <td>{{ t.durationDays || '-' }} ngày</td>
+        <td>{{ t.code }}</td> <!-- change -->
+        <td>{{ t.durationDays | durationFormat }}</td> 
         <td> <!-- change -->
           <nz-tag [nzColor]="getStatusColor(t.tourStatus)">
             {{ getStatusVi(t.tourStatus) }}
@@ -60,7 +62,7 @@
 
         <!-- ===== Ô lịch khởi hành cuộn ngang ===== -->
         <td>
-          <div class="overflow-x-auto whitespace-nowrap custom-scrollbar">
+          <div class="overflow-x-auto whitespace-nowrap custom-scrollbar py-2">
             <ng-container *ngIf="getRowSchedules(t.id).length; else emptyRow">
               <span *ngFor="let s of getRowSchedules(t.id)"
                 class="inline-block mr-2 mb-1 px-2 py-1 border rounded relative select-none">

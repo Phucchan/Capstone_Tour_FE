@@ -24,6 +24,7 @@ export interface Paged<T> {
 
 export interface TourDiscountListItem { 
   id: number; // tourId 
+  code: string; 
   name: string; 
   thumbnailImage?: string; 
   durationDays?: number; 

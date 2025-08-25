@@ -19,6 +19,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { DiscountService, DiscountUpsertPayload, ScheduleItem, TourDiscountListItem } from '../../services/discount.service';
 import { NzPageHeaderModule } from 'ng-zorro-antd/page-header'; 
 import { NzAvatarModule } from 'ng-zorro-antd/avatar';           
+import { DurationFormatPipe } from '../../../../shared/pipes/duration-format.pipe';
 interface NzDisabledTimeObj {
   nzDisabledHours: () => number[];
   nzDisabledMinutes: (h: number) => number[];
@@ -43,7 +44,8 @@ interface NzDisabledTimeObj {
     NzInputNumberModule,
     NzTagModule,
     NzPageHeaderModule, 
-    NzAvatarModule,     
+    NzAvatarModule,
+    DurationFormatPipe     
   ],
   templateUrl: './discount-management.component.html',
 })

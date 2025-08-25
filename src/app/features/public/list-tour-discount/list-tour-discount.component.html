@@ -66,7 +66,7 @@
                 <h3 class="font-bold text-base text-gray-800 line-clamp-2">{{ tour.name }}</h3>
                 <div class="grid grid-cols-2 gap-y-2 gap-5 text text-gray-800">
                     <p>🆔 Mã tour: {{ tour.code }}</p>
-                    <p>📍 Khởi hành: {{ tour.locationName }}</p>
+                    <p class="line-clamp-1">📍 Khởi hành: {{ tour.locationName }}</p>
                     <p> {{ tour.tourTransport | iconTransport }}</p>
                     <p>📅 Ngày đi: {{ tour.departureDates[0] | date: 'dd/MM/yyyy' }}</p>
                     <p>⏳ Thời gian: {{ tour.durationDays }}N{{ tour.durationDays - 1 }}Đ</p>
