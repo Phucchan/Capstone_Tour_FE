@@ -253,9 +253,42 @@ export class TourFormComponent implements OnInit {
     }
 
     this.isSubmitting = true;
-    const formData = new FormData();
     const formValue = this.tourForm.getRawValue();
+    const newStatus = formValue.tourStatus;
+    const oldStatus = this.initialTourData?.tourStatus;
 
+    // Kịch bản 1: Chỉ thay đổi trạng thái, không sửa nội dung khác.
+    const statusControl = this.tourForm.get('tourStatus');
+    statusControl?.markAsPristine(); // Tạm đánh dấu status là chưa đổi để kiểm tra các trường còn lại
+
+    if (
+      this.isEditMode &&
+      this.tourId &&
+      this.tourForm.pristine &&
+      newStatus !== oldStatus
+    ) {
+      statusControl?.markAsDirty(); // Trả lại trạng thái dirty
+      this.tourService
+        .changeTourStatus(this.tourId, newStatus)
+        .pipe(finalize(() => (this.isSubmitting = false)))
+        .subscribe({
+          next: () => {
+            this.message.success('Cập nhật trạng thái tour thành công!');
+            this.initialTourData!.tourStatus = newStatus; // Cập nhật trạng thái ban đầu để so sánh lần sau
+            this.tourForm.markAsPristine(); // Đánh dấu toàn bộ form là đã lưu
+          },
+          error: (err) => {
+            console.error('Lỗi khi thay đổi trạng thái:', err);
+            this.message.error('Có lỗi xảy ra khi đổi trạng thái.');
+          },
+        });
+      return; // Dừng tại đây, không chạy logic cập nhật đầy đủ bên dưới
+    }
+
+    statusControl?.markAsDirty(); // Trả lại trạng thái dirty nếu cần
+
+    // ===================== LOGIC cho tạo mới hoặc sửa nhiều thông tin =====================
+    const formData = new FormData();
     if (this.selectedFile) {
       formData.append(
         'thumbnailFile',
@@ -288,38 +321,38 @@ export class TourFormComponent implements OnInit {
         ? this.tourService.updateTourWithFile(this.tourId, formData)
         : this.tourService.createTourWithFile(formData);
 
-     apiCall.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
-       next: (savedTour: TourDetail) => {
-         const newStatus = formValue.tourStatus;
-         const oldStatus = this.initialTourData?.tourStatus;
+    apiCall.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
+      next: (savedTour: TourDetail) => {
+        if (this.isEditMode) {
+          this.message.success('Cập nhật tour thành công!');
+          // Cập nhật lại initial data sau khi lưu thành công
+          this.initialTourData = savedTour;
+          this.tourForm.markAsPristine();
 
-         if (this.isEditMode) {
-           this.message.success('Cập nhật tour thành công!');
-           // Logic kiểm tra việc publish tour custom
-           if (
-             newStatus === 'PUBLISHED' &&
-             oldStatus !== 'PUBLISHED' &&
-             savedTour.tourType === 'CUSTOM' &&
-             savedTour.requestBooking
-           ) {
-             this.autoCreateSchedule(
-               savedTour.id,
-               savedTour.requestBooking.startDate,
-               savedTour.requestBooking.endDate
-             );
-           }
-         } else {
-           this.message.success(
-             `Tạo tour thành công! Mã tour: ${savedTour.code}`
-           );
-           this.router.navigate(['/business/tours', savedTour.id, 'schedule']);
-         }
-       },
-       error: (err: any) => {
-         console.error('Lỗi khi lưu tour:', err);
-         this.message.error('Có lỗi xảy ra khi lưu tour.');
-       },
-     });
+          if (
+            newStatus === 'PUBLISHED' &&
+            oldStatus !== 'PUBLISHED' &&
+            savedTour.tourType === 'CUSTOM' &&
+            savedTour.requestBooking
+          ) {
+            this.autoCreateSchedule(
+              savedTour.id,
+              savedTour.requestBooking.startDate,
+              savedTour.requestBooking.endDate
+            );
+          }
+        } else {
+          this.message.success(
+            `Tạo tour thành công! Mã tour: ${savedTour.code}`
+          );
+          this.router.navigate(['/business/tours', savedTour.id, 'schedule']);
+        }
+      },
+      error: (err: any) => {
+        console.error('Lỗi khi lưu tour:', err);
+        this.message.error('Có lỗi xảy ra khi lưu tour.');
+      },
+    });
   }
 
   // Hàm nhận thêm ngày tháng làm tham số

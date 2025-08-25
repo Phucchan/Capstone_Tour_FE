@@ -3,6 +3,10 @@
   <nz-page-header [nzTitle]="pageTitle" (nzBack)="goBack()">
     <nz-page-header-extra>
     <nz-space>
+      <button nz-button (click)="goBack()">
+          <span nz-icon nzType="arrow-left"></span>
+          Quay về
+        </button>
         <!--Các nút điều hướng chỉ hiển thị ở chế độ edit và tour đã published -->
          <ng-container *ngIf="isEditMode">
           <!-- Các nút này luôn hiển thị ở chế độ chỉnh sửa -->
@@ -85,13 +89,14 @@
           <div nz-col nzXs="24" nzLg="8">
              <!-- ... Các trường form phụ ... -->
             <nz-card nzTitle="Thông tin bổ sung">
-              <!-- Mã Tour -->
-              <nz-form-item>
-                <nz-form-label>Mã Tour</nz-form-label>
-                <nz-form-control>
-                  <input nz-input formControlName="code" [placeholder]="!isEditMode ? 'Sẽ được tạo tự động' : ''" />
-                </nz-form-control>
-              </nz-form-item>
+            <!-- Mã Tour -->
+<nz-form-item>
+  <nz-form-label [nzFor]="'tourCode'">Mã Tour</nz-form-label>
+  <nz-form-control>
+    <!--Gán một placeholder cố định và đơn giản -->
+    <input id="tourCode" nz-input formControlName="code" placeholder="Mã sẽ được tạo tự động" />
+  </nz-form-control>
+</nz-form-item>
 
               <!-- Trạng thái -->
               <nz-form-item *ngIf="isEditMode">
@@ -153,7 +158,7 @@
             </nz-card>
           </div>
 
-          <!-- THAY ĐỔI: Hiển thị thông tin yêu cầu của khách (nếu có) -->
+          <!--Hiển thị thông tin yêu cầu của khách (nếu có) -->
           <div nz-col nzXs="24" *ngIf="isCustomRequestMode && (requestBookingDetail$ | async) as request">
             <nz-card nzTitle="Thông tin chi tiết từ Yêu cầu của Khách hàng">
               <nz-descriptions nzBordered [nzColumn]="{ xs: 1, sm: 2, md: 2, lg: 2, xl: 2, xxl: 2 }">

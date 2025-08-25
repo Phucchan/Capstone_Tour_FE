@@ -1,4 +1,3 @@
-<!-- Ghi chú: Áp dụng layout container căn giữa và nền xám. -->
 <div class="bg-gray-50 min-h-screen">
   <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Spinner -->
@@ -19,9 +18,16 @@
             Yêu cầu Hoàn tiền #{{ detail.bookingCode }}
           </h1>
           <div class="flex items-center gap-2 flex-wrap">
-            <button nz-button (click)="confirmCancellation()" *ngIf="detail.status === 'CANCEL_REQUESTED'" [nzLoading]="isProcessing" nzType="primary" nzDanger>
-              <i nz-icon nzType="check-circle" nzTheme="outline"></i> Duyệt Yêu Cầu Hủy
-            </button>
+            <!-- CẬP NHẬT: Thêm nhóm button cho các hành động -->
+            <ng-container *ngIf="detail.status === 'CANCEL_REQUESTED'">
+              <button nz-button (click)="approveCancellation()" [nzLoading]="isProcessing" nzType="primary">
+                <i nz-icon nzType="check-circle" nzTheme="outline"></i> Duyệt Yêu Cầu Hủy
+              </button>
+              <button nz-button (click)="rejectCancellation()" [nzLoading]="isProcessing" nzType="default" nzDanger>
+                <i nz-icon nzType="close-circle" nzTheme="outline"></i> Từ Chối
+              </button>
+            </ng-container>
+
             <button nz-button (click)="openCreateBillModal()" *ngIf="detail.status === 'CANCELLED'" [nzLoading]="isProcessing" nzType="primary">
               <i nz-icon nzType="file-add" nzTheme="outline"></i> Tạo Phiếu Hoàn Tiền
             </button>
@@ -43,7 +49,7 @@
               <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Tên Tour</dt><dd class="text-sm text-gray-900 sm:col-span-2">{{ detail.tourName }}</dd></div>
               <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Tên khách hàng</dt><dd class="text-sm text-gray-900 sm:col-span-2">{{ detail.customerName }}</dd></div>
               <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Ngày đi</dt><dd class="text-sm text-gray-900 sm:col-span-2">{{ detail.startDate | formatDate }}</dd></div>
-              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Trạng thái</dt><dd class="text-sm text-gray-900 sm:col-span-2"><nz-tag [nzColor]="getStatusColor(detail.status)">{{ detail.status }}</nz-tag></dd></div>
+              <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"><dt class="text-sm font-medium text-gray-500">Trạng thái</dt><dd class="text-sm text-gray-900 sm:col-span-2"><nz-tag [nzColor]="getStatusColor(detail.status)">{{ detail.status | statusVietnamese }}</nz-tag></dd></div>
             </dl>
           </div>
 

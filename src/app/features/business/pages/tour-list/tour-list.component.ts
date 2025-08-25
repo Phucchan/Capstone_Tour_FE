@@ -18,7 +18,7 @@ import { TourListItem } from '../../../../core/models/tour.model';
 import { Paging } from '../../../../core/models/paging.model';
 
 // NG-ZORRO Imports
-import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
+import { NzTableModule  } from 'ng-zorro-antd/table';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
@@ -31,6 +31,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzAvatarModule } from 'ng-zorro-antd/avatar';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { NzPaginationModule } from 'ng-zorro-antd/pagination'; // change
 
 @Component({
   selector: 'app-tour-list',
@@ -41,6 +42,7 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
     RouterLink,
     // --- NG-ZORRO ---
     NzTableModule,
+    NzPaginationModule,
     NzFormModule,
     NzInputModule,
     NzSelectModule,
@@ -76,6 +78,26 @@ export class TourListComponent implements OnInit {
   tourTypes = ['FIXED', 'CUSTOM'];
   tourStatuses = ['DRAFT', 'PUBLISHED', 'CANCELLED'];
 
+  labelTourTypes: Record<string, string> = {
+    FIXED: 'Tour cố định',
+    CUSTOM: 'Tour đặt riêng',
+  }; // change
+
+labelTourStatuses: Record<string, string> = {
+    DRAFT: 'Nháp',
+    PUBLISHED: 'Đã xuất bản',
+    CANCELLED: 'Đã hủy',
+  }; // change
+ // change: helper để lấy label, có fallback
+  getTypeVi(type?: string): string {
+    return (type && this.labelTourTypes[type]) || type || '';
+  } // change
+
+  // change
+  getStatusVi(status?: string): string {
+    return (status && this.labelTourStatuses[status]) || status || '';
+  } // change
+
   ngOnInit(): void {
     this.filterForm = this.fb.group({
       keyword: [''],
@@ -107,17 +129,25 @@ export class TourListComponent implements OnInit {
       });
   }
 
-  onQueryParamsChange(params: NzTableQueryParams): void {
-    const { pageSize, pageIndex } = params;
-    this.pageSize = pageSize;
-    this.pageIndex = pageIndex;
-    this.searchTrigger$.next();
-  }
+
 
   navigateToCreateTour(): void {
     // FIX: Corrected navigation path
     this.router.navigate(['/business/tours/new']);
   }
+
+    // ===== [VỊ TRÍ: trong class - thêm 2 handler] =====
+  onNzPageIndexChange(p: number) {          // change
+    this.pageIndex = p;                     // nz-pagination là 1-based
+    this.searchTrigger$.next();             // gọi lại API
+  }                                         // change
+
+  onNzPageSizeChange(size: number) {        // change
+    this.pageSize = size;
+    this.pageIndex = 1;                     // reset về trang 1
+    this.searchTrigger$.next();             // gọi lại API
+  }                                         // change
+
 
   getStatusColor(status: string): string {
     switch (status) {

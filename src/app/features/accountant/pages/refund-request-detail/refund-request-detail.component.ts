@@ -1,9 +1,3 @@
-/*
-----------------------------------------------------------------
--- File: src/app/features/accountant/pages/refund-request-detail/refund-request-detail.component.ts
--- Ghi chú: Component trang chi tiết.
-----------------------------------------------------------------
-*/
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -23,6 +17,7 @@ import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
 import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
 import { RefundBillViewComponent } from '../../components/refund-bill-view/refund-bill-view.component';
 import { CreateRefundBillModalComponent } from '../../components/create-refund-bill-modal/create-refund-bill-modal.component';
+import { StatusVietnamesePipe } from '../../../../shared/pipes/status-vietnamese.pipe';
 
 @Component({
   selector: 'app-refund-request-detail',
@@ -39,6 +34,7 @@ import { CreateRefundBillModalComponent } from '../../components/create-refund-b
     NzIconModule,
     FormatDatePipe,
     CurrencyVndPipe,
+    StatusVietnamesePipe,
     RefundBillViewComponent,
   ],
   templateUrl: './refund-request-detail.component.html',
@@ -80,21 +76,53 @@ export class RefundRequestDetailComponent implements OnInit {
       });
   }
 
-  confirmCancellation(): void {
+  approveCancellation(): void {
     if (!this.detail || this.isProcessing) return;
 
     this.modalService.confirm({
       nzTitle: 'Xác nhận duyệt yêu cầu hủy?',
       nzContent:
         'Hành động này sẽ chuyển trạng thái booking sang "Đã Hủy" để chuẩn bị hoàn tiền.',
+      nzOkText: 'Xác nhận',
+      nzCancelText: 'Hủy bỏ',
       nzOnOk: () => {
         this.isProcessing = true;
         this.accountantService
-          .confirmCancellation(this.detail!.bookingId)
+          .approveCancellation(this.detail!.bookingId)
           .subscribe({
             next: (updatedDetail) => {
               this.detail = updatedDetail;
               this.messageService.success('Duyệt yêu cầu hủy thành công.');
+              this.isProcessing = false;
+            },
+            error: (err) => {
+              this.messageService.error(err.error?.message || 'Có lỗi xảy ra.');
+              this.isProcessing = false;
+            },
+          });
+      },
+    });
+  }
+
+  rejectCancellation(): void {
+    if (!this.detail || this.isProcessing) return;
+
+    this.modalService.confirm({
+      nzTitle: 'Xác nhận từ chối yêu cầu hủy?',
+      nzContent:
+        'Hành động này sẽ hoàn trả trạng thái booking về "Đã xác nhận".',
+      nzOkText: 'Xác nhận',
+      nzCancelText: 'Hủy bỏ',
+      nzOkType: 'primary',
+      nzOkDanger: true,
+      nzOnOk: () => {
+        this.isProcessing = true;
+        this.accountantService
+          .rejectCancellation(this.detail!.bookingId)
+          .subscribe({
+            next: (updatedDetail) => {
+              this.detail = updatedDetail;
+              this.messageService.success('Đã từ chối yêu cầu hủy.');
               this.isProcessing = false;
             },
             error: (err) => {
@@ -113,36 +141,16 @@ export class RefundRequestDetailComponent implements OnInit {
       nzTitle: 'Tạo Phiếu Hoàn Tiền',
       nzContent: CreateRefundBillModalComponent,
       nzWidth: '600px',
-      nzZIndex: 1100, // Thêm z-index để modal không bị che
       nzData: {
         bookingDetail: this.detail,
       },
-      nzFooter: [
-        {
-          label: 'Hủy',
-          onClick: () => modal.destroy(),
-        },
-        {
-          label: 'Tạo Phiếu',
-          type: 'primary',
-          loading: false,
-          onClick: (
-            contentComponentInstance: CreateRefundBillModalComponent
-          ) => {
-            return new Promise((resolve) => {
-              contentComponentInstance
-                .submitForm()
-                .then((success: BookingRefundDetail | null) => {
-                  if (success) {
-                    this.detail = success;
-                    modal.destroy();
-                  }
-                  resolve(undefined);
-                });
-            });
-          },
-        },
-      ],
+      nzFooter: null,
+    });
+
+    modal.afterClose.subscribe((result: BookingRefundDetail | null) => {
+      if (result) {
+        this.detail = result;
+      }
     });
   }
 
@@ -154,6 +162,8 @@ export class RefundRequestDetailComponent implements OnInit {
         return 'red';
       case 'REFUNDED':
         return 'green';
+      case 'CONFIRMED':
+        return 'blue';
       default:
         return 'default';
     }

@@ -1,10 +1,4 @@
-/*
-----------------------------------------------------------------
--- File: src/app/features/accountant/components/create-refund-bill-modal/create-refund-bill-modal.component.ts
--- Ghi chú: Component cho modal tạo phiếu chi.
-----------------------------------------------------------------
-*/
-import { Component, Input, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -18,14 +12,13 @@ import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NZ_MODAL_DATA, NzModalRef } from 'ng-zorro-antd/modal';
+import { NzButtonModule } from 'ng-zorro-antd/button';
 import { BookingRefundDetail } from '../../models/booking-refund-detail.model';
 import { AccountantService } from '../../services/accountant.service';
-import {
-  PaymentMethod,
-  PaymentType,
-  PaymentBillItemStatus,
-} from '../../../../core/models/enums';
+import { PaymentMethod, PaymentType } from '../../../../core/models/enums';
 import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
+import { CreateBillRequest } from '../../models/create-bill-request.model';
 
 @Component({
   selector: 'app-create-refund-bill-modal',
@@ -38,69 +31,79 @@ import { CurrentUserService } from '../../../../core/services/user-storage/curre
     NzInputNumberModule,
     NzSelectModule,
     NzDatePickerModule,
+    NzButtonModule,
   ],
   templateUrl: './create-refund-bill-modal.component.html',
 })
 export class CreateRefundBillModalComponent implements OnInit {
-  @Input() bookingDetail!: BookingRefundDetail;
-
   private fb = inject(FormBuilder);
   private accountantService = inject(AccountantService);
   private messageService = inject(NzMessageService);
   private currentUserService = inject(CurrentUserService);
+  private modal = inject(NzModalRef);
 
   validateForm!: FormGroup;
   paymentMethods = Object.values(PaymentMethod);
+  isSubmitting = false;
 
-  // Thêm hàm định dạng tiền tệ
   formatterVND = (value: number): string =>
     value ? `${value.toLocaleString('vi-VN')} ₫` : '';
   parserVND = (value: string): number =>
     parseFloat(value.replace(' ₫', '').replace(/,/g, ''));
 
+  constructor(
+    @Inject(NZ_MODAL_DATA) public data: { bookingDetail: BookingRefundDetail }
+  ) {}
+
   ngOnInit(): void {
     const currentUser = this.currentUserService.getCurrentUser();
     this.validateForm = this.fb.group({
-      payTo: [this.bookingDetail.customerName, [Validators.required]],
+      payTo: [this.data.bookingDetail.customerName, [Validators.required]],
       paidBy: [currentUser?.fullName || '', [Validators.required]],
       createdDate: [new Date(), [Validators.required]],
       paymentMethod: [PaymentMethod.BANK_TRANSFER, [Validators.required]],
       note: [null],
       content: [
-        `Hoàn tiền cho booking #${this.bookingDetail.bookingCode}`,
+        `Hoàn tiền cho booking #${this.data.bookingDetail.bookingCode}`,
         [Validators.required],
       ],
       amount: [
-        this.bookingDetail.refundAmount,
-        [Validators.required, Validators.min(1)],
+        { value: this.data.bookingDetail.refundAmount, disabled: true },
+        [Validators.required],
       ],
     });
   }
 
-  async submitForm(): Promise<BookingRefundDetail | null> {
+  submitForm(): void {
     if (this.validateForm.valid) {
-      try {
-        const formValue = this.validateForm.value;
-        const request = {
-          ...formValue,
-          createdDate: formValue.createdDate.toISOString(),
-          paymentType: PaymentType.REFUND,
-          unitPrice: formValue.amount,
-          quantity: 1,
-          discount: 0,
-          status: PaymentBillItemStatus.PAID,
-        };
-        const result = await this.accountantService
-          .createRefundBill(this.bookingDetail.bookingId, request)
-          .toPromise();
-        this.messageService.success('Tạo phiếu hoàn tiền thành công!');
-        return result!;
-      } catch (err: any) {
-        this.messageService.error(
-          err.error?.message || 'Có lỗi xảy ra khi tạo phiếu.'
-        );
-        return null;
-      }
+      this.isSubmitting = true;
+      const formValue = this.validateForm.getRawValue();
+
+      const request: CreateBillRequest = {
+        payTo: formValue.payTo,
+        paidBy: formValue.paidBy,
+        createdDate: new Date(formValue.createdDate).toISOString(),
+        paymentType: PaymentType.REFUND,
+        paymentMethod: formValue.paymentMethod,
+        note: formValue.note,
+        content: formValue.content,
+      };
+
+      this.accountantService
+        .createRefundBill(this.data.bookingDetail.bookingId, request)
+        .subscribe({
+          next: (result) => {
+            this.messageService.success('Tạo phiếu hoàn tiền thành công!');
+            this.isSubmitting = false;
+            this.modal.close(result);
+          },
+          error: (err) => {
+            this.messageService.error(
+              err.error?.message || 'Có lỗi xảy ra khi tạo phiếu.'
+            );
+            this.isSubmitting = false;
+          },
+        });
     } else {
       Object.values(this.validateForm.controls).forEach((control) => {
         if (control.invalid) {
@@ -108,7 +111,10 @@ export class CreateRefundBillModalComponent implements OnInit {
           control.updateValueAndValidity({ onlySelf: true });
         }
       });
-      return null;
     }
+  }
+
+  destroyModal(): void {
+    this.modal.destroy();
   }
 }

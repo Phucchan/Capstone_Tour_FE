@@ -61,4 +61,18 @@ export class LocationService {
       formData
     );
   }
+  /**
+   * Thay đổi trạng thái ẩn/hiện (deleted) của một địa điểm.
+   * @param id - ID của địa điểm.
+   * @param isDeleted - Trạng thái mới (true = ẩn, false = hiện).
+   * @returns Observable chứa địa điểm đã được cập nhật.
+   */
+  changeLocationStatus(
+    id: number,
+    isDeleted: boolean
+  ): Observable<ApiResponse<LocationDTO>> {
+    const url = `${this.apiUrl}/${id}/status`;
+    const payload = { deleted: isDeleted };
+    return this.http.patch<ApiResponse<LocationDTO>>(url, payload);
+  }
 }

@@ -24,17 +24,22 @@
             <nz-form-label>Loại tour</nz-form-label>
             <nz-form-control>
               <nz-select formControlName="tourType" nzAllowClear nzPlaceHolder="Tất cả các loại">
-                <nz-option *ngFor="let type of tourTypes" [nzLabel]="type" [nzValue]="type"></nz-option>
+                <!-- change: hiển thị label tiếng Việt -->
+                <nz-option *ngFor="let type of tourTypes" [nzLabel]="getTypeVi(type)" [nzValue]="type">
+                </nz-option>
               </nz-select>
             </nz-form-control>
           </nz-form-item>
         </div>
+
         <div nz-col nzSpan="8">
           <nz-form-item>
             <nz-form-label>Trạng thái</nz-form-label>
             <nz-form-control>
               <nz-select formControlName="tourStatus" nzAllowClear nzPlaceHolder="Tất cả trạng thái">
-                <nz-option *ngFor="let status of tourStatuses" [nzLabel]="status" [nzValue]="status"></nz-option>
+                <!-- change -->
+                <nz-option *ngFor="let status of tourStatuses" [nzLabel]="getStatusVi(status)" [nzValue]="status">
+                </nz-option>
               </nz-select>
             </nz-form-control>
           </nz-form-item>
@@ -44,16 +49,10 @@
   </nz-card>
 
   <nz-table
-    #tourTable
-    [nzData]="tours"
+    [nzData]="tours"                         
     [nzLoading]="isLoading"
-    [nzTotal]="totalRecords"
-    [nzPageSize]="pageSize"
-    [nzPageIndex]="pageIndex"
-    (nzQueryParams)="onQueryParamsChange($event)"
-    nzShowSizeChanger
     nzSize="middle"
-  >
+    [nzFrontPagination]="false">    
     <thead>
       <tr>
         <th>Tên Tour</th>
@@ -64,17 +63,20 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let tour of tourTable.data">
+      <tr *ngFor="let tour of tours">
         <td>
           <div class="flex items-center">
-            <nz-avatar [nzSrc]="tour.thumbnailImage || 'https://placehold.co/40x40/EBF4FF/76A9FA?text=T'" nzShape="square"></nz-avatar>
+            <nz-avatar [nzSrc]="tour.thumbnailImage || 'https://placehold.co/40x40/EBF4FF/76A9FA?text=T'"
+              nzShape="square"></nz-avatar>
             <span class="ml-3 font-medium">{{ tour.name }}</span>
           </div>
         </td>
         <td>{{ tour.durationDays }} ngày</td>
-        <td>{{ tour.typeName }}</td>
+         <td>{{ getTypeVi(tour.typeName) }}</td> 
         <td>
-          <nz-tag [nzColor]="getStatusColor(tour.tourStatus)">{{ tour.tourStatus }}</nz-tag>
+          <nz-tag [nzColor]="getStatusColor(tour.tourStatus)">
+            {{ getStatusVi(tour.tourStatus) }}                                  <!-- // change -->
+          </nz-tag>
         </td>
         <td nzAlign="right">
           <!-- FIX: Corrected routerLink paths -->
@@ -93,7 +95,7 @@
                 <a [routerLink]="['/business/tours', tour.id, 'costing']">Chiết tính</a>
               </li>
               <li nz-menu-item *ngIf="tour.tourStatus === 'PUBLISHED'">
-                 <a [routerLink]="['/business/tours', tour.id, 'departure-dates']">Ngày khởi hành</a>
+                <a [routerLink]="['/business/tours', tour.id, 'departure-dates']">Ngày khởi hành</a>
               </li>
             </ul>
           </nz-dropdown-menu>
@@ -101,4 +103,16 @@
       </tr>
     </tbody>
   </nz-table>
+   <!-- PHÂN TRANG -->
+  <nz-pagination
+    class="mt-4 flex justify-end md:text-right"
+    [nzTotal]="totalRecords"
+    [nzPageIndex]="pageIndex"
+    [nzPageSize]="pageSize"
+    [nzShowSizeChanger]="true"
+    [nzPageSizeOptions]="[5,10,20,50]"
+    [nzShowQuickJumper]="true"
+    (nzPageIndexChange)="onNzPageIndexChange($event)"
+    (nzPageSizeChange)="onNzPageSizeChange($event)">
+  </nz-pagination>
 </div>

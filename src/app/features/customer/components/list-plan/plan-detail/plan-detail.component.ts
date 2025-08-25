@@ -198,7 +198,7 @@ export class PlanDetailComponent {
 
   isEdited: boolean = false;
 
-  ids: any[] = [];
+  locationIds: number[] = [];
 
   onEditPlan() {
     this.isEdited = !this.isEdited;
@@ -319,18 +319,11 @@ export class PlanDetailComponent {
           this.plan.days[this.plan.days.length - 1].date;
         this.selectedDay = this.plan.days[0];
 
+
+        this.locationIds = this.plan.days.map((item: any) => item.locationId);
+
         console.log(this.selectedDay);
 
-        const ids: number[] = Array.from(
-          new Set(
-            this.plan.days.flatMap((day: any) => [
-              ...day.hotels.map((hotel: any) => hotel.id),
-              ...day.restaurants.map((restaurant: any) => restaurant.id),
-            ])
-          )
-        );
-
-        this.ids = ids;
         console.log(this.plan);
         this.isLoading = false;
       },
@@ -370,7 +363,7 @@ export class PlanDetailComponent {
   ) {
     this.providers = [];
     this.planService
-      .fetchProviderByCategoryAndLocationId(locationId, categoryName, this.ids)
+      .fetchProviderByCategoryAndLocationId(this.plan?.id, categoryName, this.locationIds)
       .subscribe(
         (response) => {
           console.log('Providers fetched successfully:', response);

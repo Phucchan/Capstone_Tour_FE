@@ -1,14 +1,12 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './core/auth/login/login.component';
 import { AuthGuard } from './core/guards/auth.guard';
-import { ChatComponent } from './features/customer/components/chat/chat.component';
-import { RegisterComponent } from './core/register/register/register.component';
 import { UnauthorizeComponent } from './core/pages/error-page/unauthorize/unauthorize.component';
-import { LayoutComponent } from './features/admin/layout/layout.component';
 import { AdminLayoutComponent } from './shared/components/admin-layout/admin-layout.component';
+import { RegisterComponent } from './core/auth/register/register.component';
 
 export const routes: Routes = [
-  {
+   {
     path: 'login',
     component: LoginComponent,
   },
@@ -26,7 +24,6 @@ export const routes: Routes = [
     component: AdminLayoutComponent, // Layout CHUNG cho toàn bộ trang quản trị
     canActivate: [AuthGuard], // Guard bảo vệ tất cả các route con
     children: [
-      // --- Các module chức năng sẽ được render bên trong LayoutComponent ---
       {
         path: 'admin',
         loadChildren: () =>
@@ -65,7 +62,6 @@ export const routes: Routes = [
           ),
         data: { expectedRoles: ['ACCOUNTANT'] },
       },
-      // BỔ SUNG ROUTE CHO MARKETING
       {
         path: 'marketing',
         loadChildren: () =>
@@ -77,10 +73,6 @@ export const routes: Routes = [
     ],
   },
 
-  {
-    path: 'chat',
-    component: ChatComponent,
-  },
   {
     path: 'error/403-unauthorized',
     component: UnauthorizeComponent,
