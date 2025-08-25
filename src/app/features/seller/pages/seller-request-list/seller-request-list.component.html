@@ -1,8 +1,4 @@
-<!--
-  FILE: src/app/features/seller/pages/seller-request-list/seller-request-list.component.html
--->
-
-<!-- 1. Breadcrumb -->
+<!-- Breadcrumb -->
 <nz-breadcrumb>
   <nz-breadcrumb-item>
     <a routerLink="/seller/dashboard">Quản lý Booking</a>
@@ -10,49 +6,72 @@
   <nz-breadcrumb-item>Yêu cầu Tour Đặt riêng</nz-breadcrumb-item>
 </nz-breadcrumb>
 
-<!-- 2. Page Header -->
+<!-- Page Header -->
 <nz-page-header class="site-page-header" nzTitle="Danh sách Yêu cầu Tour Đặt riêng"
   [nzSubtitle]="paging.total > 0 ? 'Có tổng cộng ' + paging.total + ' yêu cầu' : ''">
 </nz-page-header>
 
-<!-- 3. Card chứa bảng dữ liệu -->
+<!--  Thêm Card chứa bộ lọc -->
+<nz-card class="mb-4">
+  <form nz-form [formGroup]="filterForm">
+    <div nz-row [nzGutter]="24">
+      <div nz-col [nzSpan]="12">
+        <nz-form-item>
+          <nz-form-label>Tìm kiếm</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="keyword" placeholder="Nhập tên hoặc SĐT khách hàng...">
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <nz-form-item>
+          <nz-form-label>Trạng thái</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="status" nzAllowClear nzPlaceHolder="Tất cả trạng thái">
+              <nz-option *ngFor="let status of requestStatuses" [nzLabel]="status | statusVietnamese" [nzValue]="status"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </div>
+  </form>
+</nz-card>
+
+<!-- Card chứa bảng dữ liệu -->
 <div class="p-6 bg-white rounded-lg shadow-md">
   <nz-table #requestTable [nzData]="requests" [nzLoading]="isLoading" [nzFrontPagination]="false"
     [nzTotal]="paging.total" [nzPageIndex]="paging.page + 1" [nzPageSize]="paging.size"
     (nzPageIndexChange)="onPageIndexChange($event)" nzBordered>
     <thead>
-  <tr>
-    <th nzWidth="8%">Mã</th>
-    <th nzWidth="22%">Khách hàng</th>
-    <th>Ngày bắt đầu</th>
-    <th>Ngày kết thúc</th>
-    <th>Ngày tạo</th>
-    <th nzWidth="12%">Trạng thái</th>
-    <th nzWidth="20%" nzAlign="center">Hành động</th>
-  </tr>
-</thead>
+      <tr>
+        <th nzWidth="8%">Mã YC</th>
+        <th nzWidth="22%">Khách hàng</th>
+        <th>Ngày bắt đầu</th>
+        <th>Ngày kết thúc</th>
+        <th>Ngày tạo</th>
+        <th nzWidth="12%">Trạng thái</th>
+        <th nzWidth="20%" nzAlign="center">Hành động</th>
+      </tr>
+    </thead>
     <tbody>
-  <tr *ngFor="let data of requestTable.data">
-    <td>#{{ data.id }}</td>
-    <!-- change: hiển thị tên + SĐT -->
-    <td>
-      <div class="font-medium">{{ data.customerName }}</div>
-      <div class="text-gray-500">{{ data.customerPhone }}</div>
-    </td>
-    <td>{{ data.startDate | formatDate }}</td>
-    <td>{{ data.endDate | formatDate }}</td>
-    <td>{{ data.createdAt | formatDate }}</td>
-    <!-- change: trạng thái + lý do (nếu REJECTED) -->
-    <td>
-      <nz-tag [nzColor]="data.status === 'PENDING' ? 'gold' : (data.status === 'ACCEPTED' ? 'green' : 'red')">
-        {{ data.status }}
-      </nz-tag>
-      <div *ngIf="data.reason" class="text-xs text-red-500 mt-1">
-        Lý do: {{ data.reason }}
-      </div>
-    </td>
+      <tr *ngFor="let data of requestTable.data">
+        <td class="font-mono">#{{ data.id }}</td>
+        <td>
+          <div class="font-medium">{{ data.customerName }}</div>
+          <div class="text-gray-500">{{ data.customerPhone }}</div>
+        </td>
+        <td>{{ data.startDate | formatDate }}</td>
+        <td>{{ data.endDate | formatDate }}</td>
+        <td>{{ data.createdAt | formatDate }}</td>
+        <td>
+          <nz-tag [nzColor]="data.status === 'PENDING' ? 'gold' : (data.status === 'ACCEPTED' ? 'green' : 'red')">
+            {{ data.status | statusVietnamese }}
+          </nz-tag>
+          <div *ngIf="data.reason" class="text-xs text-red-500 mt-1">
+            Lý do: {{ data.reason }}
+          </div>
+        </td>
         <td nzAlign="center">
-          <!-- Nút Duyệt -->
           <button nz-button nzType="primary" nz-popconfirm
             nzPopconfirmTitle="Bạn có chắc muốn duyệt yêu cầu này?"
             nzPopconfirmSubTitle="Hành động này sẽ chuyển yêu cầu cho bộ phận kinh doanh."
@@ -60,11 +79,9 @@
             <span nz-icon nzType="check"></span>
             Duyệt
           </button>
-
         </td>
       </tr>
     </tbody>
   </nz-table>
-  <!-- Giao diện khi không có dữ liệu -->
   <nz-empty *ngIf="!isLoading && requests.length === 0" nzNotFoundContent="Không có yêu cầu nào."></nz-empty>
 </div>

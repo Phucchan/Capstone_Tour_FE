@@ -1,14 +1,34 @@
-<!--
-  FILE: src/app/features/seller/pages/seller-dashboard/seller-dashboard.component.html
-  MÔ TẢ: Giao diện đã được chuyển đổi sang sử dụng NzTabs và NzTable của NG-ZORRO.
--->
-
-<!-- 1. Page Header -->
+<!-- Page Header -->
 <nz-page-header class="site-page-header" nzTitle="Quản lý Booking"></nz-page-header>
 
-<!-- 2. Card chứa nội dung chính -->
+<!-- CẬP NHẬT: Thêm Card chứa bộ lọc -->
+<nz-card class="mb-4">
+  <form nz-form [formGroup]="filterForm">
+    <div nz-row [nzGutter]="24">
+      <div nz-col [nzSpan]="12">
+        <nz-form-item>
+          <nz-form-label>Tìm kiếm</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="keyword" placeholder="Nhập mã booking, tên tour, tên khách hàng...">
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <nz-form-item>
+          <nz-form-label>Trạng thái</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="status" nzAllowClear nzPlaceHolder="Tất cả trạng thái">
+              <nz-option *ngFor="let status of bookingStatuses" [nzLabel]="status | statusVietnamese" [nzValue]="status"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </div>
+  </form>
+</nz-card>
+
+<!-- Card chứa nội dung chính -->
 <div class="p-6 bg-white rounded-lg shadow-md">
-  <!-- Sử dụng nz-tabset để tạo các tab -->
   <nz-tabset [(nzSelectedIndex)]="selectedTabIndex" (nzSelectChange)="onTabChange()">
     <!-- Tab 1: Booking chờ xử lý -->
     <nz-tab nzTitle="Booking chờ xử lý">
@@ -19,6 +39,7 @@
           (nzPageSizeChange)="loadAvailableBookings(true)" nzShowSizeChanger [nzFrontPagination]="false" nzBordered>
           <thead>
             <tr>
+              <th>Mã Booking</th>
               <th>Tên Tour</th>
               <th>Khách hàng</th>
               <th>Ngày đặt</th>
@@ -31,6 +52,7 @@
           <tbody>
             <tr *ngFor="let booking of availableTable.data" (click)="navigateToDetail(booking.id)"
               class="cursor-pointer hover:bg-gray-50">
+              <td class="font-mono">{{ booking.bookingCode }}</td>
               <td>{{ booking.tourName }}</td>
               <td>{{ booking.customer }}</td>
               <td>{{ booking.bookingDate | formatDate }}</td>
@@ -60,6 +82,7 @@
           [nzFrontPagination]="false" nzBordered>
           <thead>
             <tr>
+              <th>Mã Booking</th>
               <th>Tên Tour</th>
               <th>Khách hàng</th>
               <th>Ngày đặt</th>
@@ -71,6 +94,7 @@
           <tbody>
             <tr *ngFor="let booking of editedTable.data" (click)="navigateToDetail(booking.id)"
               class="cursor-pointer hover:bg-gray-50">
+              <td class="font-mono">{{ booking.bookingCode }}</td>
               <td>{{ booking.tourName }}</td>
               <td>{{ booking.customer }}</td>
               <td>{{ booking.bookingDate | formatDate }}</td>

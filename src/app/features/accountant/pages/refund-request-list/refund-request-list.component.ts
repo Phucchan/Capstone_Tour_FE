@@ -21,6 +21,7 @@ import { BookingRefund } from '../../models/booking-refund.model';
 import { Paging } from '../../../../core/models/paging.model';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
+import { StatusVietnamesePipe } from '../../../../shared/pipes/status-vietnamese.pipe';
 
 @Component({
   selector: 'app-refund-request-list',
@@ -36,6 +37,7 @@ import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
     NzEmptyModule,
     PaginationComponent,
     FormatDatePipe,
+    StatusVietnamesePipe,
   ],
   templateUrl: './refund-request-list.component.html',
 })

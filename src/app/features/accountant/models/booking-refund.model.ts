@@ -6,6 +6,7 @@
 */
 export interface BookingRefund {
   bookingId: number;
+  bookingCode: string;
   tourCode: string;
   tourName: string;
   tourType: string;

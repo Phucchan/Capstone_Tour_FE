@@ -18,6 +18,7 @@ export interface TourOption {
 // Dùng cho danh sách tour
 export interface TourListItem {
   id: number;
+  code: string;
   name: string;
   thumbnailImage: string;
   typeName: string;
@@ -40,7 +41,6 @@ export interface TourDetail {
   departLocation: TourOption;
   destinations: TourOption[];
   themes: TourOption[];
-  // Thêm thuộc tính để nhận dữ liệu request booking
   requestBooking?: RequestBookingInfo | null;
 }
 
@@ -160,7 +160,6 @@ export interface TourDayManagerCreateRequestDTO {
   title: string;
   locationId: number | null;
   description?: string;
-  // serviceTypeIds: number[]; // Trường này không còn cần thiết khi quản lý dịch vụ trực tiếp
 }
 
 export interface ServiceInfoDTO {

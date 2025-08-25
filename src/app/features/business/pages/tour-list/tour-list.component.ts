@@ -31,7 +31,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzAvatarModule } from 'ng-zorro-antd/avatar';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { NzPaginationModule } from 'ng-zorro-antd/pagination'; // change
+import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 
 @Component({
   selector: 'app-tour-list',
@@ -81,22 +81,21 @@ export class TourListComponent implements OnInit {
   labelTourTypes: Record<string, string> = {
     FIXED: 'Tour cố định',
     CUSTOM: 'Tour đặt riêng',
-  }; // change
+  };
 
 labelTourStatuses: Record<string, string> = {
     DRAFT: 'Nháp',
     PUBLISHED: 'Đã xuất bản',
     CANCELLED: 'Đã hủy',
-  }; // change
- // change: helper để lấy label, có fallback
+  };
   getTypeVi(type?: string): string {
     return (type && this.labelTourTypes[type]) || type || '';
-  } // change
+  }
 
-  // change
+
   getStatusVi(status?: string): string {
     return (status && this.labelTourStatuses[status]) || status || '';
-  } // change
+  }
 
   ngOnInit(): void {
     this.filterForm = this.fb.group({
@@ -132,21 +131,19 @@ labelTourStatuses: Record<string, string> = {
 
 
   navigateToCreateTour(): void {
-    // FIX: Corrected navigation path
     this.router.navigate(['/business/tours/new']);
   }
 
-    // ===== [VỊ TRÍ: trong class - thêm 2 handler] =====
-  onNzPageIndexChange(p: number) {          // change
+  onNzPageIndexChange(p: number) {
     this.pageIndex = p;                     // nz-pagination là 1-based
     this.searchTrigger$.next();             // gọi lại API
-  }                                         // change
+  }
 
-  onNzPageSizeChange(size: number) {        // change
+  onNzPageSizeChange(size: number) {
     this.pageSize = size;
     this.pageIndex = 1;                     // reset về trang 1
     this.searchTrigger$.next();             // gọi lại API
-  }                                         // change
+  }
 
 
   getStatusColor(status: string): string {

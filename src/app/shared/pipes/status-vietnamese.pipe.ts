@@ -35,8 +35,7 @@ export class StatusVietnamesePipe implements PipeTransform {
     // PaymentMethod
     CASH: 'Tiền mặt',
     BANK_TRANSFER: 'Chuyển khoản',
-    CREDIT_CARD: 'Thẻ tín dụng',
-    VNPAY: 'VNPAY',
+
 
     // PaymentType
     DEPOSIT: 'Đặt cọc',

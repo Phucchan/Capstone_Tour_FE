@@ -76,11 +76,19 @@ export class SellerBookingService {
 
   getAvailableBookings(
     page: number,
-    size: number
+    size: number,
+    keyword?: string | null,
+    status?: string | null
   ): Observable<ApiResponse<Paging<SellerBookingSummary>>> {
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
+    if (keyword) {
+      params = params.set('keyword', keyword);
+    }
+    if (status) {
+      params = params.set('status', status);
+    }
     return this.http.get<ApiResponse<Paging<SellerBookingSummary>>>(
       `${this.bookingApiUrl}/available`,
       { params }
@@ -90,12 +98,20 @@ export class SellerBookingService {
   getEditedBookings(
     sellerUsername: string,
     page: number,
-    size: number
+    size: number,
+    keyword?: string | null,
+    status?: string | null
   ): Observable<ApiResponse<Paging<SellerBookingSummary>>> {
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('sellerUsername', sellerUsername)
       .set('page', page.toString())
       .set('size', size.toString());
+    if (keyword) {
+      params = params.set('keyword', keyword);
+    }
+    if (status) {
+      params = params.set('status', status);
+    }
     return this.http.get<ApiResponse<Paging<SellerBookingSummary>>>(
       `${this.bookingApiUrl}/edited`,
       { params }
@@ -152,15 +168,18 @@ export class SellerBookingService {
   getRequestBookings(
     page: number,
     size: number,
-    search?: string
+    keyword?: string | null,
+    status?: string | null
   ): Observable<ApiResponse<Paging<RequestBookingSummary>>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
 
-    // chỉ set search khi có giá trị
-    if (search && search.trim().length > 0) {
-      params = params.set('search', search.trim());
+    if (keyword) {
+      params = params.set('keyword', keyword);
+    }
+    if (status) {
+      params = params.set('status', status);
     }
     return this.http.get<ApiResponse<Paging<RequestBookingSummary>>>(
       this.requestApiUrl,

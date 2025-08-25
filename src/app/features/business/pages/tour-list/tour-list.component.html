@@ -24,7 +24,6 @@
             <nz-form-label>Loại tour</nz-form-label>
             <nz-form-control>
               <nz-select formControlName="tourType" nzAllowClear nzPlaceHolder="Tất cả các loại">
-                <!-- change: hiển thị label tiếng Việt -->
                 <nz-option *ngFor="let type of tourTypes" [nzLabel]="getTypeVi(type)" [nzValue]="type">
                 </nz-option>
               </nz-select>
@@ -37,7 +36,6 @@
             <nz-form-label>Trạng thái</nz-form-label>
             <nz-form-control>
               <nz-select formControlName="tourStatus" nzAllowClear nzPlaceHolder="Tất cả trạng thái">
-                <!-- change -->
                 <nz-option *ngFor="let status of tourStatuses" [nzLabel]="getStatusVi(status)" [nzValue]="status">
                 </nz-option>
               </nz-select>
@@ -49,12 +47,13 @@
   </nz-card>
 
   <nz-table
-    [nzData]="tours"                         
+    [nzData]="tours"
     [nzLoading]="isLoading"
     nzSize="middle"
-    [nzFrontPagination]="false">    
+    [nzFrontPagination]="false">
     <thead>
       <tr>
+        <th>Mã Tour</th>
         <th>Tên Tour</th>
         <th>Số ngày</th>
         <th>Loại</th>
@@ -64,6 +63,7 @@
     </thead>
     <tbody>
       <tr *ngFor="let tour of tours">
+           <td class="font-mono">{{ tour.code }}</td>
         <td>
           <div class="flex items-center">
             <nz-avatar [nzSrc]="tour.thumbnailImage || 'https://placehold.co/40x40/EBF4FF/76A9FA?text=T'"
@@ -72,14 +72,13 @@
           </div>
         </td>
         <td>{{ tour.durationDays }} ngày</td>
-         <td>{{ getTypeVi(tour.typeName) }}</td> 
+         <td>{{ getTypeVi(tour.typeName) }}</td>
         <td>
           <nz-tag [nzColor]="getStatusColor(tour.tourStatus)">
-            {{ getStatusVi(tour.tourStatus) }}                                  <!-- // change -->
+            {{ getStatusVi(tour.tourStatus) }}
           </nz-tag>
         </td>
         <td nzAlign="right">
-          <!-- FIX: Corrected routerLink paths -->
           <a [routerLink]="['/business/tours', tour.id]">Chi tiết</a>
           <nz-divider nzType="vertical"></nz-divider>
           <a nz-dropdown [nzDropdownMenu]="menu" (click)="$event.stopPropagation()">
