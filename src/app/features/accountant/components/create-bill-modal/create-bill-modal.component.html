@@ -1,8 +1,3 @@
-<!--
-  Ghi chú:
-  - Chuyển sang layout label-on-top (nhãn ở trên) để dễ đọc và nhất quán hơn.
-  - Giảm khoảng cách dọc để form gọn gàng hơn trong modal.
--->
 <form nz-form [formGroup]="validateForm" class="py-2">
   <div class="space-y-4">
     <!-- Row: Người nộp/chi -->
@@ -31,10 +26,6 @@
       </ng-template>
     </nz-form-item>
 
-    <!--
-      Ghi chú: Sử dụng grid để đặt Ngày tạo và Phương thức trên cùng một hàng,
-      giúp tiết kiệm không gian theo chiều dọc.
-    -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <!-- Column: Ngày tạo -->
       <nz-form-item>
@@ -55,13 +46,6 @@
       </nz-form-item>
     </div>
 
-    <!-- Row: Số tiền -->
-    <nz-form-item>
-      <nz-form-label nzRequired>Số tiền</nz-form-label>
-      <nz-form-control nzErrorTip="Vui lòng nhập số tiền hợp lệ!">
-        <nz-input-number formControlName="amount" [nzMin]="1" [nzStep]="1000" class="w-full" [nzFormatter]="formatterVND" [nzParser]="parserVND"></nz-input-number>
-      </nz-form-control>
-    </nz-form-item>
 
     <!-- Row: Nội dung -->
     <nz-form-item>

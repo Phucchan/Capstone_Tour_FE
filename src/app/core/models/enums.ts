@@ -27,6 +27,6 @@ export enum PaymentType {
 
 export enum PaymentBillItemStatus {
   PAID = 'PAID',
-  UNPAID = 'PENDING',
+  PENDING = 'PENDING',
 }
 

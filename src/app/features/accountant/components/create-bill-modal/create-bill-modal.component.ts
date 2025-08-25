@@ -1,9 +1,3 @@
-/*
-----------------------------------------------------------------
--- File: src/app/features/accountant/components/create-bill-modal/create-bill-modal.component.ts
--- Ghi chú: Component cho modal tạo phiếu thu/chi. (ĐÃ SỬA LỖI TRIỆT ĐỂ)
-----------------------------------------------------------------
-*/
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -14,18 +8,16 @@ import {
 } from '@angular/forms';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzMessageService } from 'ng-zorro-antd/message';
-// *** THAY ĐỔI 1: Import NZ_MODAL_DATA ***
 import { NZ_MODAL_DATA } from 'ng-zorro-antd/modal';
 import { AccountantService } from '../../services/accountant.service';
 import { PaymentMethod, PaymentType } from '../../../../core/models/enums';
 import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service';
 import { BookingSettlement } from '../../models/booking-settlement.model';
+import { CreateBillRequest } from '../../models/create-bill-request.model';
 
-// Interface để định nghĩa cấu trúc dữ liệu được truyền vào
 interface CreateBillModalData {
   bookingDetail: BookingSettlement;
   billType: PaymentType;
@@ -39,18 +31,13 @@ interface CreateBillModalData {
     ReactiveFormsModule,
     NzFormModule,
     NzInputModule,
-    NzInputNumberModule,
     NzSelectModule,
     NzDatePickerModule,
   ],
   templateUrl: './create-bill-modal.component.html',
-
 })
 export class CreateBillModalComponent implements OnInit {
-  // *** THAY ĐỔI 2: Xóa @Input, inject NZ_MODAL_DATA để lấy dữ liệu ***
   private modalData: CreateBillModalData = inject(NZ_MODAL_DATA);
-
-  // Các service khác không thay đổi
   private fb = inject(FormBuilder);
   private accountantService = inject(AccountantService);
   private messageService = inject(NzMessageService);
@@ -59,7 +46,6 @@ export class CreateBillModalComponent implements OnInit {
   validateForm!: FormGroup;
   paymentMethods = Object.values(PaymentMethod);
 
-  // Lấy bookingDetail và billType từ modalData đã inject
   get bookingDetail(): BookingSettlement {
     return this.modalData.bookingDetail;
   }
@@ -75,8 +61,10 @@ export class CreateBillModalComponent implements OnInit {
   private initializeForm(): void {
     const currentUser = this.currentUserService.getCurrentUser();
     this.validateForm = this.fb.group({
-      // *** THAY ĐỔI 3: Sử dụng getter để lấy dữ liệu, đảm bảo an toàn ***
-      payTo: [this.isReceipt() ? 'Công ty' : null, [Validators.required]],
+      payTo: [
+        this.isReceipt() ? 'Công ty TNHH Du Lịch ABC' : null,
+        [Validators.required],
+      ],
       paidBy: [
         this.isReceipt() ? null : currentUser?.fullName || '',
         [Validators.required],
@@ -85,10 +73,11 @@ export class CreateBillModalComponent implements OnInit {
       paymentMethod: [PaymentMethod.BANK_TRANSFER, [Validators.required]],
       note: [null],
       content: [
-        `Thanh toán cho booking #${this.bookingDetail.bookingCode}`,
+        this.isReceipt()
+          ? `Thanh toán booking #${this.bookingDetail.bookingCode}`
+          : `Chi trả dịch vụ cho booking #${this.bookingDetail.bookingCode}`,
         [Validators.required],
       ],
-      amount: [null, [Validators.required, Validators.min(1)]],
     });
   }
 
@@ -96,22 +85,19 @@ export class CreateBillModalComponent implements OnInit {
     return this.billType === PaymentType.RECEIPT;
   }
 
-  formatterVND = (value: number): string =>
-    value ? `${value.toLocaleString('vi-VN')} ₫` : '';
-  parserVND = (value: string): number =>
-    parseFloat(value.replace(' ₫', '').replace(/,/g, ''));
-
   async submitForm(): Promise<BookingSettlement | null> {
     if (this.validateForm.valid) {
       try {
         const formValue = this.validateForm.value;
-        const request = {
-          ...formValue,
+
+        const request: CreateBillRequest = {
+          payTo: formValue.payTo,
+          paidBy: formValue.paidBy,
           createdDate: formValue.createdDate.toISOString(),
           paymentType: this.billType,
-          unitPrice: formValue.amount,
-          quantity: 1,
-          discount: 0,
+          paymentMethod: formValue.paymentMethod,
+          note: formValue.note,
+          content: formValue.content,
         };
 
         const result = this.isReceipt()

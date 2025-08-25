@@ -1,4 +1,8 @@
-import { PaymentMethod, PaymentType } from '../../../core/models/enums';
+import {
+  PaymentMethod,
+  PaymentType,
+  PaymentBillItemStatus,
+} from '../../../core/models/enums';
 
 export interface PaymentBillList {
   billId: number;
@@ -10,4 +14,7 @@ export interface PaymentBillList {
   paymentType: PaymentType;
   paymentMethod: PaymentMethod;
   totalAmount: number;
+  // Tthuộc tính status để theo dõi trạng thái của phiếu.
+  // Backend cần trả về giá trị này ('PENDING' hoặc 'PAID').
+  status: PaymentBillItemStatus;
 }
