@@ -1,9 +1,4 @@
-<!--
-  Ghi chú:
-  - Áp dụng layout label-on-top (nhãn ở trên) để đồng bộ với modal tạo phiếu thu/chi.
-  - Tối ưu hóa không gian để form gọn gàng hơn.
--->
-<form nz-form [formGroup]="validateForm" class="py-2">
+<form nz-form [formGroup]="validateForm" (ngSubmit)="submitForm()" class="py-2">
   <div class="space-y-4">
     <!-- Row: Người nhận -->
     <nz-form-item>
@@ -44,9 +39,10 @@
 
     <!-- Row: Số tiền -->
     <nz-form-item>
-      <nz-form-label nzRequired>Số tiền hoàn trả</nz-form-label>
-      <nz-form-control nzErrorTip="Vui lòng nhập số tiền hợp lệ!">
-        <nz-input-number formControlName="amount" [nzMin]="1" [nzStep]="1000" class="w-full" [nzFormatter]="formatterVND" [nzParser]="parserVND"></nz-input-number>
+      <nz-form-label>Số tiền hoàn trả</nz-form-label>
+      <nz-form-control>
+        <!--Trường này chỉ để hiển thị, không gửi đi -->
+        <nz-input-number formControlName="amount" class="w-full" [nzFormatter]="formatterVND" [nzParser]="parserVND"></nz-input-number>
       </nz-form-control>
     </nz-form-item>
 
@@ -65,5 +61,11 @@
         <textarea nz-input formControlName="note" [nzAutosize]="{ minRows: 2, maxRows: 4 }"></textarea>
       </nz-form-control>
     </nz-form-item>
+  </div>
+
+  <!--  Thêm footer cho modal -->
+  <div class="flex justify-end gap-2 border-t pt-4 mt-4">
+    <button nz-button type="button" (click)="destroyModal()">Hủy</button>
+    <button type="submit" nz-button nzType="primary" [nzLoading]="isSubmitting">Tạo Phiếu</button>
   </div>
 </form>
