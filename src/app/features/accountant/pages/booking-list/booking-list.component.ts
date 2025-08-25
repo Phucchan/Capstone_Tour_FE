@@ -24,6 +24,7 @@ import { BookingList } from '../../models/booking-list.model';
 import { Paging } from '../../../../core/models/paging.model';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
+import { StatusVietnamesePipe } from '../../../../shared/pipes/status-vietnamese.pipe';
 
 @Component({
   selector: 'app-booking-list',
@@ -42,6 +43,7 @@ import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
     NzEmptyModule,
     PaginationComponent,
     FormatDatePipe,
+    StatusVietnamesePipe,
   ],
   templateUrl: './booking-list.component.html',
 })
@@ -111,7 +113,6 @@ export class BookingListComponent implements OnInit {
       case 'CANCELLED':
       case 'REFUNDED':
         return 'red';
-      // Ghi chú: Thêm màu cho trạng thái yêu cầu hủy
       case 'CANCEL_REQUESTED':
         return 'orange';
       case 'PENDING':

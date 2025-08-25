@@ -26,6 +26,8 @@ import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
 import { BillTableComponent } from '../../components/bill-table/bill-table.component';
 import { CreateBillModalComponent } from '../../components/create-bill-modal/create-bill-modal.component';
 import { PaymentType } from '../../../../core/models/enums';
+import { StatusVietnamesePipe } from '../../../../shared/pipes/status-vietnamese.pipe';
+
 
 @Component({
   selector: 'app-booking-settlement',
@@ -45,6 +47,7 @@ import { PaymentType } from '../../../../core/models/enums';
     FormatDatePipe,
     CurrencyVndPipe,
     BillTableComponent,
+    StatusVietnamesePipe,
   ],
   templateUrl: './booking-settlement.component.html',
 

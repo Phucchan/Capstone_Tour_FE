@@ -82,7 +82,7 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ data.startDate | formatDate }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-center">
-                <nz-tag [nzColor]="getStatusColor(data.status)">{{ data.status }}</nz-tag>
+                <nz-tag [nzColor]="getStatusColor(data.status)">{{ data.status | statusVietnamese }}</nz-tag>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <a (click)="viewSettlementDetail(data.bookingId)" class="text-indigo-600 hover:text-indigo-800 cursor-pointer inline-flex items-center gap-1 font-semibold">
