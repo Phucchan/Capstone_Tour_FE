@@ -142,13 +142,13 @@
                                 <ol cdkDropList [cdkDropListData]="selectedDay?.activities"
                                     [cdkDropListDisabled]="!isEdited" (cdkDropListDropped)="dropActivity($event)">
                                     <li *ngFor="let activity of selectedDay?.activities; let last = last"
-                                        class="mb-5 ms-6 overflow-y-hidden" [class]="last ? '!mb-0' : ''"
-                                        cdkDrag>
+                                        class="mb-5 ms-6 overflow-y-hidden" [class]="last ? '!mb-0' : ''" cdkDrag>
                                         <span
                                             class="absolute flex items-center justify-center w-8 h-8 bg-sky-200 rounded-full -start-4 ring-4 ring-white dark:ring-gray-900 dark:bg-green-900">
                                         </span>
                                         <div class="relative pl-6">
-                                            <div class="bg-white rounded-lg shadow p-4 flex justify-between items-center">
+                                            <div
+                                                class="bg-white rounded-lg shadow p-4 flex justify-between items-center">
                                                 <div class="flex">
                                                     <img [src]="activity.imageUrl" alt="image"
                                                         class="w-24 h-20 object-cover rounded-md mr-4" />
@@ -161,7 +161,8 @@
                                                         </p>
                                                         <p class="text-sm text-gray-600">
 
-                                                            ⏰ {{ activity?.startTime | date: 'shortTime' }} · {{ activity?.endTime | date: 'shortTime' }}
+                                                            ⏰ {{ activity?.startTime | date: 'shortTime' }} · {{
+                                                            activity?.endTime | date: 'shortTime' }}
                                                             <button *ngIf="isEdited" type="button"
                                                                 class="text-sm ml-2 hover:bg-blue-200"
                                                                 (click)="openEditTimeModal(activity)">
@@ -375,7 +376,7 @@
 
                 <div id="activity-modal" tabindex="-1" aria-hidden="true"
                     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-                    <div class="relative p-4 w-full max-w-2xl max-h-[60%]">
+                    <div class="relative p-4 w-full max-w-2xl min-h-screen">
                         <!-- Modal content -->
                         <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
                             <!-- Modal header -->
@@ -397,19 +398,6 @@
                             </div>
                             <!-- Modal body -->
                             <div class="p-4 md:p-5 space-y-4">
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                                        </svg>
-                                    </div>
-                                    <input type="text" id="default-search" (input)="filterActivities($event)"
-                                        class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        placeholder="Tìm kiếm..." required />
-                                </div>
-
                                 <div class="flex flex-col space-y-4 h-[40vh] overflow-y-auto">
                                     @if(filteredActivities?.length === 0) {
                                     <div class="flex items-center justify-center h-48">

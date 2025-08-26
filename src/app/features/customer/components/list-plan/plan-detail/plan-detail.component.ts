@@ -19,7 +19,7 @@ import {
 } from '@angular/forms';
 @Component({
   selector: 'app-plan-detail',
-imports: [
+  imports: [
     CommonModule,
     FooterComponent,
     SpinnerComponent,
@@ -27,17 +27,14 @@ imports: [
     ReactiveFormsModule,
   ],
   templateUrl: './plan-detail.component.html',
-  styleUrls: ['./plan-detail.component.css']
+  styleUrls: ['./plan-detail.component.css'],
 })
 export class PlanDetailComponent {
-
-
-
   constructor(
     private planService: PlanService,
     private userStorageService: UserStorageService,
     private router: Router,
-    private fb: FormBuilder,
+    private fb: FormBuilder
   ) {
     this.addActivityForm = this.fb.group({
       title: ['', [Validators.required]],
@@ -147,7 +144,35 @@ export class PlanDetailComponent {
   openActivityModal() {
     if (this.activityModal) {
       this.activityModal.show();
+      this.fetchActivities();
     }
+  }
+
+  fetchActivities() {
+    const maxId = Math.max(
+      ...this.selectedDay.activities.map((activity: any) => activity.id)
+    );
+
+    if(this.filteredActivities.length > 0){
+      return;
+    }
+
+    this.planService
+      .fetchActivities(
+        this.selectedDay.locationName,
+        this.plan.preferences.toString(),
+        maxId + 1,
+        this.selectedDay.date
+      )
+      .subscribe(
+        (response) => {
+          this.filteredActivities = response.data;
+          console.log('Activities fetched successfully:', response);
+        },
+        (error) => {
+          console.error('Error fetching activities:', error);
+        }
+      );
   }
 
   closeActivityModal() {
@@ -164,6 +189,10 @@ export class PlanDetailComponent {
         event.currentIndex
       );
     }
+  }
+
+  test() {
+    console.log('Test button clicked');
   }
 
   selectedCategoryName: string = 'Hotel';
@@ -249,7 +278,6 @@ export class PlanDetailComponent {
   }
 
   onSave() {
-
     this.planService.updatePlan(this.plan.id, this.plan).subscribe(
       (response) => {
         console.log('Plan updated successfully:', response);
@@ -315,10 +343,8 @@ export class PlanDetailComponent {
       (response) => {
         this.plan = response.data;
         this.startDate = this.plan.days[0].date;
-        this.endDate =
-          this.plan.days[this.plan.days.length - 1].date;
+        this.endDate = this.plan.days[this.plan.days.length - 1].date;
         this.selectedDay = this.plan.days[0];
-
 
         this.locationIds = this.plan.days.map((item: any) => item.locationId);
 
@@ -363,7 +389,11 @@ export class PlanDetailComponent {
   ) {
     this.providers = [];
     this.planService
-      .fetchProviderByCategoryAndLocationId(this.plan?.id, categoryName, this.locationIds)
+      .fetchProviderByCategoryAndLocationId(
+        this.plan?.id,
+        categoryName,
+        this.locationIds
+      )
       .subscribe(
         (response) => {
           console.log('Providers fetched successfully:', response);

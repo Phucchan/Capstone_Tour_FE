@@ -68,13 +68,14 @@ export class PlanService {
     });
   }
 
-  fetchActivities(locationName: string, preferences: string, startIndex: number): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}/public/plans/activity/list`, {
-      params: {
+  fetchActivities(locationName: string, preferences: string, startIndex: number, date: String): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/public/plans/activities/suggestion`, {
+      
         locationName: locationName,
         preferences: preferences,
-        startIndex: startIndex
-      }
+        startIndex: startIndex,
+        date: date
+      
     });
   }
 
