@@ -34,7 +34,7 @@
                             selectedDay?.date === day.date,
                             'text-gray-700': selectedDay?.date !== day.date
                         }" class="px-4 py-1 rounded-full border border-sky-300 hover:bg-gray-100">
-                            {{ day.date }}
+                            {{ day.date | date:'dd/MM/yyyy' }}
                         </button>
                         }
                     </div>
