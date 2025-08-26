@@ -1,118 +1,110 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
-import { finalize, debounceTime } from 'rxjs';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
 import {
   FormBuilder,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 
-import { NzTableModule } from 'ng-zorro-antd/table';
-import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzModalModule, NzModalService, NzModalRef } from 'ng-zorro-antd/modal';
-import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzEmptyModule } from 'ng-zorro-antd/empty';
-import { NzIconModule } from 'ng-zorro-antd/icon';
+// NG-ZORRO Imports
 import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
 import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
-import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
-import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzTagModule } from 'ng-zorro-antd/tag';
-import { NzFormModule } from 'ng-zorro-antd/form';
-import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzModalModule, NzModalRef, NzModalService } from 'ng-zorro-antd/modal';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzFormModule } from 'ng-zorro-antd/form';
 
+// Custom Imports
 import { SellerBookingService } from '../../services/seller-booking.service';
-import { RequestBookingSummary } from '../../models/request-booking-summary.model';
-import { Paging } from '../../../../core/models/paging.model';
+import { RequestBookingDetail } from '../../models/request-booking-detail.model';
 import { FormatDatePipe } from '../../../../shared/pipes/format-date.pipe';
 import { StatusVietnamesePipe } from '../../../../shared/pipes/status-vietnamese.pipe';
+import { CurrencyVndPipe } from '../../../../shared/pipes/currency-vnd.pipe';
 
 @Component({
-  selector: 'app-seller-request-list',
+  selector: 'app-seller-request-detail',
   standalone: true,
   imports: [
     CommonModule,
     RouterLink,
+    FormsModule,
     ReactiveFormsModule,
     FormatDatePipe,
     StatusVietnamesePipe,
-    NzTableModule,
-    NzButtonModule,
-    NzEmptyModule,
-    NzIconModule,
+    CurrencyVndPipe,
     NzPageHeaderModule,
     NzBreadCrumbModule,
-    NzPopconfirmModule,
+    NzCardModule,
+    NzGridModule,
+    NzDescriptionsModule,
+    NzSpinModule,
+    NzButtonModule,
+    NzTagModule,
     NzModalModule,
     NzInputModule,
-    NzTagModule,
-    NzFormModule,
-    NzSelectModule,
-    NzGridModule,
-    NzCardModule,
-    NzDividerModule,
+    NzPopconfirmModule,
+    NzIconModule,
   ],
-  templateUrl: './seller-request-list.component.html',
+  templateUrl: './seller-request-detail.component.html',
 })
-export class SellerRequestListComponent implements OnInit {
+export class SellerRequestDetailComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+  public router = inject(Router);
   private sellerService = inject(SellerBookingService);
-  private modal = inject(NzModalService);
   private message = inject(NzMessageService);
-  private fb = inject(FormBuilder);
+  private modal = inject(NzModalService);
 
-  filterForm!: FormGroup;
-  requestStatuses = ['PENDING', 'ACCEPTED', 'REJECTED'];
-
-  requests: RequestBookingSummary[] = [];
-  isLoading = true;
-  paging: Paging<any> = { page: 0, size: 10, total: 0, items: [] };
+  isLoading = signal(true);
+  requestDetail = signal<RequestBookingDetail | null>(null);
+  requestId!: number;
 
   ngOnInit(): void {
-    this.filterForm = this.fb.group({
-      keyword: [null],
-      status: [null],
-    });
-
-    this.loadRequests();
-
-    this.filterForm.valueChanges.pipe(debounceTime(500)).subscribe(() => {
-      this.paging.page = 0; // Reset to first page on filter change
-      this.loadRequests();
-    });
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (idParam) {
+      this.requestId = +idParam;
+      this.loadRequestDetail();
+    } else {
+      this.message.error('Không tìm thấy mã yêu cầu.');
+      this.router.navigate(['/seller/requests']);
+    }
   }
 
-  loadRequests(): void {
-    this.isLoading = true;
-    const { keyword, status } = this.filterForm.value;
+  loadRequestDetail(): void {
+    this.isLoading.set(true);
     this.sellerService
-      .getRequestBookings(this.paging.page, this.paging.size, keyword, status)
-      .pipe(finalize(() => (this.isLoading = false)))
+      .getRequestDetail(this.requestId)
+      .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => {
-          if (res && res.data) {
-            this.requests = res.data.items || [];
-            this.paging = { ...res.data, items: [] };
+          if (res.data) {
+            this.requestDetail.set(res.data);
           } else {
-            this.message.error(
-              res.message || 'Không thể tải danh sách yêu cầu.'
-            );
+            this.message.error(res.message || 'Tải chi tiết yêu cầu thất bại.');
           }
         },
-        error: () => this.message.error('Đã xảy ra lỗi. Vui lòng thử lại.'),
+        error: (err) =>
+          this.message.error(err.error?.message || 'Đã có lỗi xảy ra.'),
       });
   }
 
-  onApprove(requestId: number): void {
-    this.sellerService.approveRequestBooking(requestId).subscribe({
+  onApprove(): void {
+    this.sellerService.approveRequestBooking(this.requestId).subscribe({
       next: (res) => {
-        if (res && res.data) {
+        if (res.data) {
           this.message.success('Duyệt yêu cầu thành công!');
-          this.loadRequests();
+          this.loadRequestDetail();
         } else {
           this.message.error(res.message || 'Duyệt yêu cầu thất bại.');
         }
@@ -122,7 +114,7 @@ export class SellerRequestListComponent implements OnInit {
     });
   }
 
-  showRejectModal(requestId: number): void {
+  showRejectModal(): void {
     const modalRef = this.modal.create({
       nzTitle: 'Xác nhận từ chối yêu cầu',
       nzContent: RejectReasonModalComponent,
@@ -146,17 +138,17 @@ export class SellerRequestListComponent implements OnInit {
 
     modalRef.afterClose.subscribe((reason) => {
       if (reason) {
-        this.onReject(requestId, reason);
+        this.onReject(reason);
       }
     });
   }
 
-  private onReject(requestId: number, reason: string): void {
-    this.sellerService.rejectRequestBooking(requestId, reason).subscribe({
+  private onReject(reason: string): void {
+    this.sellerService.rejectRequestBooking(this.requestId, reason).subscribe({
       next: (res) => {
-        if (res && res.data) {
+        if (res.data) {
           this.message.success('Đã từ chối yêu cầu thành công!');
-          this.loadRequests();
+          this.loadRequestDetail();
         } else {
           this.message.error(res.message || 'Từ chối yêu cầu thất bại.');
         }
@@ -165,17 +157,18 @@ export class SellerRequestListComponent implements OnInit {
         this.message.error(err.error?.message || 'Đã xảy ra lỗi.'),
     });
   }
-
-  onPageIndexChange(page: number): void {
-    this.paging.page = page - 1;
-    this.loadRequests();
-  }
 }
 
-// Component con cho modal nhập lý do
+// Helper component for the rejection reason modal
 @Component({
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NzInputModule, NzFormModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    NzInputModule,
+    ReactiveFormsModule,
+    NzFormModule,
+  ],
   template: `
     <form [formGroup]="reasonForm" class="mt-4">
       <p>

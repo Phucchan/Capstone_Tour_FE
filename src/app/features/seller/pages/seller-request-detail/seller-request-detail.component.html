@@ -1,0 +1,80 @@
+<nz-spin [nzSpinning]="isLoading()">
+  <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+    <!-- Breadcrumb -->
+    <nz-breadcrumb>
+      <nz-breadcrumb-item>
+        <a routerLink="/seller/dashboard">Quản lý Booking</a>
+      </nz-breadcrumb-item>
+      <nz-breadcrumb-item>
+        <a routerLink="/seller/requests">Yêu cầu Tour Đặt riêng</a>
+      </nz-breadcrumb-item>
+      <nz-breadcrumb-item>Chi tiết Yêu cầu</nz-breadcrumb-item>
+    </nz-breadcrumb>
+
+    <!-- Page Header -->
+    <nz-page-header class="site-page-header" nzBackIcon [nzTitle]="'Chi tiết Yêu cầu Tour #' + requestId" (nzBack)="router.navigate(['/seller/requests'])">
+        <nz-page-header-extra *ngIf="requestDetail() as request">
+             <ng-container *ngIf="request.status === 'PENDING'">
+                <button nz-button nz-popconfirm nzPopconfirmTitle="Bạn có chắc muốn duyệt yêu cầu này?"
+                    nzPopconfirmSubTitle="Hành động này sẽ chuyển yêu cầu cho bộ phận kinh doanh."
+                    (nzOnConfirm)="onApprove()" class="mr-2">
+                    <span nz-icon nzType="check"></span>
+                    Duyệt
+                </button>
+                <button nz-button nzType="primary" nzDanger (click)="showRejectModal()">
+                    <span nz-icon nzType="close"></span>
+                    Từ chối
+                </button>
+             </ng-container>
+        </nz-page-header-extra>
+    </nz-page-header>
+
+    <div *ngIf="requestDetail() as request; else noData">
+        <div nz-row [nzGutter]="[24, 24]">
+            <div nz-col nzXs="24" nzLg="16">
+                <nz-card nzTitle="Thông tin yêu cầu">
+                    <nz-descriptions nzBordered [nzColumn]="{ xs: 1, sm: 2, md: 2, lg: 2, xl: 2, xxl: 2 }">
+                        <nz-descriptions-item nzTitle="Trạng thái">
+                            <nz-tag [nzColor]="request.status === 'PENDING' ? 'gold' : (request.status === 'ACCEPTED' ? 'green' : 'red')">
+                                {{ request.status | statusVietnamese }}
+                            </nz-tag>
+                        </nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Lý do từ chối" *ngIf="request.reason">{{ request.reason }}</nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Ngày đi dự kiến">{{ request.startDate | formatDate }}</nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Ngày về dự kiến">{{ request.endDate | formatDate }}</nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Khoảng giá mong muốn" [nzSpan]="2">
+                            {{ request.priceMin | currencyVnd }} - {{ request.priceMax | currencyVnd }}
+                        </nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Điểm đến chi tiết" [nzSpan]="2">{{ request.destinationDetail }}</nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Phương tiện">{{ request.transport }}</nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Chủ đề Tour">{{ request.tourTheme }}</nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Dịch vụ mong muốn" [nzSpan]="2">{{ request.desiredServices }}</nz-descriptions-item>
+                    </nz-descriptions>
+                </nz-card>
+            </div>
+            <div nz-col nzXs="24" nzLg="8">
+                <nz-card nzTitle="Thông tin khách hàng">
+                     <nz-descriptions nzBordered [nzColumn]="1">
+                        <nz-descriptions-item nzTitle="Họ và tên">{{ request.customerName }}</nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Email">{{ request.customerEmail }}</nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Số điện thoại">{{ request.customerPhone }}</nz-descriptions-item>
+                     </nz-descriptions>
+                </nz-card>
+                 <nz-card nzTitle="Số lượng khách" class="mt-6">
+                     <nz-descriptions nzBordered [nzColumn]="2">
+                        <nz-descriptions-item nzTitle="Người lớn">{{ request.adults }}</nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Trẻ em">{{ request.children }}</nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Trẻ nhỏ">{{ request.infants }}</nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Em bé">{{ request.toddlers }}</nz-descriptions-item>
+                     </nz-descriptions>
+                </nz-card>
+            </div>
+        </div>
+    </div>
+    <ng-template #noData>
+        <div *ngIf="!isLoading()" class="text-center p-8">
+            <p>Không tìm thấy thông tin chi tiết cho yêu cầu này.</p>
+        </div>
+    </ng-template>
+  </div>
+</nz-spin>
