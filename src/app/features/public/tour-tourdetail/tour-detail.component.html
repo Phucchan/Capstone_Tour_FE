@@ -114,10 +114,16 @@
               class="w-1/2 px-4 py-2 text-sm font-semibold border border-blue-500 text-blue-500 rounded-md hover:bg-blue-100">
               Ngày khác
             </button>
-            <button (click)="navigateToDetails()"
-              class="w-1/2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">
-              Đặt chỗ
-            </button>
+        
+            <button (click)="navigateToDetails()" 
+    [disabled]="selectedSchedule?.availableSeats === 0"
+    class="w-1/2 px-4 py-2 text-sm font-semibold text-white rounded-md transition-colors"
+    [ngClass]="{
+      'bg-blue-600 hover:bg-blue-700': selectedSchedule?.availableSeats > 0,
+      'bg-gray-400 cursor-not-allowed': selectedSchedule?.availableSeats === 0
+    }">
+    {{ selectedSchedule?.availableSeats === 0 ? 'Hết chỗ' : 'Đặt chỗ' }}
+  </button>
           </div>
           } @else {
           <h2 class="text-lg font-semibold">Giá từ</h2>

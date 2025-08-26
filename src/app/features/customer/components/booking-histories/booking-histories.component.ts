@@ -25,6 +25,7 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
 type BookingStatus =
   | 'PENDING'
   | 'CONFIRMED'
+  | 'PAID'
   | 'CANCEL_REQUESTED'
   | 'CANCELLED'
   | 'COMPLETED'
@@ -104,6 +105,7 @@ export class BookingHistoriesComponent implements OnInit {
   readonly statuses: BookingStatus[] = [
     'PENDING',
     'CONFIRMED',
+    'PAID',
     'CANCEL_REQUESTED',
     'CANCELLED',
     'COMPLETED',
@@ -145,6 +147,7 @@ export class BookingHistoriesComponent implements OnInit {
     const map: Record<BookingStatus, string> = {
       PENDING: 'Chờ xác nhận',
       CONFIRMED: 'Đã xác nhận',
+      PAID: 'Đã thanh toán',
       CANCEL_REQUESTED: 'Đang yêu cầu hủy',
       CANCELLED: 'Đã hủy',
       COMPLETED: 'Hoàn thành',
