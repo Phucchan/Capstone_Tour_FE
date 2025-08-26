@@ -11,7 +11,7 @@ import {
 } from '@angular/forms';
 import { finalize } from 'rxjs';
 
-// --- [THÊM MỚI] Imports cho các module của NG-ZORRO ---
+// --- Imports cho các module của NG-ZORRO ---
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSelectModule } from 'ng-zorro-antd/select';
@@ -52,12 +52,10 @@ import { CustomValidators } from '../../../../core/validators/custom-validators'
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
-    // Pipes
     FormatDatePipe,
     CurrencyVndPipe,
     StatusVietnamesePipe,
     TitleCasePipe,
-    // NG-ZORRO Modules
     NzModalModule,
     NzSelectModule,
     NzInputModule,
@@ -79,7 +77,6 @@ import { CustomValidators } from '../../../../core/validators/custom-validators'
   templateUrl: './seller-booking-detail.component.html',
 })
 export class SellerBookingDetailComponent implements OnInit {
-  // Dependency Injection using inject()
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private sellerService = inject(SellerBookingService);
@@ -258,6 +255,26 @@ export class SellerBookingDetailComponent implements OnInit {
       });
   }
 
+  onUpdateStatus(newStatus: BookingStatus): void {
+    if (!this.booking) return;
+
+    this.isLoading = true;
+    this.sellerService
+      .updateBookingStatus(this.booking.id, newStatus)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (res) => {
+          this.message.success(`Cập nhật trạng thái thành công!`);
+          this.booking = res.data;
+        },
+        error: (err) => {
+          this.message.error(
+            err.error.message || 'Không thể cập nhật trạng thái.'
+          );
+        },
+      });
+  }
+
   get customersArray(): FormArray {
     return this.addCustomerForm.get('customers') as FormArray;
   }
@@ -429,6 +446,8 @@ export class SellerBookingDetailComponent implements OnInit {
     switch (status) {
       case 'PENDING':
         return 'orange';
+      case 'PAID':
+        return 'processing';
       case 'CONFIRMED':
         return 'green';
       case 'CANCELLED':

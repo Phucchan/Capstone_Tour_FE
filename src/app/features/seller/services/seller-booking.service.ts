@@ -76,19 +76,11 @@ export class SellerBookingService {
 
   getAvailableBookings(
     page: number,
-    size: number,
-    keyword?: string | null,
-    status?: string | null
+    size: number
   ): Observable<ApiResponse<Paging<SellerBookingSummary>>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
-    if (keyword) {
-      params = params.set('keyword', keyword);
-    }
-    if (status) {
-      params = params.set('status', status);
-    }
     return this.http.get<ApiResponse<Paging<SellerBookingSummary>>>(
       `${this.bookingApiUrl}/available`,
       { params }
@@ -98,20 +90,12 @@ export class SellerBookingService {
   getEditedBookings(
     sellerUsername: string,
     page: number,
-    size: number,
-    keyword?: string | null,
-    status?: string | null
+    size: number
   ): Observable<ApiResponse<Paging<SellerBookingSummary>>> {
     let params = new HttpParams()
       .set('sellerUsername', sellerUsername)
       .set('page', page.toString())
       .set('size', size.toString());
-    if (keyword) {
-      params = params.set('keyword', keyword);
-    }
-    if (status) {
-      params = params.set('status', status);
-    }
     return this.http.get<ApiResponse<Paging<SellerBookingSummary>>>(
       `${this.bookingApiUrl}/edited`,
       { params }

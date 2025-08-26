@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { finalize, debounceTime } from 'rxjs';
+import { finalize, debounceTime, startWith } from 'rxjs';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 // --- Imports cho các module của NG-ZORRO ---
@@ -36,7 +36,6 @@ import { BookingStatus } from '../../../../core/models/enums';
     ReactiveFormsModule,
     FormatDatePipe,
     StatusVietnamesePipe,
-    // NG-ZORRO Modules
     NzTableModule,
     NzTabsModule,
     NzButtonModule,
@@ -68,8 +67,14 @@ export class SellerDashboardComponent implements OnInit {
     'REFUNDED',
   ];
 
-  availableBookings: Paging<SellerBookingSummary> | null = null;
-  editedBookings: Paging<SellerBookingSummary> | null = null;
+  rawAvailableBookings: SellerBookingSummary[] = [];
+  filteredAvailableBookings: SellerBookingSummary[] = [];
+
+  rawEditedBookings: SellerBookingSummary[] = [];
+  filteredEditedBookings: SellerBookingSummary[] = [];
+
+  availableBookingsPaging: Paging<SellerBookingSummary> | null = null;
+  editedBookingsPaging: Paging<SellerBookingSummary> | null = null;
 
   isLoadingAvailable = true;
   isLoadingEdited = false;
@@ -87,70 +92,90 @@ export class SellerDashboardComponent implements OnInit {
 
     this.loadAvailableBookings();
 
-    this.filterForm.valueChanges.pipe(debounceTime(500)).subscribe(() => {
-      this.applyFilters();
-    });
+    this.filterForm.valueChanges
+      .pipe(startWith(this.filterForm.value), debounceTime(300))
+      .subscribe(() => {
+        this.applyClientSideFilters();
+      });
   }
 
-  applyFilters(): void {
+  applyClientSideFilters(): void {
+    const { keyword, status } = this.filterForm.value;
+    const keywordLower = keyword?.toLowerCase().trim() || '';
+
     if (this.selectedTabIndex === 0) {
-      this.loadAvailableBookings(true);
+      this.filteredAvailableBookings = this.rawAvailableBookings.filter(
+        (booking) => {
+          const statusMatch = !status || booking.status === status;
+          const keywordMatch =
+            !keywordLower ||
+            booking.bookingCode.toLowerCase().includes(keywordLower) ||
+            booking.tourName.toLowerCase().includes(keywordLower) ||
+            booking.customer.toLowerCase().includes(keywordLower);
+          return statusMatch && keywordMatch;
+        }
+      );
     } else {
-      this.loadEditedBookings(true);
+      this.filteredEditedBookings = this.rawEditedBookings.filter((booking) => {
+        const statusMatch = !status || booking.status === status;
+        const keywordMatch =
+          !keywordLower ||
+          booking.bookingCode.toLowerCase().includes(keywordLower) ||
+          booking.tourName.toLowerCase().includes(keywordLower) ||
+          booking.customer.toLowerCase().includes(keywordLower);
+        return statusMatch && keywordMatch;
+      });
     }
   }
 
-  onTabChange(): void {
+  onTabChange(index: number): void {
+    this.selectedTabIndex = index;
+    this.filterForm.reset(
+      { keyword: null, status: null },
+      { emitEvent: false }
+    );
     if (this.selectedTabIndex === 0) {
-      this.loadAvailableBookings(true);
+      if (!this.availableBookingsPaging) this.loadAvailableBookings();
     } else {
-      this.loadEditedBookings(true);
+      if (!this.editedBookingsPaging) this.loadEditedBookings();
     }
+    this.applyClientSideFilters();
   }
 
   loadAvailableBookings(reset: boolean = false): void {
-    if (reset) {
-      this.availableBookingsPage = 1;
-    }
+    if (reset) this.availableBookingsPage = 1;
     this.isLoadingAvailable = true;
-    const { keyword, status } = this.filterForm.value;
 
     this.sellerService
-      .getAvailableBookings(
-        this.availableBookingsPage - 1,
-        this.pageSize,
-        keyword,
-        status
-      )
+      .getAvailableBookings(this.availableBookingsPage - 1, this.pageSize)
       .pipe(finalize(() => (this.isLoadingAvailable = false)))
       .subscribe({
-        next: (res) => (this.availableBookings = res.data),
+        next: (res) => {
+          this.availableBookingsPaging = res.data;
+          this.rawAvailableBookings = res.data.items || [];
+          this.applyClientSideFilters();
+        },
         error: () =>
           this.message.error('Không thể tải danh sách booking chờ xử lý.'),
       });
   }
 
   loadEditedBookings(reset: boolean = false): void {
-    if (reset) {
-      this.editedBookingsPage = 1;
-    }
+    if (reset) this.editedBookingsPage = 1;
     const username = this.currentUserService.getCurrentUser()?.username;
     if (!username) return;
 
     this.isLoadingEdited = true;
-    const { keyword, status } = this.filterForm.value;
 
     this.sellerService
-      .getEditedBookings(
-        username,
-        this.editedBookingsPage - 1,
-        this.pageSize,
-        keyword,
-        status
-      )
+      .getEditedBookings(username, this.editedBookingsPage - 1, this.pageSize)
       .pipe(finalize(() => (this.isLoadingEdited = false)))
       .subscribe({
-        next: (res) => (this.editedBookings = res.data),
+        next: (res) => {
+          this.editedBookingsPaging = res.data;
+          this.rawEditedBookings = res.data.items || [];
+          this.applyClientSideFilters();
+        },
         error: () =>
           this.message.error('Không thể tải danh sách booking của bạn.'),
       });
@@ -167,7 +192,7 @@ export class SellerDashboardComponent implements OnInit {
       next: () => {
         this.message.success('Nhận booking thành công!');
         this.loadAvailableBookings();
-        if (this.editedBookings) {
+        if (this.editedBookingsPaging) {
           this.loadEditedBookings();
         }
       },
@@ -184,6 +209,8 @@ export class SellerDashboardComponent implements OnInit {
     switch (status) {
       case 'PENDING':
         return 'orange';
+      case 'PAID':
+        return 'processing';
       case 'CONFIRMED':
         return 'green';
       case 'CANCELLED':
