@@ -132,11 +132,12 @@ export interface TourPaxFullDTO {
   manualPrice: boolean;
   isDeleted: boolean;
   previewSellingPrice?: number;
+  costPerPax?: number;
 }
 
 export interface TourPriceCalculateRequestDTO {
   profitRate: number;
-  extraCost: number;
+  // extraCost: number;
 }
 
 export interface TourPaxCreateRequestDTO {
@@ -150,6 +151,7 @@ export interface TourPaxRequestDTO {
   fixedPrice?: number | null;
   sellingPrice?: number | null;
   manualPrice?: boolean;
+  extraHotelCost?: number | null;
 }
 
 export interface PartnerServiceShortDTO {

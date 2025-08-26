@@ -24,8 +24,13 @@
             <div *ngFor="let group of groupedServices()" class="border-b pb-2 last:border-b-0">
               <h3 class="font-semibold text-gray-700">{{ group.name }}</h3>
               <ul class="text-sm text-gray-600 list-none p-0 mt-1">
-                <li *ngFor="let service of group.services" class="flex justify-between">
-                  <span>{{ service.partnerName }}</span>
+                <li *ngFor="let service of group.services" class="flex justify-between items-center">
+                  <div>
+                    <span>{{ service.partnerName }}</span>
+                    <nz-tag [nzColor]="service.costType === 'FIXED' ? 'blue' : 'green'" class="ml-2">
+                      {{ service.costType === 'FIXED' ? 'Cố định' : 'Theo khách' }}
+                    </nz-tag>
+                  </div>
                   <span class="font-medium">{{ service.nettPrice | currencyVnd }}</span>
                 </li>
               </ul>
@@ -46,11 +51,10 @@
       <!-- Cột 2: Bảng giá và công cụ tính -->
       <div nz-col nzXs="24" nzLg="16">
         <div class="space-y-6">
-          <!-- Công cụ tính giá -->
           <nz-card nzTitle="Công cụ tính giá tự động">
             <form nz-form [formGroup]="priceToolForm" nzLayout="vertical">
               <div nz-row [nzGutter]="16">
-                <div nz-col nzSpan="8">
+                <div nz-col nzSpan="12">
                   <nz-form-item>
                     <nz-form-label nzRequired>Tỷ suất lợi nhuận (%)</nz-form-label>
                     <nz-form-control nzErrorTip="Vui lòng nhập số hợp lệ">
@@ -58,17 +62,9 @@
                     </nz-form-control>
                   </nz-form-item>
                 </div>
-                <div nz-col nzSpan="8">
-                  <nz-form-item>
-                    <nz-form-label nzRequired>Chi phí phát sinh/khách</nz-form-label>
-                    <nz-form-control nzErrorTip="Vui lòng nhập số hợp lệ">
-                       <nz-input-number formControlName="extraCost" [nzMin]="0" [nzStep]="1000" [nzFormatter]="formatterVND" [nzParser]="parserVND" class="w-full"></nz-input-number>
-                    </nz-form-control>
-                  </nz-form-item>
-                </div>
-                <div nz-col nzSpan="8" class="flex items-end pb-6">
+                <div nz-col nzSpan="12" class="flex items-end pb-6">
                   <button type="button" nz-button nzType="primary" (click)="applyAndSaveAllPrices()" [nzLoading]="isSubmitting()" [disabled]="priceToolForm.invalid" class="w-full">
-                    <span nz-icon nzType="save"></span> Áp dụng & Lưu tất cả
+                    <span nz-icon nzType="calculator"></span> Tính lại giá bán
                   </button>
                 </div>
               </div>
@@ -90,6 +86,7 @@
                   <th>Số khách</th>
                   <th nz-tooltip="Chi phí cố định/khách + Chi phí/người">Giá vốn/khách</th>
                   <th>Giá bán</th>
+                  <th>Phụ thu P.Đơn</th>
                   <th>Ghi chú</th>
                   <th nzAlign="right">Hành động</th>
                 </tr>
@@ -101,6 +98,7 @@
                   <td>
                     <strong class="text-green-600">{{ pax.previewSellingPrice | currencyVnd }}</strong>
                   </td>
+                  <td>{{ pax.extraHotelCost | currencyVnd }}</td>
                   <td>
                     <nz-tag *ngIf="pax.manualPrice" [nzColor]="'gold'">Giá thủ công</nz-tag>
                   </td>
@@ -174,6 +172,17 @@
                 <ng-container *ngIf="control.hasError('required')">Vui lòng nhập giá bán</ng-container>
                 <ng-container *ngIf="paxForm.hasError('priceInvalid')">Giá bán phải lớn hơn giá vốn</ng-container>
             </ng-template>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </div>
+    <!--  Phụ thu phòng đơn  -->
+    <div nz-row [nzGutter]="16">
+      <div nz-col nzSpan="24">
+        <nz-form-item>
+          <nz-form-label>Phụ thu phòng đơn</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="extraHotelCost" class="w-full" [nzFormatter]="formatterVND" [nzParser]="parserVND" [nzMin]="0"></nz-input-number>
           </nz-form-control>
         </nz-form-item>
       </div>
