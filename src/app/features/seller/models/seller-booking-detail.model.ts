@@ -18,6 +18,7 @@ export interface SellerBookingDetail {
   status: string;
   paymentMethod: string;
   operator: string;
+  sellerUsername: string | null;
   departureDate: string; // ISO Date String
   tourType: string;
   themes: string[];

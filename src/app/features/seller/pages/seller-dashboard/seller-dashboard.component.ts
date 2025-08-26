@@ -201,8 +201,10 @@ export class SellerDashboardComponent implements OnInit {
     });
   }
 
-  navigateToDetail(bookingId: number): void {
-    this.router.navigate(['/seller/booking', bookingId]);
+  navigateToDetail(bookingId: number, isOwned: boolean): void {
+    this.router.navigate(['/seller/booking', bookingId], {
+      queryParams: { isOwner: isOwned },
+    });
   }
 
   getStatusColor(status: string): string {
