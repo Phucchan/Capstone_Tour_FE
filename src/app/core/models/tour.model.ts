@@ -2,6 +2,15 @@
 
 import { CostType } from './enums';
 
+//Enum cho phương tiện di chuyển, đồng bộ với backend
+export enum TourTransport {
+  CAR = 'CAR',
+  MOTORBIKE = 'MOTORBIKE',
+  PLANE = 'PLANE',
+  TRAIN = 'TRAIN',
+  CRUISE_SHIP = 'CRUISE_SHIP',
+}
+
 // Interface cho thông tin request booking lồng trong tour detail
 export interface RequestBookingInfo {
   id: number;
@@ -24,6 +33,7 @@ export interface TourListItem {
   typeName: string;
   tourStatus: string;
   durationDays: number;
+  tourTransport: string;
 }
 
 /**
@@ -38,6 +48,7 @@ export interface TourDetail {
   description: string;
   tourType: string;
   tourStatus: string;
+  tourTransport: TourTransport;
   departLocation: TourOption;
   destinations: TourOption[];
   themes: TourOption[];
@@ -51,6 +62,7 @@ export interface CreateTourRequest {
   name: string;
   thumbnailUrl: string;
   description: string;
+  tourTransport: TourTransport;
   departLocationId: number;
   destinationLocationIds: number[];
   tourThemeIds: number[];
@@ -64,6 +76,7 @@ export interface UpdateTourRequest {
   thumbnailUrl: string;
   description: string;
   tourStatus: string;
+  tourTransport: TourTransport;
   departLocationId: number;
   destinationLocationIds: number[];
   tourThemeIds: number[];

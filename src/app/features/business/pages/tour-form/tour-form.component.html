@@ -64,16 +64,31 @@
                 </nz-form-control>
               </nz-form-item>
 
-              <!-- Loại Tour -->
-              <nz-form-item>
-                <nz-form-label nzRequired>Loại Tour</nz-form-label>
-                <nz-form-control>
-                  <nz-radio-group formControlName="tourType">
-                    <label nz-radio nzValue="FIXED">Tour cố định (FIXED)</label>
-                    <label nz-radio nzValue="CUSTOM">Tour theo yêu cầu (CUSTOM)</label>
-                  </nz-radio-group>
-                </nz-form-control>
-              </nz-form-item>
+              <!-- Loại Tour & Phương tiện -->
+              <div nz-row [nzGutter]="16">
+                <div nz-col [nzSpan]="12">
+                  <nz-form-item>
+                    <nz-form-label nzRequired>Loại Tour</nz-form-label>
+                    <nz-form-control>
+                      <nz-radio-group formControlName="tourType">
+                        <label nz-radio nzValue="FIXED">Tour cố định (FIXED)</label>
+                        <label nz-radio nzValue="CUSTOM">Tour theo yêu cầu (CUSTOM)</label>
+                      </nz-radio-group>
+                    </nz-form-control>
+                  </nz-form-item>
+                </div>
+                <!-- [THÊM MỚI] Dropdown chọn phương tiện -->
+                <div nz-col [nzSpan]="12">
+                  <nz-form-item>
+                    <nz-form-label nzRequired>Phương tiện</nz-form-label>
+                    <nz-form-control nzErrorTip="Vui lòng chọn phương tiện">
+                      <nz-select formControlName="tourTransport" nzPlaceHolder="Chọn phương tiện chính">
+                        <nz-option *ngFor="let transport of transportOptions" [nzLabel]="transport.label" [nzValue]="transport.value"></nz-option>
+                      </nz-select>
+                    </nz-form-control>
+                  </nz-form-item>
+                </div>
+              </div>
 
               <!-- Mô tả -->
               <nz-form-item>

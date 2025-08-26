@@ -19,6 +19,7 @@ import {
   TourOptionsData,
   TourDetail,
   TourPaxRequestDTO,
+  TourTransport,
 } from '../../../../core/models/tour.model';
 import { RequestBookingDetail } from '../../models/request-booking.model';
 import { TourDepartureService } from '../../../../core/services/tour-departure.service';
@@ -93,6 +94,15 @@ export class TourFormComponent implements OnInit {
   tourOptions$!: Observable<TourOptionsData>;
   durationDays = 0;
   private initialTourData: TourDetail | null = null;
+
+  // Danh sách các phương tiện
+  transportOptions = [
+    { label: 'Ô tô', value: TourTransport.CAR },
+    { label: 'Xe máy', value: TourTransport.MOTORBIKE },
+    { label: 'Máy bay', value: TourTransport.PLANE },
+    { label: 'Tàu hỏa', value: TourTransport.TRAIN },
+    { label: 'Tàu thủy', value: TourTransport.CRUISE_SHIP },
+  ];
 
   // --- File Upload State ---
   selectedFile: File | null = null;
@@ -200,6 +210,7 @@ export class TourFormComponent implements OnInit {
       name: ['', Validators.required],
       code: [{ value: '', disabled: true }],
       tourType: ['FIXED', Validators.required],
+      tourTransport: [null, Validators.required],
       description: [''],
       tourStatus: ['DRAFT'],
       departLocationId: [null, Validators.required],
@@ -215,6 +226,7 @@ export class TourFormComponent implements OnInit {
       description: tour.description,
       tourStatus: tour.tourStatus,
       tourType: tour.tourType,
+      tourTransport: tour.tourTransport,
       departLocationId: tour.departLocation.id,
       destinationLocationIds: tour.destinations.map((d) => d.id),
       tourThemeIds: tour.themes.map((t) => t.id),
@@ -302,6 +314,7 @@ export class TourFormComponent implements OnInit {
       description: formValue.description,
       tourType: formValue.tourType,
       tourStatus: formValue.tourStatus,
+      tourTransport: formValue.tourTransport,
       departLocationId: formValue.departLocationId,
       destinationLocationIds: formValue.destinationLocationIds,
       tourThemeIds: formValue.tourThemeIds,
