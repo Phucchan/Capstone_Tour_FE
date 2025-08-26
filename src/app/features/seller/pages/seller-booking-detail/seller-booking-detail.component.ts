@@ -43,6 +43,7 @@ import { SellerBookingCustomer } from '../../models/seller-booking-customer.mode
 import { SellerMailRequest } from '../../models/seller-mail-request.model';
 import { BookingStatus } from '../../../../core/models/enums';
 import { CustomValidators } from '../../../../core/validators/custom-validators';
+import { CurrentUserService } from '../../../../core/services/user-storage/current-user.service'; // [THÊM MỚI]
 
 @Component({
   selector: 'app-seller-booking-detail',
@@ -83,10 +84,12 @@ export class SellerBookingDetailComponent implements OnInit {
   private fb = inject(FormBuilder);
   private message = inject(NzMessageService);
   private modal = inject(NzModalService);
+  private currentUserService = inject(CurrentUserService);
 
   booking?: SellerBookingDetail;
   isLoading = true;
   bookingId!: number;
+  isViewOnly = true;
 
   bookerForm!: FormGroup;
   isAddCustomerModalOpen = false;
@@ -108,11 +111,6 @@ export class SellerBookingDetailComponent implements OnInit {
       phone: ['', [Validators.required, CustomValidators.vietnamesePhone]],
       address: ['', Validators.required],
       paymentDeadline: ['', CustomValidators.noPastDateTime],
-    });
-    this.mailForm = this.fb.group({
-      email: [{ value: '', disabled: true }, Validators.required],
-      subject: ['', Validators.required],
-      content: ['', Validators.required],
     });
   }
 
@@ -141,32 +139,85 @@ export class SellerBookingDetailComponent implements OnInit {
         next: (res) => {
           this.booking = res.data;
           if (this.booking) {
-            this.booking.totalAmount = Math.max(0, this.booking.totalAmount);
-            const currentSchedule = this.booking.schedules.find(
-              (s) =>
-                new Date(s.departureDate).toISOString().slice(0, 10) ===
-                new Date(this.booking!.departureDate).toISOString().slice(0, 10)
-            );
-            this.currentScheduleId = currentSchedule
-              ? currentSchedule.id
-              : null;
-            this.bookerForm.patchValue({
-              fullName: this.booking.customerName,
-              email: this.booking.email,
-              phone: this.booking.phoneNumber,
-              address: this.booking.address,
-              paymentDeadline: this.booking.paymentDeadline
-                ? new Date(this.booking.paymentDeadline)
-                    .toISOString()
-                    .slice(0, 16)
-                : '',
-            });
+            this.updateFormAndViewState();
           }
         },
         error: () => {
           this.message.error('Không thể tải thông tin booking.');
           this.router.navigate(['/seller/dashboard']);
         },
+      });
+  }
+
+  // Hàm để cập nhật form và trạng thái view-only
+  private updateFormAndViewState(): void {
+    if (!this.booking) return;
+
+    const isOwnerParam = this.route.snapshot.queryParamMap.get('isOwner');
+    const currentUser = this.currentUserService.getCurrentUser();
+
+    if (isOwnerParam === 'true') {
+      this.isViewOnly = false;
+    } else {
+      // Nếu không có query param, dùng logic fallback (dù có thể không chính xác do BE thiếu data)
+      this.isViewOnly = !(
+        this.booking.sellerUsername &&
+        this.booking.sellerUsername === currentUser?.username
+      );
+    }
+
+    if (this.isViewOnly) {
+      this.bookerForm.disable();
+    } else {
+      this.bookerForm.enable();
+    }
+
+    this.booking.totalAmount = Math.max(0, this.booking.totalAmount);
+    const currentSchedule = this.booking.schedules.find(
+      (s) =>
+        new Date(s.departureDate).toISOString().slice(0, 10) ===
+        new Date(this.booking!.departureDate).toISOString().slice(0, 10)
+    );
+    this.currentScheduleId = currentSchedule ? currentSchedule.id : null;
+    this.bookerForm.patchValue({
+      fullName: this.booking.customerName,
+      email: this.booking.email,
+      phone: this.booking.phoneNumber,
+      address: this.booking.address,
+      paymentDeadline: this.booking.paymentDeadline
+        ? new Date(this.booking.paymentDeadline).toISOString().slice(0, 16)
+        : '',
+    });
+  }
+
+  //  Hàm để nhận booking
+  onClaimBooking(): void {
+    const username = this.currentUserService.getCurrentUser()?.username;
+    if (!username) {
+      this.message.error('Không tìm thấy thông tin người dùng');
+      return;
+    }
+    this.isLoading = true;
+    this.sellerService
+      .claimBooking(this.bookingId, username)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (res) => {
+          this.message.success(
+            'Nhận booking thành công! Bây giờ bạn có thể chỉnh sửa.'
+          );
+          this.booking = res.data;
+          this.isViewOnly = false; // Cập nhật trạng thái ngay lập tức
+          this.updateFormAndViewState();
+          // Cập nhật URL để nếu người dùng refresh trang, vẫn ở chế độ edit
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { isOwner: 'true' },
+            queryParamsHandling: 'merge',
+          });
+        },
+        error: (err) =>
+          this.message.error(err.error.message || 'Không thể nhận booking'),
       });
   }
 
