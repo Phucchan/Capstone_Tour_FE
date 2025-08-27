@@ -17,7 +17,7 @@ export interface ServiceItem { // change
   nettPrice?: number;
   sellingPrice?: number;
   costType?: 'FIXED' | 'VARIABLE' | string;
-  status?: 'PENDING' | 'ACTIVE' | 'DEACTIVE' | string;
+  status?:  'ACTIVE' | 'DEACTIVE' | string;
 }
 
 export interface PageResp<T> { // change
@@ -73,7 +73,7 @@ export class CoordinatorServiceApi { // change
     return this.http.delete<any>(`${this.base}/coordinator/services/${id}`);
   }
 
-  updateStatus(id: number, status: 'PENDING' | 'ACTIVE' | 'DEACTIVE'): Observable<any> { // change
+  updateStatus(id: number, status:  'ACTIVE' | 'DEACTIVE'): Observable<any> { // change
     const params = new HttpParams().set('status', status);
     return this.http.put<any>(`${this.base}/coordinator/services/${id}/status`, null, { params });
   }

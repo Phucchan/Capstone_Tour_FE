@@ -166,7 +166,7 @@ openEdit(id: number) { // change
     });
   }
 
-  updateStatus(id: number, status: 'PENDING' | 'ACTIVE' | 'DEACTIVE') { // change
+  updateStatus(id: number, status: 'ACTIVE' | 'DEACTIVE') { // change
     this.api.updateStatus(id, status).subscribe({
       next: () => { this.msg.success('Đã cập nhật trạng thái'); this.reload(); },
       error: () => this.msg.error('Không cập nhật được trạng thái')
