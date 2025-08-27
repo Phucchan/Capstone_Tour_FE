@@ -275,9 +275,9 @@
                         <tr>
                             <td class="font-semibold p-3">Điều khoản thanh toán:</td>
                             <td class="p-3">
-                                <span class="text-red-600 font-semibold">{{ expiredDate | date: 'dd/MM/yyyy HH:mm'
+                                <span class="text-red-600 text-2xl font-semibold">{{ expiredDate | date: 'dd/MM/yyyy HH:mm'
                                     }}</span>
-                                <span class="text-gray-500 text-sm"> (Đặt chỗ sẽ bị hủy nếu quá hạn.)</span>
+                                <span class="text-gray-500 text-xl text-sm"> (Đặt chỗ sẽ bị hủy nếu quá hạn.)</span>
                             </td>
                         </tr>
                     </tbody>
@@ -322,8 +322,8 @@
             </div>
             <!-- change: (tuỳ chọn) hiển thị giá gốc & giá đã giảm -->
             <p class="font-semibold flex justify-between text-xl mb-4">
-                <span>👥 Khách hàng</span>
-                <span class="text-red-600">Tổng số khách : {{ totalGuests}}</span>
+                <span>👥 Tổng số Khách hàng</span>
+                <span class="text-red-600"> {{ totalGuests}}</span>
             </p>
 
             <p class="flex justify-between mb-2">

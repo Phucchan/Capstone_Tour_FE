@@ -126,32 +126,42 @@ export class TourBookingConfirmComponent {
 
 
   changePaymentMethod() {
+  // change: lấy từ bookingCode, KHÔNG phải id
+  const current = (this.bookingData?.paymentMethod || 'CASH') as 'CASH' | 'BANKING';
+  const newMethod: 'CASH' | 'BANKING' = current === 'CASH' ? 'BANKING' : 'CASH';
 
-    const newMethod = this.bookingData.paymentMethod === 'CASH' ? 'BANKING' : 'CASH';
-
-    console.log(this.bookingData.id)
-
-    this.bookingInforService.changePaymentStatus(this.bookingData.id, newMethod).subscribe({
-      next: (response) => {
-        console.log(response)
-
-
-
-
-        this.bookingData.paymentMethod = newMethod;
-        this.triggerSuccess()
-      }, 
-      error: (error) => {
-        console.log(error)
-      }
-    })
+  const bookingCode: string = this.bookingData?.bookingCode;
+  if (!bookingCode) {
+    this.errorMessage = 'Không tìm thấy mã bookingCode';
+    this.triggerError();
+    return;
   }
+
+  // (tuỳ chọn): chặn đổi khi đang cùng phương thức
+  if (newMethod === current) return;
+
+  // gọi đúng service mới
+  this.bookingInforService.changePaymentMethod(bookingCode, newMethod).subscribe({
+    next: (res) => {
+      // Backend thường trả { status, code, message, data }
+      // Bạn có thể kiểm tra res.status === 0/200 nếu muốn chặt chẽ hơn
+      this.bookingData.paymentMethod = newMethod;
+      this.successMessage = 'Đã đổi phương thức thanh toán';
+      this.triggerSuccess();
+    },
+    error: (err) => {
+      this.errorMessage = err?.error?.message || 'Đổi phương thức thất bại';
+      this.triggerError();
+    }
+  });
+}
+
 
   expiredDate?:Date;
 
   setExpiredDate(): void {
     let date = new Date(this.bookingData.createdAt);
-    date.setHours(date.getHours() + 2);
+    date.setHours(date.getHours() + 1);
     this.expiredDate = date;
     console.log(this.expiredDate)
   }
