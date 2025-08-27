@@ -79,5 +79,9 @@ export class PlanService {
     });
   }
 
+  getLocationData(): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/public/plans/locations`);
+  }
+
 
 }

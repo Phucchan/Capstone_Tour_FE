@@ -14,9 +14,11 @@ import {
 import {
   FormBuilder,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { title } from 'process';
 @Component({
   selector: 'app-plan-detail',
   imports: [
@@ -25,6 +27,7 @@ import {
     SpinnerComponent,
     DragDropModule,
     ReactiveFormsModule,
+    FormsModule,
   ],
   templateUrl: './plan-detail.component.html',
   styleUrls: ['./plan-detail.component.css'],
@@ -49,6 +52,62 @@ export class PlanDetailComponent {
       startTime: ['', [Validators.required]],
       endTime: ['', [Validators.required]],
     });
+
+    this.addDayForm = this.fb.group({
+      date: ['', Validators.required],
+      longDescription: ['', Validators.required],
+      title: ['', Validators.required],
+      dayNumber: ['', Validators.required],
+      hotels: this.fb.array([]),
+      restaurants: this.fb.array([]),
+      activities: this.fb.array([]),
+      locationName: ['', Validators.required],
+      locationId: ['', Validators.required],
+    });
+
+    this.getLocations();
+  }
+
+  locations: any;
+
+  onSelect(event: any) {
+    const location = event.target.value; // trả về object location
+
+    console.log(location);
+
+    this.addDayForm.patchValue({
+      locationName: location.split('-')[1],
+      locationId: location.split('-')[0],
+    });
+  }
+
+  selected: any;
+
+  getLocations() {
+    this.planService.getLocationData().subscribe({
+      next: (response: any) => {
+        this.locations = response.data;
+      },
+      error: (error: any) => {
+        console.error('Error fetching locations:', error);
+      },
+    });
+  }
+
+  addDay() {
+    this.addDayForm.patchValue({
+      dayNumber: this.plan.days.length
+    });
+
+    if (this.addDayForm.invalid) {
+      this.addDayForm.markAllAsTouched();
+      console.log(this.addDayForm.value)
+      return;
+    }
+
+    const newDay = this.addDayForm.value;
+    this.plan.days.push(newDay);
+    this.closeAddDayModal();
   }
 
   editTime() {
@@ -93,6 +152,10 @@ export class PlanDetailComponent {
 
   editTimeForm: FormGroup;
 
+  addDayForm: FormGroup;
+
+  addDayModal: Modal | null = null;
+
   ngAfterViewInit(): void {
     this.serviceModal = new Modal(document.getElementById('service-modal'));
     this.activityModal = new Modal(document.getElementById('activity-modal'));
@@ -100,6 +163,20 @@ export class PlanDetailComponent {
       document.getElementById('authentication-modal')
     );
     this.editTimeModal = new Modal(document.getElementById('crud-modal'));
+
+    this.addDayModal = new Modal(document.getElementById('add-day-modal'));
+  }
+
+  openAddDayModal() {
+    if (this.addDayModal) {
+      this.addDayModal.show();
+    }
+  }
+
+  closeAddDayModal() {
+    if (this.addDayModal) {
+      this.addDayModal.hide();
+    }
   }
 
   openEditTimeModal(activity: any) {
@@ -136,6 +213,7 @@ export class PlanDetailComponent {
   saveActivity() {
     if (this.addActivityForm.valid) {
       this.selectedDay.activities.push(this.addActivityForm.value);
+      this.closeEditActivityModal();
     } else {
       this.addActivityForm.markAllAsTouched();
     }
@@ -153,7 +231,7 @@ export class PlanDetailComponent {
       ...this.selectedDay.activities.map((activity: any) => activity.id)
     );
 
-    if(this.filteredActivities.length > 0){
+    if (this.filteredActivities.length > 0) {
       return;
     }
 
