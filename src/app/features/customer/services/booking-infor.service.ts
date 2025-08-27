@@ -75,13 +75,18 @@ export class BookingInfoService {
   }
 
   
-  changePaymentStatus(bookingId: number, method: string): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}/public/booking/change-payment-method`, {
-      bookingId: bookingId,
-      paymentMethod: method
-    });
-
-  }
+  changePaymentMethod(bookingCode: string, method: 'CASH' | 'BANKING'): Observable<any> {
+  return this.http.post<any>(
+    `${environment.apiUrl}/public/booking/change-payment-method`,
+    null, // body phải là null vì swagger nhận query, không nhận body
+    {
+      params: {
+        bookingCode,                // ?bookingCode=...
+        paymentMethod: method       // &paymentMethod=CASH|BANKING
+      }
+    }
+  );
+}
 
 
 }

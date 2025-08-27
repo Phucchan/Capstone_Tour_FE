@@ -98,10 +98,8 @@ export class TourFormComponent implements OnInit {
   // Danh sách các phương tiện
   transportOptions = [
     { label: 'Ô tô', value: TourTransport.CAR },
-    { label: 'Xe máy', value: TourTransport.MOTORBIKE },
     { label: 'Máy bay', value: TourTransport.PLANE },
     { label: 'Tàu hỏa', value: TourTransport.TRAIN },
-    { label: 'Tàu thủy', value: TourTransport.CRUISE_SHIP },
   ];
 
   // --- File Upload State ---

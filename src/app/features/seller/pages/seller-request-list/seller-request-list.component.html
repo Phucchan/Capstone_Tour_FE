@@ -67,18 +67,24 @@
           <nz-tag [nzColor]="data.status === 'PENDING' ? 'gold' : (data.status === 'ACCEPTED' ? 'green' : 'red')">
             {{ data.status | statusVietnamese }}
           </nz-tag>
-          <div *ngIf="data.reason" class="text-xs text-red-500 mt-1">
-            Lý do: {{ data.reason }}
+          <div *ngIf="data.reason" class="text-xs text-red-500 mt-1" [title]="data.reason">
+            Lý do: {{ data.reason | slice:0:20 }}...
           </div>
         </td>
         <td nzAlign="center">
-          <button nz-button nzType="primary" nz-popconfirm
-            nzPopconfirmTitle="Bạn có chắc muốn duyệt yêu cầu này?"
-            nzPopconfirmSubTitle="Hành động này sẽ chuyển yêu cầu cho bộ phận kinh doanh."
-            (nzOnConfirm)="onApprove(data.id)" class="mr-2">
-            <span nz-icon nzType="check"></span>
-            Duyệt
-          </button>
+          <!-- [SỬA] Cập nhật lại các nút hành động -->
+          <a [routerLink]="['/seller/requests', data.id]" class="mr-2">Xem chi tiết</a>
+          <ng-container *ngIf="data.status === 'PENDING'">
+            <nz-divider nzType="vertical"></nz-divider>
+            <a nz-popconfirm
+              nzPopconfirmTitle="Bạn có chắc muốn duyệt yêu cầu này?"
+              nzPopconfirmSubTitle="Hành động này sẽ chuyển yêu cầu cho bộ phận kinh doanh."
+              (nzOnConfirm)="onApprove(data.id)" class="mr-2 text-green-600">
+              Duyệt
+            </a>
+            <nz-divider nzType="vertical"></nz-divider>
+            <a (click)="showRejectModal(data.id)" class="text-red-500">Từ chối</a>
+          </ng-container>
         </td>
       </tr>
     </tbody>

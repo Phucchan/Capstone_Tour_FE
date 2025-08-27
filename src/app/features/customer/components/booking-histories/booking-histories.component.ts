@@ -25,6 +25,7 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
 type BookingStatus =
   | 'PENDING'
   | 'CONFIRMED'
+  | 'PAID'
   | 'CANCEL_REQUESTED'
   | 'CANCELLED'
   | 'COMPLETED'
@@ -104,6 +105,7 @@ export class BookingHistoriesComponent implements OnInit {
   readonly statuses: BookingStatus[] = [
     'PENDING',
     'CONFIRMED',
+    'PAID',
     'CANCEL_REQUESTED',
     'CANCELLED',
     'COMPLETED',
@@ -145,6 +147,7 @@ export class BookingHistoriesComponent implements OnInit {
     const map: Record<BookingStatus, string> = {
       PENDING: 'Chờ xác nhận',
       CONFIRMED: 'Đã xác nhận',
+      PAID: 'Đã thanh toán',
       CANCEL_REQUESTED: 'Đang yêu cầu hủy',
       CANCELLED: 'Đã hủy',
       COMPLETED: 'Hoàn thành',
@@ -444,6 +447,47 @@ export class BookingHistoriesComponent implements OnInit {
       });
     });
   }
+  cancelBooking(b: BookingItem) {
+  Swal.fire({
+    title: 'Bạn có chắc muốn hủy đơn này?',
+    html: `<p>Mã đơn: <span class="font-mono font-semibold">${b.bookingCode}</span></p>`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Hủy ngay',
+    cancelButtonText: 'Không',
+    reverseButtons: true,
+  }).then((result) => {
+    if (!result.isConfirmed) return;
+
+    Swal.fire({
+      title: 'Đang xử lý...',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+    this.bookingService.cancelBooking(b.id, this.userId()!).subscribe({
+      next: () => {
+        this.fetch();
+        Swal.fire({
+          icon: 'success',
+          title: 'Đã hủy thành công',
+          text: `Đơn ${b.bookingCode} đã được hủy.`,
+          timer: 1800,
+          showConfirmButton: false,
+        });
+      },
+      error: () => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Hủy thất bại',
+          text: 'Vui lòng thử lại sau',
+        });
+      },
+    });
+  });
+}
+
 
   submitRefund(b: BookingItem) {
     if (!this.canSubmitRefund(b.status)) return;

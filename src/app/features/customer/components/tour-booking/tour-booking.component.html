@@ -131,7 +131,7 @@
                                 (click)="incrementInfants()">+</button>
                         </div>
                     </div>
-                    <div class="border border-gray-300 p-4 rounded-lg flex justify-between items-center">
+                    <!-- <div class="border border-gray-300 p-4 rounded-lg flex justify-between items-center">
                         <span>Em bé<br><small class="text-gray-500">Dưới 2 tuổi</small></span>
                         <div class="flex items-center space-x-2">
                             <button type="button" class="border border-gray-300 px-3 py-1 rounded"
@@ -140,8 +140,11 @@
                             <button type="button" class="border border-gray-300 px-3 py-1 rounded"
                                 (click)="incrementToddlers()">+</button>
                         </div>
-                    </div>
-                    <div class="border-gray-300 border p-4 rounded-lg flex justify-between items-center"
+                    </div> -->
+
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="border-gray-300 border p-4 rounded-lg flex justify-between items-center mt-3 "
                         *ngIf="isHelpingInput">
                         <span>Phòng đơn<br><small class="text-gray-500">1 giường / phòng</small></span>
                         <div class="flex items-center space-x-2">
@@ -446,14 +449,15 @@
                 <div class="bg-gray-100 p-4 rounded-md mb-4">
                     <p class="font-semibold flex items-center justify-between gap-2 mb-2 line-clamp-1">
                         <span class="line-clamp-1">📍 {{tourDetails?.name}} </span>
-                        
+
                     </p>
                     <span
-                            class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-blue-400 border border-blue-400 whitespace-nowrap	">
-                            {{tourDetails?.tourThemeName}}
-                        </span>
+                        class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-blue-400 border border-blue-400 whitespace-nowrap	">
+                        {{tourDetails?.tourThemeName}}
+                    </span>
                     <p *ngIf="tourSchedule?.hasDiscount"
-                        class="text-sm text-center rounded-full bg-red-500 text-white font-semibold mb-2 w-[40px] mt-1">-{{
+                        class="text-sm text-center rounded-full bg-red-500 text-white font-semibold mb-2 w-[40px] mt-1">
+                        -{{
                         tourSchedule?.discountPercent }}%</p> <!-- CHANGE -->
                     <p class="text-gray-500 italic">🆔 Mã tour: {{ tourDetails?.code }}</p>
                     <p class="text-gray-500">

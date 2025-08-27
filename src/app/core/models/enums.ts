@@ -5,6 +5,7 @@ export enum CostType {
 
 export type BookingStatus =
   | 'PENDING'
+  | 'PAID'
   | 'CONFIRMED'
   | 'COMPLETED'
   | 'CANCELLED'
@@ -13,7 +14,7 @@ export type BookingStatus =
 
 export enum PaymentMethod {
   CASH = 'CASH',
-  BANK_TRANSFER = 'BANK_TRANSFER',
+  BANK_TRANSFER = 'BANKING',
 }
 
 export enum PaymentType {

@@ -171,6 +171,12 @@ export class SellerBookingService {
     );
   }
 
+  getRequestDetail(id: number): Observable<ApiResponse<RequestBookingDetail>> {
+    return this.http.get<ApiResponse<RequestBookingDetail>>(
+      `${this.requestApiUrl}/${id}`
+    );
+  }
+
   approveRequestBooking(
     requestId: number
   ): Observable<ApiResponse<RequestBookingDetail>> {

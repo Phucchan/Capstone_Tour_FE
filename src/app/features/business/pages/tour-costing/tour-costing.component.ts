@@ -1,3 +1,6 @@
+// ==================================================================
+// FILE: src/app/features/business/pages/tour-costing/tour-costing.component.ts
+// ==================================================================
 import {
   Component,
   OnInit,
@@ -109,7 +112,6 @@ export class TourCostingComponent implements OnInit {
   //  Add formatter and parser for currency input
   formatterVND = (value: number | null): string =>
     value ? `${value.toLocaleString('vi-VN')} đ` : '';
-  // parserVND must return a number
   parserVND = (value: string): number =>
     Number(value.replace(/\s?đ/g, '').replace(/,/g, ''));
 
@@ -145,7 +147,7 @@ export class TourCostingComponent implements OnInit {
       }));
     }
 
-    const { profitRate, extraCost } = toolValues;
+    const { profitRate } = toolValues;
 
     return paxes.map((pax) => {
       const costPerPax =
@@ -153,7 +155,7 @@ export class TourCostingComponent implements OnInit {
       let previewPrice = pax.sellingPrice ?? 0;
 
       if (!pax.manualPrice) {
-        previewPrice = costPerPax * (1 + profitRate / 100) + extraCost;
+        previewPrice = costPerPax * (1 + profitRate / 100);
       }
 
       return {
@@ -167,7 +169,6 @@ export class TourCostingComponent implements OnInit {
   constructor() {
     this.priceToolForm = this.fb.group({
       profitRate: [10, [Validators.required, Validators.min(0)]],
-      extraCost: [0, [Validators.required, Validators.min(0)]],
     });
 
     this.paxForm = this.fb.group(
@@ -177,6 +178,7 @@ export class TourCostingComponent implements OnInit {
         manualPrice: [false, Validators.required],
         fixedPrice: [{ value: null, disabled: true }],
         sellingPrice: [{ value: null, disabled: true }],
+        extraHotelCost: [0, [Validators.min(0)]],
       },
       {
         validators: [
@@ -221,18 +223,24 @@ export class TourCostingComponent implements OnInit {
     });
   }
 
+  private updatePriceControlsState(isManual: boolean): void {
+    const fixedPriceControl = this.paxForm.get('fixedPrice');
+    const sellingPriceControl = this.paxForm.get('sellingPrice');
+    if (isManual) {
+      fixedPriceControl?.enable();
+      sellingPriceControl?.enable();
+    } else {
+      fixedPriceControl?.disable();
+      sellingPriceControl?.disable();
+    }
+  }
+
   onManualPriceChange(): void {
     this.paxForm.get('manualPrice')?.valueChanges.subscribe((isManual) => {
-      const fixedPriceControl = this.paxForm.get('fixedPrice');
-      const sellingPriceControl = this.paxForm.get('sellingPrice');
-      if (isManual) {
-        fixedPriceControl?.enable();
-        sellingPriceControl?.enable();
-      } else {
-        fixedPriceControl?.disable();
-        sellingPriceControl?.disable();
-        fixedPriceControl?.reset();
-        sellingPriceControl?.reset();
+      this.updatePriceControlsState(isManual);
+      if (!isManual) {
+        this.paxForm.get('fixedPrice')?.reset();
+        this.paxForm.get('sellingPrice')?.reset();
       }
     });
   }
@@ -241,7 +249,8 @@ export class TourCostingComponent implements OnInit {
     if (pax) {
       this.isEditMode.set(true);
       this.currentPaxId.set(pax.id);
-      this.paxForm.patchValue(pax);
+      this.paxForm.patchValue(pax, { emitEvent: false });
+      this.updatePriceControlsState(pax.manualPrice);
     } else {
       this.isEditMode.set(false);
       this.currentPaxId.set(null);
@@ -251,6 +260,7 @@ export class TourCostingComponent implements OnInit {
         manualPrice: false,
         fixedPrice: { value: null, disabled: true },
         sellingPrice: { value: null, disabled: true },
+        extraHotelCost: 0,
       });
     }
 
@@ -300,7 +310,7 @@ export class TourCostingComponent implements OnInit {
 
     operation.subscribe({
       next: () => {
-        this.loadData(); // Tải lại toàn bộ dữ liệu để đồng bộ
+        this.loadData();
         this.message.success('Lưu khoảng khách thành công!');
         this.modalService.closeAll();
       },
@@ -328,10 +338,10 @@ export class TourCostingComponent implements OnInit {
   applyAndSaveAllPrices(): void {
     if (this.priceToolForm.invalid) return;
     this.isSubmitting.set(true);
-    const { profitRate, extraCost } = this.priceToolForm.value;
+    const { profitRate } = this.priceToolForm.value;
 
     this.tourPaxService
-      .calculateAndSavePrices(this.tourId, { profitRate, extraCost })
+      .calculateAndSavePrices(this.tourId, { profitRate })
       .subscribe({
         next: (res) => {
           this.paxConfigs.set(res);

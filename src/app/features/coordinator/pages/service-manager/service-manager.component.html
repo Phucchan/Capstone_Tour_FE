@@ -1,0 +1,133 @@
+<!-- Vị trí: src/app/features/marketing/pages/service-manager/service-manager.component.html -->
+
+<!-- ===== Breadcrumb & Page Header ===== -->                      <!-- change -->
+<nz-breadcrumb>                                                   <!-- change -->
+  <nz-breadcrumb-item>Điều phối viên</nz-breadcrumb-item>         <!-- change -->
+  <nz-breadcrumb-item>Quản lý Dịch vụ</nz-breadcrumb-item>        <!-- change -->
+</nz-breadcrumb>                                                  <!-- change -->
+
+<nz-page-header class="site-page-header" nzTitle="Quản lý Dịch vụ"  
+  [nzSubtitle]="total > 0 ? 'Có tổng cộng ' + total + ' dịch vụ' : ''"> 
+  <nz-page-header-extra>                                          <!-- change -->
+    <button nz-button nzType="primary" (click)="openCreate()">    <!-- change -->
+      <span nz-icon nzType="plus"></span>                         <!-- change -->
+      Thêm dịch vụ                                                <!-- change -->
+    </button>                                                     <!-- change -->
+  </nz-page-header-extra>                                         <!-- change -->
+</nz-page-header>                                                 <!-- change -->
+
+<div class="p-4 space-y-4">
+  <!-- Toolbar: Search + Add -->
+  <div class="flex items-center gap-2">
+    <nz-input-group nzPrefixIcon="search">                        <!-- change -->
+      <input
+        class="w-[120px]"                                         
+        nz-input
+        placeholder="Tìm theo tên dịch vụ..."
+        [(ngModel)]="query.keyword"
+        (keyup.enter)="reload()" />
+    </nz-input-group>                                             <!-- change -->
+
+    <button nz-button nzType="default" (click)="reset()">Làm mới</button>
+    
+  </div>
+
+    <!-- Table -->
+    <nz-table ngSkipHydration [nzData]="items" [nzLoading]="loading" [nzFrontPagination]="false"
+        [nzPageIndex]="query.page + 1" [nzTotal]="total" [nzPageSize]="query.size"
+        (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)" nzSize="middle">
+
+        <thead>
+            <tr>
+                <th style="width: 24%">Tên dịch vụ</th>
+                <th style="width: 14%">Đối tác</th>
+                <th style="width: 14%">Loại dịch vụ</th>
+                <th style="width: 14%">Giá bán</th>
+                <th style="width: 14%">Trạng thái</th>
+                <th nzAlign="right" style="width: 20%">Hành động</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr *ngFor="let s of items">
+                <td class="font-medium">
+                    <div class="flex items-center gap-3">
+                        <nz-avatar nzShape="square"
+                            [nzSrc]="s.imageUrl || 'https://placehold.co/40x40?text=S'"></nz-avatar>
+                        <span class="line-clamp-2">{{ s.name }}</span>
+                    </div>
+                </td>
+                <td>{{ s.partnerName || '-' }}</td>
+                <td>{{ s.serviceTypeName || '-' }}</td>
+                <td>{{ s.sellingPrice | number:'1.0-0' }}</td>
+                <td>
+                    <nz-tag [nzColor]="statusColor(s.status)">{{ statusVi(s.status) }}</nz-tag> <!-- change -->
+                </td>
+                <td nzAlign="right">
+                    <button nz-button nzType="link" (click)="openEdit(s.id)">Sửa</button>
+
+                    <button nz-button nzType="link" nz-dropdown [nzDropdownMenu]="menu">Trạng thái</button>
+                    <nz-dropdown-menu #menu="nzDropdownMenu"> <!-- change -->
+                        <ul nz-menu> <!-- change -->
+                            <li nz-menu-item (click)="updateStatus(s.id, 'ACTIVE')">Kích hoạt</li>
+                            <li nz-menu-item (click)="updateStatus(s.id, 'DEACTIVE')">Ngưng</li>
+                            <li nz-menu-item (click)="updateStatus(s.id, 'PENDING')">Chờ duyệt</li>
+                        </ul>
+                    </nz-dropdown-menu> <!-- change -->
+
+                    <button nz-button nzType="link" nzDanger (click)="confirmDelete(s.id)">Xoá</button>
+                </td>
+            </tr>
+        </tbody>
+    </nz-table>
+</div>
+
+<!-- Modal Create/Edit -->
+<nz-modal [(nzVisible)]="ui.visible" [nzTitle]="ui.mode==='create' ? 'Thêm dịch vụ' : 'Chỉnh sửa dịch vụ'"
+    (nzOnCancel)="closeModal()" (nzOnOk)="submitForm()" [nzOkLoading]="ui.saving">
+    <ng-template nzModalContent>
+        <form [formGroup]="form" class="grid gap-3 grid-cols-2">
+            <label class="col-span-2">
+                Tên dịch vụ
+                <input nz-input formControlName="name" placeholder="Nhập tên dịch vụ" />
+            </label>
+
+            <!-- <label>
+                Loại dịch vụ
+                <input nz-input formControlName="serviceTypeId" placeholder="ID loại dịch vụ" />
+            </label>
+
+            <label>
+                Đối tác
+                <input nz-input formControlName="partnerId" placeholder="ID đối tác" />
+            </label> -->
+
+            <label class="col-span-2">
+                Ảnh (URL)
+                <input nz-input formControlName="imageUrl" placeholder="https://..." />
+            </label>
+
+            <label class="col-span-2">
+                Mô tả
+                <textarea nz-input rows="3" formControlName="description"></textarea>
+            </label>
+
+            <label>
+                Giá vốn (netPrice)
+                <input nz-input type="number" formControlName="nettPrice" />
+            </label>
+
+            <label>
+                Giá bán (sellingPrice)
+                <input nz-input type="number" formControlName="sellingPrice" />
+            </label>
+            <label>
+                Cost Type
+                <select nz-select class="w-full" formControlName="costType">
+                    <option value="FIXED">Cố định</option>
+                    <option value="PER_PERSON">Theo người</option>
+                </select>
+            </label>
+        </form>
+    </ng-template>
+</nz-modal>

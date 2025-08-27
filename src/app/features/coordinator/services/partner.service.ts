@@ -19,7 +19,7 @@ export interface ChangeStatusRequest {
   providedIn: 'root',
 })
 export class PartnerService {
-  private apiUrl = `${environment.apiUrl}/cordinator/partners`;
+  private apiUrl = `${environment.apiUrl}/coordinator/partners`;
 
   constructor(private http: HttpClient) {}
 

@@ -4,6 +4,7 @@ import { ListServiceProviderComponent } from './pages/list-service-provider/list
 import { AddServiceProviderComponent } from './pages/list-service-provider/add-service-provider/add-service-provider.component';
 import { ServiceTypeManagementComponent } from './pages/service-type-management/service-type-management.component';
 import { ServiceApprovalComponent } from './pages/service-approval/service-approval.component';
+import { ServiceManagerComponent } from './pages/service-manager/service-manager.component';
 
 export const COORDINATOR_ROUTES: Routes = [
   {
@@ -33,4 +34,8 @@ export const COORDINATOR_ROUTES: Routes = [
     path: 'service-approval', // URL: /coordinator/service-approval
     component: ServiceApprovalComponent,
   },
+  {
+    path: 'service-managers', // URL: /coordinator/service-managers
+    component: ServiceManagerComponent,
+  }
 ];

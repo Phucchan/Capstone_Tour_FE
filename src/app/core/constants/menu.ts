@@ -25,17 +25,16 @@ export const MENU_ITEMS: MenuItem[] = [
     separator: true,
     roles: [ROLES.ADMIN],
     items: [
-      // Route được sửa lại từ 'user-management' thành các route thực tế
       {
         icon: 'assets/icons/heroicons/outline/users.svg',
         label: 'Danh sách khách hàng',
-        route: '/admin/list-customer', // <-- Đã sửa
+        route: '/admin/list-customer',
         roles: [ROLES.ADMIN],
       },
       {
         icon: 'assets/icons/heroicons/outline/users.svg',
         label: 'Danh sách nhân viên',
-        route: '/admin/list-staff', // <-- Đã sửa
+        route: '/admin/list-staff',
         roles: [ROLES.ADMIN],
       },
     ],
@@ -52,25 +51,25 @@ export const MENU_ITEMS: MenuItem[] = [
       {
         icon: 'assets/icons/heroicons/outline/chart-pie.svg',
         label: 'Dashboard',
-        route: '/business/dashboard', // Chính xác
+        route: '/business/dashboard',
         roles: [ROLES.BUSINESS_DEPARTMENT],
       },
       {
         icon: 'assets/icons/heroicons/outline/travel-bag-svgrepo-com.svg',
         label: 'Quản lý Tour',
-        route: '/business/tours', // Chính xác
+        route: '/business/tours',
         roles: [ROLES.BUSINESS_DEPARTMENT],
       },
       {
         icon: 'assets/icons/heroicons/outline/request-quote-svgrepo-com.svg',
         label: 'Yêu cầu tạo Tour',
-        route: '/business/request-bookings', // Khớp với routing
+        route: '/business/request-bookings',
         roles: [ROLES.BUSINESS_DEPARTMENT],
       },
       {
         icon: 'assets/icons/heroicons/outline/location-pin-svgrepo-com.svg',
         label: 'Quản lý Địa điểm',
-        route: '/business/locations', // Route này dùng chung với business, đã chính xác
+        route: '/business/locations',
         roles: [ROLES.SERVICE_COORDINATOR],
       },
     ],
@@ -87,19 +86,24 @@ export const MENU_ITEMS: MenuItem[] = [
       {
         icon: 'assets/icons/heroicons/outline/users.svg',
         label: 'Quản lý Đối tác',
-        route: '/coordinator/service-providers', // Chính xác
-        roles: [ROLES.SERVICE_COORDINATOR],
+        route: '/coordinator/service-providers',
       },
       {
         icon: 'assets/icons/heroicons/outline/category-svgrepo-com.svg',
         label: 'Quản lý Loại Dịch vụ',
-        route: '/coordinator/service-types', // Chính xác
+        route: '/coordinator/service-types',
         roles: [ROLES.SERVICE_COORDINATOR],
       },
       {
-        icon: 'assets/icons/heroicons/outline/ticket.svg', // Có thể chọn icon khác phù hợp hơn
+        icon: 'assets/icons/heroicons/outline/cog.svg',
+        label: 'Quản lý Dịch vụ',
+        route: '/coordinator/service-managers',
+        roles: [ROLES.SERVICE_COORDINATOR],
+      },
+      {
+        icon: 'assets/icons/heroicons/outline/ticket.svg',
         label: 'Phê duyệt Dịch vụ',
-        route: '/coordinator/service-approval', // Trỏ đến route mới
+        route: '/coordinator/service-approval',
         roles: [ROLES.SERVICE_COORDINATOR],
       },
     ],
@@ -116,7 +120,7 @@ export const MENU_ITEMS: MenuItem[] = [
       {
         icon: 'assets/icons/heroicons/outline/cart.svg',
         label: 'Quản lý Booking',
-        route: '/seller/dashboard', // Chính xác
+        route: '/seller/dashboard',
         roles: [ROLES.SELLER],
       },
 
@@ -169,7 +173,7 @@ export const MENU_ITEMS: MenuItem[] = [
       {
         icon: 'assets/icons/heroicons/outline/refund-2-svgrepo-com.svg',
         label: 'Yêu cầu hoàn tiền',
-        route: '/accountant/refunds', // Chính xác
+        route: '/accountant/refunds',
         roles: [ROLES.ACCOUNTANT],
       },
     ],
