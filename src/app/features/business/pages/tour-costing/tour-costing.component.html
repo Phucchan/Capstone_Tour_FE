@@ -24,10 +24,10 @@
             <div *ngFor="let group of groupedServices()" class="border-b pb-2 last:border-b-0">
               <h3 class="font-semibold text-gray-700">{{ group.name }}</h3>
               <ul class="text-sm text-gray-600 list-none p-0 mt-1">
-                <li *ngFor="let service of group.services" class="flex justify-between items-center">
-                  <div>
+                <li *ngFor="let service of group.services" class="flex justify-between items-center ">
+                  <div  class="flex items-center gap-2">
                     <span>{{ service.partnerName }}</span>
-                    <nz-tag [nzColor]="service.costType === 'FIXED' ? 'blue' : 'green'" class="ml-2">
+                    <nz-tag  [nzColor]="service.costType === 'FIXED' ? 'blue' : 'green'" class="ml-2">
                       {{ service.costType === 'FIXED' ? 'Cố định' : 'Theo khách' }}
                     </nz-tag>
                   </div>
