@@ -80,7 +80,6 @@ export class TourDayFormComponent implements OnInit, OnChanges {
   private tourService = inject(TourService);
   private partnerFilterService = inject(PartnerServiceService);
   private message = inject(NzMessageService);
-  // --- SỬA ĐỔI: Inject service thật ---
   private partnerService = inject(PartnerService);
 
   // --- Inputs & Outputs ---
@@ -106,14 +105,13 @@ export class TourDayFormComponent implements OnInit, OnChanges {
   isCreateServiceModalVisible = false;
   isCreatingService = false;
   newServiceForm!: FormGroup;
-  // --- SỬA ĐỔI: Sử dụng model PartnerSummary thật ---
   partners$!: Observable<PartnerSummary[]>;
 
   constructor() {
     this.dayForm = this.fb.group({
       title: ['', Validators.required],
       description: [''],
-      locationId: [null],
+      locationId: [null, Validators.required],
     });
 
     this.newServiceForm = this.fb.group({
@@ -136,6 +134,13 @@ export class TourDayFormComponent implements OnInit, OnChanges {
     this.partners$ = this.partnerService
       .getPartners(0, 1000, '', false)
       .pipe(map((response) => response.data.items));
+    this.resetFormAndServices();
+
+    this.dayForm.get('locationId')?.valueChanges.subscribe(() => {
+      this.selectedServiceType = null;
+      this.selectedPartnerService = null;
+      this.filteredPartnerServices = [];
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -162,12 +167,15 @@ export class TourDayFormComponent implements OnInit, OnChanges {
   }
 
   onServiceTypeChange(typeId: number | null): void {
-    this.selectedPartnerService = null;
-    this.filteredPartnerServices = [];
-    if (typeId) {
+    this.selectedPartnerService = null; // Reset lựa chọn dịch vụ chi tiết
+    this.filteredPartnerServices = []; // Xóa danh sách dịch vụ cũ
+    const locationId = this.dayForm.get('locationId')?.value;
+
+    // Chỉ gọi API khi cả loại dịch vụ và địa điểm đã được chọn
+    if (typeId && locationId) {
       this.isServiceLoading = true;
-      this.partnerFilterService
-        .getPartnerServicesByType(typeId)
+      this.tourService
+        .getPartnerServices(typeId, locationId) // Gọi service với cả 2 tham số
         .pipe(finalize(() => (this.isServiceLoading = false)))
         .subscribe((services) => (this.filteredPartnerServices = services));
     }
@@ -242,7 +250,6 @@ export class TourDayFormComponent implements OnInit, OnChanges {
     this.close.emit();
   }
 
-  // --- New Service Modal Methods ---
   openCreateServiceModal(): void {
     this.newServiceForm.reset();
     this.isCreateServiceModalVisible = true;

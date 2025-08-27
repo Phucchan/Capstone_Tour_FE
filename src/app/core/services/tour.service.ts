@@ -13,6 +13,7 @@ import {
   ServiceTypeShortDTO,
   ServiceInfoDTO,
   PartnerServiceCreateDTO,
+  PartnerServiceShortDTO
 } from '../models/tour.model';
 import { Paging } from '../../core/models/paging.model';
 import { environment } from '../../../environments/environment';
@@ -136,6 +137,31 @@ export class TourService {
       )
       .pipe(map((res) => res.data));
   }
+
+  /**
+   * Lấy danh sách các dịch vụ của đối tác, có thể lọc theo loại dịch vụ và địa điểm
+   * @param serviceTypeId (Tùy chọn) ID của loại dịch vụ
+   * @param locationId (Tùy chọn) ID của địa điểm
+   */
+  getPartnerServices(
+    serviceTypeId?: number | null,
+    locationId?: number | null
+  ): Observable<PartnerServiceShortDTO[]> {
+    let params = new HttpParams();
+    if (serviceTypeId) {
+      params = params.set('serviceTypeId', serviceTypeId.toString());
+    }
+    if (locationId) {
+      params = params.set('locationId', locationId.toString());
+    }
+    return this.http
+      .get<ApiResponse<PartnerServiceShortDTO[]>>(
+        `${this.baseApiUrl}/partner-services`,
+        { params }
+      )
+      .pipe(map((res) => res.data));
+  }
+
   /**
    * Thêm một dịch vụ cụ thể vào một ngày trong tour
    * @param tourId ID của tour
