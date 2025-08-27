@@ -11,15 +11,15 @@
         Đăng nhập
       </button>
 
-      <button *ngIf="currentUser !== undefined && currentUser?.username" type="button" (click)="openChatList()"
+      <!-- <button *ngIf="currentUser !== undefined && currentUser?.username" type="button" (click)="openChatList()"
         class="flex text-sm hover:bg-gray-800 rounded-full md:me-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
         id="user-menu-button" aria-expanded="false">
         <img class="w-12 p-1 h-12 rounded-full object-contain cursor-pointer hover:bg-gray-100 "
           src="/assets/icons/message.png" alt="user photo">
-      </button>
+      </button> -->
 
-      <app-chat *ngIf="showChat" [currentUser]="customerBasicInfo" [friends]="friends"
-        [chatGroups]="chatGroups"></app-chat>
+      <!-- <app-chat *ngIf="showChat" [currentUser]="customerBasicInfo" [friends]="friends"
+        [chatGroups]="chatGroups"></app-chat> -->
 
       <button (click)="toggleDropdown()" *ngIf="currentUser !== undefined && currentUser?.username" type="button"
         class="flex text-sm hover:bg-gray-800 cursor-pointer rounded-full ml-5 md:me-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
@@ -144,15 +144,6 @@
           </a>
         </li>
 
-        <!-- Cộng đồng -->
-        <li>
-          <a routerLink="/community" routerLinkActive="text-blue-700 font-bold border-b-2 border-blue-700"
-            [routerLinkActiveOptions]="{ exact: true }" class="block py-2 px-3 rounded-sm 
-               hover:text-blue-700 hover:font-semibold hover:border-b-2 hover:border-blue-500 
-               transition-all duration-200">
-            Cộng đồng
-          </a>
-        </li>
 
       </ul>
     </div>

@@ -61,4 +61,9 @@ export class BookingService {
     const params = new HttpParams().set('userId', userId);
     return this.http.post(`${this.base}/${bookingId}/refund-info`, body, { params });
   }
+  
+  cancelBooking(bookingId: number, userId: number) {
+  const params = new HttpParams().set('userId', userId);
+  return this.http.put(`${this.base}/${bookingId}/cancel`, {}, { params });
+}
 }

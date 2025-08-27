@@ -15,8 +15,8 @@ declare const window: any;
   imports: [
     CommonModule, 
     FormsModule, 
-    RouterModule, 
-    ChatComponent],
+    RouterModule
+   ],
   templateUrl: './header.component.html',
 })
 export class HeaderComponent implements OnInit {

@@ -700,8 +700,7 @@ applyVoucherDirect(v: any): void {
     return (
       this.numberAdults +
       this.numberChildren +
-      this.numberInfants +
-      this.numberToddlers
+      this.numberInfants 
     );
   }
 
@@ -781,8 +780,7 @@ applyVoucherDirect(v: any): void {
     if (
       this.numberAdults +
       this.numberChildren +
-      this.numberInfants +
-      this.numberToddlers <
+      this.numberInfants <
       this.tourSchedule?.availableSeats!
     ) {
       this.numberToddlers++;

@@ -14,7 +14,7 @@ export interface ServiceItem { // change
   serviceTypeName?: string;
   imageUrl?: string;
   description?: string;
-  netPrice?: number;
+  nettPrice?: number;
   sellingPrice?: number;
   costType?: 'FIXED' | 'VARIABLE' | string;
   status?: 'PENDING' | 'ACTIVE' | 'DEACTIVE' | string;
@@ -33,7 +33,7 @@ export interface ServiceCreateRequest { // change
   partnerId: number;
   imageUrl?: string;
   description?: string;
-  netPrice: number;
+  nettPrice: number;
   sellingPrice: number;
   costType: 'FIXED' | 'PER_PERSON';
 }

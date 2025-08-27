@@ -73,7 +73,7 @@ export class ServiceManagerComponent implements OnInit {
       partnerId: [null, Validators.required],
       imageUrl: [''],
       description: [''],
-      netPrice: [0, [Validators.required, Validators.min(0)]],
+      nettPrice: [0, [Validators.required, Validators.min(0)]],
       sellingPrice: [0, [Validators.required, Validators.min(0)]],
       costType: ['FIXED', Validators.required]
     });
@@ -119,7 +119,7 @@ export class ServiceManagerComponent implements OnInit {
 
   openCreate() { // change
   if (!this.form) this.buildForm(); // change
-  this.form.reset({ costType: 'FIXED', netPrice: 0, sellingPrice: 0 });
+  this.form.reset({ costType: 'FIXED', nettPrice: 0, sellingPrice: 0 });
   this.ui = { visible: true, mode: 'create', saving: false, currentId: 0 }; // change: set visible sau khi patch
 }
 
@@ -134,7 +134,7 @@ openEdit(id: number) { // change
         partnerId: d.partnerId,
         imageUrl: d.imageUrl,
         description: d.description,
-        netPrice: d.netPrice,
+        nettPrice: d.nettPrice,
         sellingPrice: d.sellingPrice,
         costType: d.costType || 'FIXED'
       });
