@@ -215,20 +215,15 @@ export class TourDepartureDateComponent implements OnInit, OnDestroy {
 
     this.isSubmitting = true;
     const formValue = this.departureForm.getRawValue();
+     const departureDate: Date = formValue.departureDate;
 
-    const localDate: Date = formValue.departureDate;
-    const formattedDateString = `${localDate.getFullYear()}-${(
-      '0' +
-      (localDate.getMonth() + 1)
-    ).slice(-2)}-${('0' + localDate.getDate()).slice(-2)}T00:00:00`;
-
-    const payload: TourScheduleCreateRequest = {
-      coordinatorId: formValue.coordinatorId,
-      tourPaxId: formValue.tourPaxId,
-      departureDate: formattedDateString,
-      repeatType: formValue.repeatType,
-      repeatCount: formValue.repeatType === 'NONE' ? 0 : formValue.repeatCount,
-    };
+     const payload: TourScheduleCreateRequest = {
+       coordinatorId: formValue.coordinatorId,
+       tourPaxId: formValue.tourPaxId,
+       departureDate: departureDate.toISOString(),
+       repeatType: formValue.repeatType,
+       repeatCount: formValue.repeatType === 'NONE' ? 0 : formValue.repeatCount,
+     };
 
     this.tourDepartureService
       .createTourSchedule(this.tourId, payload)

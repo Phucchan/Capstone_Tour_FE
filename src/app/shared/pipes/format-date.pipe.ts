@@ -19,11 +19,14 @@ export class FormatDatePipe implements PipeTransform {
     if (!value) {
       return '';
     }
-
+ let dateValue = value;
+ if (typeof dateValue === 'string' && !dateValue.endsWith('Z')) {
+   dateValue = dateValue + 'Z';
+ }
     // Use Angular's built-in DatePipe for robust formatting
     const datePipe = new DatePipe('en-US');
     try {
-      return datePipe.transform(value, format) || '';
+      return datePipe.transform(dateValue, format) || '';
     } catch (error) {
       console.error('Invalid date value for FormatDatePipe', error);
       return ''; // Return empty string for invalid dates
