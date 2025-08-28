@@ -32,7 +32,7 @@
           <tr *ngFor="let schedule of departureTable.data">
             <td>{{ schedule.departureDate | formatDate:'dd/MM/yyyy HH:mm' }}</td>
             <td>{{ schedule.coordinator?.fullName || 'N/A' }}</td>
-            <td>{{ formatPaxOption(schedule.tourPax!) }}</td>
+          <td>{{ schedule.tourPax ? formatPaxOption(schedule.tourPax) : 'Chưa có gói giá' }}</td>
             <td>
               <strong class="text-green-600">{{ schedule.price | currencyVnd }}</strong>
             </td>
@@ -56,8 +56,12 @@
     <nz-form-item>
       <nz-form-label nzRequired>Ngày khởi hành đầu tiên</nz-form-label>
       <nz-form-control nzErrorTip="Vui lòng chọn ngày">
-        <nz-date-picker formControlName="departureDate" class="w-full" nzShowTime
-          nzFormat="yyyy-MM-dd HH:mm"></nz-date-picker>
+        <nz-date-picker
+          formControlName="departureDate"
+          class="w-full"
+          [nzShowTime]="{ nzFormat: 'HH:mm' }"
+          nzFormat="yyyy-MM-dd HH:mm">
+        </nz-date-picker>
       </nz-form-control>
     </nz-form-item>
 
